@@ -34,10 +34,16 @@ import io.mockk.unmockkAll
 import io.mockk.unmockkConstructor
 import io.mockk.unmockkObject
 import io.mockk.unmockkStatic
+import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert
@@ -369,5 +375,115 @@ internal class PolarSleepApiImplTest {
         } finally {
             unmockkObject(PolarServiceClientUtils)
         }
+    }
+
+    @Test
+    fun `getSleepRecordingState returns promptly when subscription flow stays open after first event`() = runTest {
+        // Simulate device: emits initial state then keeps the flow open indefinitely.
+        val deviceId = "E123456F"
+        val api = BDBleApiImpl.getInstance(context, setOf(PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_SLEEP_DATA))
+        val (client, _) = mockSleepConnection(deviceId)
+
+        mockkStatic("com.polar.sdk.impl.utils.PolarDeviceRestApiUtilsKt")
+        every { client.write(any(), any()) } returns flowOf(1L)
+        // Emit the initial state (as a real device would ~10 ms after subscribe) then
+        // keep the flow open forever — exactly the scenario that triggered the 8.1.0 hang.
+        every { client.receiveRestApiEvents(any()) } returns flow {
+            emit(listOf("""{"sleep_recording_state":{"enabled":1}}"""))
+            delay(Long.MAX_VALUE) // subscription stays open on the device side
+        }
+
+        try {
+            val result = api.getSleepRecordingState(deviceId)
+
+            // Assert
+            Assert.assertTrue(
+                "getSleepRecordingState must return true from the first event even when the flow never terminates",
+                result
+            )
+        } finally {
+            unmockkObject(PolarServiceClientUtils)
+            unmockkStatic("com.polar.sdk.impl.utils.PolarDeviceRestApiUtilsKt")
+            resetCapabilityUtilityState()
+        }
+    }
+
+    @Test
+    fun `getSleepRecordingState returns value from first event even when flow emits multiple events`() = runTest {
+        // Device sends several events; only the first should be used.
+        val deviceId = "E123456F"
+        val api = BDBleApiImpl.getInstance(context, setOf(PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_SLEEP_DATA))
+        val (client, _) = mockSleepConnection(deviceId)
+
+        mockkStatic("com.polar.sdk.impl.utils.PolarDeviceRestApiUtilsKt")
+        every { client.write(any(), any()) } returns flowOf(1L)
+        every { client.receiveRestApiEvents(any()) } returns flow {
+            emit(listOf("""{"sleep_recording_state":{"enabled":1}}"""))
+            emit(listOf("""{"sleep_recording_state":{"enabled":0}}""")) // must NOT override first
+            delay(Long.MAX_VALUE)
+        }
+
+        try {
+            val result = api.getSleepRecordingState(deviceId)
+            Assert.assertTrue(
+                "getSleepRecordingState must return the value from the first (true) event",
+                result
+            )
+        } finally {
+            unmockkObject(PolarServiceClientUtils)
+            unmockkStatic("com.polar.sdk.impl.utils.PolarDeviceRestApiUtilsKt")
+            resetCapabilityUtilityState()
+        }
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun `getSleepRecordingState and observeSleepRecordingState work correctly when used concurrently`() = runTest {
+        val deviceId = "E123456F"
+        val api = BDBleApiImpl.getInstance(context, setOf(PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_SLEEP_DATA))
+        val (client, _) = mockSleepConnection(deviceId)
+
+        mockkStatic("com.polar.sdk.impl.utils.PolarDeviceRestApiUtilsKt")
+        every { client.write(any(), any()) } returns flowOf(1L)
+
+        // Single hot flow shared by both callers — mimics the real SharedFlow inside BlePsFtpClient.
+        val eventFlow = MutableSharedFlow<List<String>>(extraBufferCapacity = 8)
+        every { client.receiveRestApiEvents(any()) } returns eventFlow
+
+        val observedStates = mutableListOf<Boolean>()
+        val observeJob = launch {
+            api.observeSleepRecordingState(deviceId).collect { states ->
+                observedStates.addAll(states.toList())
+            }
+        }
+        // Let observer's inner eventJob subscribe to eventFlow (no timeout pending → safe).
+        advanceUntilIdle()
+
+        // Start getSleepRecordingState. Use runCurrent() — not advanceUntilIdle() — so that
+        // virtual time does NOT advance past the withTimeoutOrNull deadline before we emit.
+        val getDeferred = async { api.getSleepRecordingState(deviceId) }
+        runCurrent() // collectorJob subscribes to eventFlow
+
+        // Both observer and get are now subscribed. Emit first event.
+        eventFlow.emit(listOf("""{"sleep_recording_state":{"enabled":1}}"""))
+        runCurrent() // both process event 1; getSleepRecordingState completes; observer gets true
+
+        val result = getDeferred.await()
+        Assert.assertTrue("getSleepRecordingState must return true from the first event", result)
+
+        // Emit two more events — collectorJob is cancelled, so only observer should see them.
+        eventFlow.emit(listOf("""{"sleep_recording_state":{"enabled":0}}"""))
+        eventFlow.emit(listOf("""{"sleep_recording_state":{"enabled":1}}"""))
+        runCurrent()
+
+        Assert.assertEquals("Observer must have received all three events", 3, observedStates.size)
+        Assert.assertEquals(listOf(true, false, true), observedStates)
+
+        observeJob.cancel()
+        try {
+            unmockkObject(PolarServiceClientUtils)
+            unmockkStatic("com.polar.sdk.impl.utils.PolarDeviceRestApiUtilsKt")
+            resetCapabilityUtilityState()
+        } catch (_: Exception) {}
     }
 }

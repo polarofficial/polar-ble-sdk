@@ -41,15 +41,15 @@ interface PolarH10OfflineExerciseApi {
      *
      * @param identifier polar device id or bt address
      * @param exerciseId unique id for exercise entry
-     * @param interval   recording interval to be used, parameter has no effect if the `type` parameter is SampleType.RR
-     * @param type       sample type to be used
+     * @param interval   recording interval to be used, parameter has no effect if the `sampleType` parameter is SampleType.RR
+     * @param sampleType sample type to be used
      * @return Success or error
      */
     suspend fun startRecording(
         identifier: String,
         @Size(min = 1, max = 64) exerciseId: String,
         interval: RecordingInterval?,
-        type: SampleType
+        sampleType: SampleType
     )
 
     /**
@@ -93,3 +93,19 @@ interface PolarH10OfflineExerciseApi {
      */
     suspend fun removeExercise(identifier: String, entry: PolarExerciseEntry)
 }
+
+/**
+ * @deprecated Parameter `type` has been renamed to `sampleType` for iOS/Android API alignment.
+ * Use [PolarH10OfflineExerciseApi.startRecording] with `sampleType` instead.
+ */
+@Deprecated(
+    "Parameter renamed from 'type' to 'sampleType' for API alignment",
+    ReplaceWith("startRecording(identifier = identifier, exerciseId = exerciseId, interval = interval, sampleType = type)")
+)
+suspend fun PolarH10OfflineExerciseApi.startRecording(
+    identifier: String,
+    exerciseId: String,
+    interval: PolarH10OfflineExerciseApi.RecordingInterval?,
+    type: PolarH10OfflineExerciseApi.SampleType
+) = startRecording(identifier = identifier, exerciseId = exerciseId, interval = interval, sampleType = type)
+

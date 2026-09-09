@@ -47,7 +47,10 @@ struct DeviceSettingsView: View {
     @State private var toast: String? = nil
     @State private var bleSignalStrengthText: String = ""
     @State private var selectedTelemetryStreamingType: PolarDeviceTelemetryType? = nil
-    
+
+    @State private var isShareSheetPresented = false
+    @State private var appLogFileURL: URL?
+
     var body: some View {
         VStack {
             if case .connected = bleSdkManager.deviceConnectionState {
@@ -488,11 +491,21 @@ struct DeviceSettingsView: View {
                         }.padding(.bottom, 10)
                             .buttonStyle(SecondaryButtonStyle(buttonState: ButtonState.released))
                     }
-                    if bleSdkManager.deviceConnectionState.get().hasSAGRFCFileSystem {
+                    if bleSdkManager.fileTransferFeature.isSupported {
                         HStack {
                             Button("Do user device settings config") {
                                 if bleSdkManager.checkIfDeviceIdSet() {
-                                    showUserDeviceSettingsConfig = true
+                                    Task {
+                                        let settings = await bleSdkManager.getUserDeviceSettings()
+                                        await MainActor.run {
+                                            if settings != nil {
+                                                showUserDeviceSettingsConfig = true
+                                            } else {
+                                                errorMessage = bleSdkManager.userDeviceSettingsError ?? "User device settings file is not readable on device."
+                                                showError = true
+                                            }
+                                        }
+                                    }
                                 } else {
                                     errorMessage = "No device ID available"
                                     showError = true
@@ -695,10 +708,29 @@ struct DeviceSettingsView: View {
                         }
                         .buttonStyle(SecondaryButtonStyle(buttonState: .released))
                     }
+
+                    Button("Export PSDC app logs") {
+                        if appLogFileURL == nil {
+                            appLogFileURL = AppLogger.ensureLogFile()
+                        }
+                        if appLogFileURL != nil {
+                            isShareSheetPresented = true
+                        }
+                    }
+                    .buttonStyle(SecondaryButtonStyle(buttonState: .released))
+                    .padding(.top, 10)
+                    .sheet(isPresented: $isShareSheetPresented) {
+                        if let url = appLogFileURL {
+                            ExportLogsView(text: "Export PSDC app logs", fileURL: url)
+                        }
+                    }
                 }
             } else {
                 Text("Not connected")
             }
+        }
+        .onAppear {
+            appLogFileURL = AppLogger.ensureLogFile()
         }
     }
 

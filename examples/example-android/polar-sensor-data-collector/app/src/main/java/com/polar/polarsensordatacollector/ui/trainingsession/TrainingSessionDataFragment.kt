@@ -195,7 +195,7 @@ fun ShowData(
                     modifier = Modifier.size(ButtonDefaults.IconSize)
                 )
                 Spacer(Modifier.size(ButtonDefaults.IconSpacing))
-                Text("Share")
+                Text(stringResource(R.string.share))
             }
 
             Spacer(modifier = Modifier.width(16.dp))

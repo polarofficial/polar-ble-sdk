@@ -304,7 +304,7 @@ public interface <span class="typeNameLabel"><a href=PolarTrainingSessionApi.htm
                                         <tr id="i7" class="rowColor">
                                             <td class="colFirst"><code>abstract <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
                                             </td>
-                                            <th class="colSecond" scope="row"><code><a href=PolarTrainingSessionApi.html#stopExercise(java.lang.String)>stopExercise</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
+                                            <th class="colSecond" scope="row"><code><a href=PolarTrainingSessionApi.html#stopExercise(java.lang.String,java.lang.Boolean)>stopExercise</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> save) </code>
                                             </th>
                                             <td class="colLast">Stop the current exercise session.</td>
                                         </tr>
@@ -612,7 +612,7 @@ public interface <span class="typeNameLabel"><a href=PolarTrainingSessionApi.htm
                                     </li>
                                 </ul>
                                 
-                                <a id="stopExercise(java.lang.String)">
+                                <a id="stopExercise(java.lang.String,java.lang.Boolean)">
                                     <!--   -->
                                 </a>
                                 <ul class=
@@ -620,8 +620,8 @@ public interface <span class="typeNameLabel"><a href=PolarTrainingSessionApi.htm
                                           >
                                     <li class="blockList">
                                         <h4>stopExercise</h4>
-                                        <pre class="methodSignature"> abstract <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a> <a href=PolarTrainingSessionApi.html#stopExercise(java.lang.String)>stopExercise</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
-                                        <div class="block"><p>Stop the current exercise session. Requires feature <a href=PolarBleApi.PolarBleSdkFeature.html#FEATURE_POLAR_TRAINING_DATA>PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_TRAINING_DATA</a></p><p>By default, the session is saved on the device.</p></div>
+                                        <pre class="methodSignature"> abstract <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a> <a href=PolarTrainingSessionApi.html#stopExercise(java.lang.String,java.lang.Boolean)>stopExercise</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> save)</pre>
+                                        <div class="block"><p>Stop the current exercise session. Requires feature <a href=PolarBleApi.PolarBleSdkFeature.html#FEATURE_POLAR_TRAINING_DATA>PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_TRAINING_DATA</a></p></div>
 
                                         <dl>
 
@@ -630,6 +630,10 @@ public interface <span class="typeNameLabel"><a href=PolarTrainingSessionApi.htm
                                             
                                             
                                             <dd><code>identifier</code> - The Polar device ID or BT address.</dd>
+                                            
+                                            
+                                            
+                                            <dd><code>save</code> - Whether to save the stopped exercise on the device.</dd>
                                             
                                             
                                         

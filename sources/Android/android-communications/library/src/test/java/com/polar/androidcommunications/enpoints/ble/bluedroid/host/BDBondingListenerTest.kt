@@ -15,6 +15,7 @@ import io.mockk.verify
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
+import org.junit.Assert.assertTrue
 
 class BDBondingListenerTest {
 
@@ -29,6 +30,7 @@ class BDBondingListenerTest {
 
         context = mockk()
         every { context.registerReceiver(any(), any()) } returns null
+        every { context.registerReceiver(any(), any(), any(), any()) } returns null
         every { context.unregisterReceiver(any()) } just runs
 
         sut = BDBondingListener(context)
@@ -174,6 +176,59 @@ class BDBondingListenerTest {
         // Assert
         verify(exactly = 0) { observer1.bonded() }
         verify(exactly = 1) { observer2.bonded() }
+    }
+
+    @Test
+    fun bondStateObserver_whenBondedThenNone_reportsPreviouslyBondedAndRemoval() {
+        val device = mockk<BluetoothDevice>()
+        val observer = mockk<BDBondingListener.BondStateObserver>(relaxed = true)
+        every { observer.device } returns device
+        sut.addBondStateObserver(observer)
+
+        fireBroadcast(createBondStateIntent(device, BluetoothDevice.BOND_BONDED))
+        fireBroadcast(createBondStateIntent(device, BluetoothDevice.BOND_NONE))
+
+        verify(exactly = 1) {
+            observer.bondStateChanged(BluetoothDevice.BOND_BONDED, false, false)
+        }
+        verify(exactly = 1) {
+            observer.bondStateChanged(BluetoothDevice.BOND_NONE, true, false)
+        }
+        assertTrue(sut.hasPairingBeenRemoved(device))
+    }
+
+    @Test
+    fun bondStateObserver_whenBondingThenNone_reportsPairingAttempt() {
+        val device = mockk<BluetoothDevice>()
+        val observer = mockk<BDBondingListener.BondStateObserver>(relaxed = true)
+        every { observer.device } returns device
+        sut.addBondStateObserver(observer)
+
+        fireBroadcast(createBondStateIntent(device, BluetoothDevice.BOND_BONDING))
+        fireBroadcast(createBondStateIntent(device, BluetoothDevice.BOND_NONE))
+
+        verify(exactly = 1) {
+            observer.bondStateChanged(BluetoothDevice.BOND_BONDING, false, false)
+        }
+        verify(exactly = 1) {
+            observer.bondStateChanged(BluetoothDevice.BOND_NONE, false, true)
+        }
+        assertTrue(!sut.hasPairingBeenRemoved(device))
+    }
+
+    @Test
+    fun bondStateObserver_whenNoneWithoutHistory_doesNotReportPairingRemoval() {
+        val device = mockk<BluetoothDevice>()
+        val observer = mockk<BDBondingListener.BondStateObserver>(relaxed = true)
+        every { observer.device } returns device
+        sut.addBondStateObserver(observer)
+
+        fireBroadcast(createBondStateIntent(device, BluetoothDevice.BOND_NONE))
+
+        verify(exactly = 1) {
+            observer.bondStateChanged(BluetoothDevice.BOND_NONE, false, false)
+        }
+        assertTrue(!sut.hasPairingBeenRemoved(device))
     }
 
     private fun createBondStateIntent(device: BluetoothDevice, bondState: Int): Intent {

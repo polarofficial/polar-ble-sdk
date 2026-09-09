@@ -44,7 +44,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="10dp"
-                android:layout_marginTop="10dp"
+                android:layout_marginTop="0dp"
                 android:layout_marginRight="10dp"
                 android:layout_marginBottom="10dp"
                 android:text="@string/search_and_connect_disconnect"
@@ -52,6 +52,20 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/search_connect_button" />
+
+            <Button
+                android:id="@+id/disconnect_all_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:layout_marginTop="0dp"
+                android:layout_marginRight="10dp"
+                android:layout_marginBottom="10dp"
+                android:text="@string/disconnect_all"
+                android:visibility="gone"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/disconnect_button" />
 
             <Button
                 android:id="@+id/listen_hr_broadcasts_button"
@@ -64,7 +78,7 @@
                 android:text="@string/listen_hr_broadcasts"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/disconnect_button" />
+                app:layout_constraintTop_toBottomOf="@+id/disconnect_all_button" />
 
             <TextView
                 android:id="@+id/phone_bluetooth_status"
@@ -86,7 +100,7 @@
                 android:layout_marginTop="10dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/disconnect_button">
+                app:layout_constraintTop_toBottomOf="@+id/disconnect_all_button">
 
                 <TextView
                     android:id="@+id/device_status"
@@ -177,13 +191,8 @@
             </androidx.constraintlayout.widget.ConstraintLayout>
         </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <com.google.android.material.tabs.TabLayout
-            android:id="@+id/tab_layout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-
-        <androidx.viewpager2.widget.ViewPager2
-            android:id="@+id/pager"
+        <FrameLayout
+            android:id="@+id/pager_container"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1" />

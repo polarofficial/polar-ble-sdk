@@ -909,10 +909,12 @@ class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
 
     private fun bleMultiConnectionStateChange(status: BleMultiConnectionUiState) {
         bleMultiConnectionEnabledSwitch.isChecked = status.isEnabled
+        bleMultiConnectionEnabledSwitch.isEnabled = status.isSwitchEnabled
     }
 
     private fun sensorInitiatedSecurityModeStateChange(status: SensorInitiatedSecurityModeUiState) {
         sensorInitiatedSecurityModeEnableSwitch.isChecked = status.isEnabled
+        sensorInitiatedSecurityModeEnableSwitch.isEnabled = status.isSwitchEnabled
     }
 
     private fun showDataDeleteDatePicker() {

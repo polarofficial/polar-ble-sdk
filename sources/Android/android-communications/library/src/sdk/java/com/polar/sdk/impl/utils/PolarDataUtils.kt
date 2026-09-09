@@ -325,6 +325,7 @@ internal object PolarDataUtils {
             PolarBleApi.PolarDeviceDataType.TEMPERATURE -> PmdMeasurementType.TEMPERATURE
             PolarBleApi.PolarDeviceDataType.SKIN_TEMPERATURE -> PmdMeasurementType.SKIN_TEMP
             PolarBleApi.PolarDeviceDataType.HR -> PmdMeasurementType.OFFLINE_HR
+            PolarBleApi.PolarDeviceDataType.DERIVED_MEASUREMENT -> PmdMeasurementType.DERIVED_MEASUREMENT
         }
     }
 
@@ -341,6 +342,7 @@ internal object PolarDataUtils {
             PmdMeasurementType.TEMPERATURE -> PolarBleApi.PolarDeviceDataType.TEMPERATURE
             PmdMeasurementType.OFFLINE_HR -> PolarBleApi.PolarDeviceDataType.HR
             PmdMeasurementType.SKIN_TEMP -> PolarBleApi.PolarDeviceDataType.SKIN_TEMPERATURE
+            PmdMeasurementType.DERIVED_MEASUREMENT -> PolarBleApi.PolarDeviceDataType.DERIVED_MEASUREMENT
             else -> throw PolarBleSdkInternalException("Error when map measurement type $pmdMeasurementType to Polar feature")
         }
     }

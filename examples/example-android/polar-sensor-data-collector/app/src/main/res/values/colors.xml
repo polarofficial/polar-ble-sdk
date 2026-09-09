@@ -17,6 +17,7 @@
 
     <color name="color_not_connectable">#F5A9A9</color>
     <color name="color_connected">#287AA9</color>
+    <color name="color_already_connected">#00AF00</color>
 
     <color name="color_gray">#808080</color>
 

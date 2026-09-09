@@ -149,6 +149,24 @@ abstract class BleDeviceListener protected constructor(clients: Set<Class<out Bl
     abstract fun sessionByAddress(address: String?): BleDeviceSession?
 
     /**
+     * Open a GATT session to a bonded device by MAC address, without waiting for a BLE advertisement.
+     *
+     * Call this when the OS reports the peripheral as present (e.g. via CompanionDeviceManager) but
+     * the device has stopped advertising — a scenario seen on devices where the watch stays OS-level
+     * connected yet never re-advertises after a mid-session disconnect.
+     *
+     * The session transitions exactly like the advertisement-triggered path:
+     * SESSION_CLOSED → SESSION_OPENING → SESSION_OPEN.
+     *
+     * If the initial GATT connect attempt fails, the library automatically retries up to
+     * MAX_DIRECT_CONNECT_RETRIES times with a fixed backoff before giving up.
+     * After exhausting retries the session reverts to normal SESSION_OPEN_PARK state.
+     *
+     * @param address BT MAC address in the format 00:11:22:33:44:55
+     */
+    abstract fun connectToBondedDevice(address: String)
+
+    /**
      * Client app/lib can request to remove device from the list,
      *
      * @param deviceSession @see BleDeviceSession

@@ -5,7 +5,9 @@ import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
 import android.bluetooth.BluetoothGattService
+import com.polar.androidcommunications.api.ble.BleLogger
 import com.polar.androidcommunications.enpoints.ble.bluedroid.host.connection.ConnectionHandler
+import com.polar.androidcommunications.api.ble.model.BleDeviceSession
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -23,6 +25,126 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
 class GattCallbackTest {
+
+    @Test
+    fun onConnectionStateChange_whenPendingDeviceCommandHasExpectedStatus_classifiesDeviceCommand() {
+        val connectionHandler = mockk<ConnectionHandler>(relaxed = true)
+        val sessions = mockk<BDDeviceList>()
+        val gatt = mockk<BluetoothGatt>(relaxed = true)
+        val deviceSession = mockk<BDDeviceSessionImpl>(relaxed = true)
+
+        every { sessions.getSession(gatt) } returns deviceSession
+        every { deviceSession.isExpectedDeviceCommandDisconnectStillValid() } returns true
+        every { deviceSession.pendingDeviceCommand } returns BleDeviceSession.DeviceCommand.RESTART
+
+        GattCallback(connectionHandler, sessions).onConnectionStateChange(gatt, 19, BluetoothGatt.STATE_DISCONNECTED)
+
+        verify(exactly = 1) {
+            deviceSession.markDisconnect(BleDeviceSession.DisconnectReason.DEVICE_COMMAND, 19)
+        }
+    }
+
+    @Test
+    fun onConnectionStateChange_whenPendingDeviceCommandHasUnexpectedStatus_classifiesDeviceCommandAndLogsWarning() {
+        val connectionHandler = mockk<ConnectionHandler>(relaxed = true)
+        val sessions = mockk<BDDeviceList>()
+        val gatt = mockk<BluetoothGatt>(relaxed = true)
+        val deviceSession = mockk<BDDeviceSessionImpl>(relaxed = true)
+        val warnings = mutableListOf<String>()
+
+        every { sessions.getSession(gatt) } returns deviceSession
+        every { deviceSession.isExpectedDeviceCommandDisconnectStillValid() } returns true
+        every { deviceSession.pendingDeviceCommand } returns BleDeviceSession.DeviceCommand.RESTART
+        BleLogger.setLoggerInterface(object : BleLogger.BleLoggerInterface {
+            override fun d(tag: String, msg: String) = Unit
+            override fun e(tag: String, msg: String) = Unit
+            override fun w(tag: String, msg: String) { warnings += msg }
+            override fun i(tag: String, msg: String) = Unit
+            override fun d_hex(tag: String, msg: String, data: ByteArray) = Unit
+        })
+
+        try {
+            GattCallback(connectionHandler, sessions).onConnectionStateChange(gatt, 133, BluetoothGatt.STATE_DISCONNECTED)
+
+            verify(exactly = 1) {
+                deviceSession.markDisconnect(BleDeviceSession.DisconnectReason.DEVICE_COMMAND, 133)
+            }
+            assertTrue(warnings.any { it.contains("unexpected GATT status") })
+        } finally {
+            BleLogger.setLoggerInterface(null)
+        }
+    }
+
+    @Test
+    fun onConnectionStateChange_whenNoPendingCommandAndPeerTerminates_classifiesPeerTerminated() {
+        val connectionHandler = mockk<ConnectionHandler>(relaxed = true)
+        val sessions = mockk<BDDeviceList>()
+        val gatt = mockk<BluetoothGatt>(relaxed = true)
+        val deviceSession = mockk<BDDeviceSessionImpl>(relaxed = true)
+
+        every { sessions.getSession(gatt) } returns deviceSession
+        every { deviceSession.isExpectedDeviceCommandDisconnectStillValid() } returns false
+
+        listOf(19, 20, 21).forEach { status ->
+            GattCallback(connectionHandler, sessions).onConnectionStateChange(gatt, status, BluetoothGatt.STATE_DISCONNECTED)
+            verify(exactly = 1) {
+                deviceSession.markDisconnect(BleDeviceSession.DisconnectReason.PEER_TERMINATED, status)
+            }
+        }
+    }
+
+    @Test
+    fun onConnectionStateChange_whenPendingDeviceCommandExpired_fallsThroughToNormalClassification() {
+        val connectionHandler = mockk<ConnectionHandler>(relaxed = true)
+        val sessions = mockk<BDDeviceList>()
+        val gatt = mockk<BluetoothGatt>(relaxed = true)
+        val deviceSession = mockk<BDDeviceSessionImpl>(relaxed = true)
+
+        every { sessions.getSession(gatt) } returns deviceSession
+        every { deviceSession.isExpectedDeviceCommandDisconnectStillValid() } returns false
+        every { deviceSession.pendingDeviceCommand } returns BleDeviceSession.DeviceCommand.RESTART
+
+        GattCallback(connectionHandler, sessions).onConnectionStateChange(gatt, 19, BluetoothGatt.STATE_DISCONNECTED)
+
+        verify(exactly = 1) {
+            deviceSession.markDisconnect(BleDeviceSession.DisconnectReason.PEER_TERMINATED, 19)
+        }
+    }
+
+    @Test
+    fun onConnectionStateChange_whenNoPendingCommandAndConnectionTimesOut_classifiesConnectionLost() {
+        val connectionHandler = mockk<ConnectionHandler>(relaxed = true)
+        val sessions = mockk<BDDeviceList>()
+        val gatt = mockk<BluetoothGatt>(relaxed = true)
+        val deviceSession = mockk<BDDeviceSessionImpl>(relaxed = true)
+
+        every { sessions.getSession(gatt) } returns deviceSession
+        every { deviceSession.isExpectedDeviceCommandDisconnectStillValid() } returns false
+
+        GattCallback(connectionHandler, sessions).onConnectionStateChange(gatt, 8, BluetoothGatt.STATE_DISCONNECTED)
+
+        verify(exactly = 1) {
+            deviceSession.markDisconnect(BleDeviceSession.DisconnectReason.CONNECTION_LOST, 8)
+        }
+    }
+
+    @Test
+    fun onConnectionStateChange_whenPendingDeviceCommandAndL2cFailureStatus_classifiesDeviceCommandOverPairingNegotiation() {
+        val connectionHandler = mockk<ConnectionHandler>(relaxed = true)
+        val sessions = mockk<BDDeviceList>()
+        val gatt = mockk<BluetoothGatt>(relaxed = true)
+        val deviceSession = mockk<BDDeviceSessionImpl>(relaxed = true)
+
+        every { sessions.getSession(gatt) } returns deviceSession
+        every { deviceSession.isExpectedDeviceCommandDisconnectStillValid() } returns true
+        every { deviceSession.pendingDeviceCommand } returns BleDeviceSession.DeviceCommand.RESTART
+
+        GattCallback(connectionHandler, sessions).onConnectionStateChange(gatt, 22, BluetoothGatt.STATE_DISCONNECTED)
+
+        verify(exactly = 1) {
+            deviceSession.markDisconnect(BleDeviceSession.DisconnectReason.DEVICE_COMMAND, 22)
+        }
+    }
 
     @Test
     fun onConnectionStateChange_whenConnectedAndStatusSuccess_callsConnectionInitialized() {
@@ -58,6 +180,74 @@ class GattCallbackTest {
         verify(exactly = 1) { connectionHandler.connectionInitialized(deviceSession) }
         verify(exactly = 0) { connectionHandler.deviceDisconnected(any()) }
         verify(exactly = 0) { gatt.close() }
+    }
+
+    @Test
+    fun onConnectionStateChange_whenBondRemovedWithZeroStatus_classifiesPairingInformationRemoved() {
+        val connectionHandler = mockk<ConnectionHandler>()
+        val sessions = mockk<BDDeviceList>()
+        val gatt = mockk<BluetoothGatt>()
+        val deviceSession = mockk<BDDeviceSessionImpl>(relaxed = true)
+        val bluetoothDevice = mockk<BluetoothDevice>()
+
+        every { sessions.getSession(gatt) } returns deviceSession
+        every { gatt.device } returns bluetoothDevice
+        every { bluetoothDevice.address } returns "AA:BB:CC:DD:EE:FF"
+        every { deviceSession.bluetoothDevice } returns bluetoothDevice
+        every { deviceSession.wasBondedAtConnection } returns true
+        every { deviceSession.hasEstablishedBond } returns true
+        every { deviceSession.pairingInformationWasRemoved() } returns true
+        every { bluetoothDevice.bondState } returns BluetoothDevice.BOND_NONE
+
+        val disconnectedLatch = CountDownLatch(1)
+        every { connectionHandler.deviceDisconnected(deviceSession) } answers {
+            disconnectedLatch.countDown()
+        }
+
+        val sut = GattCallback(connectionHandler, sessions)
+
+        sut.onConnectionStateChange(gatt, BluetoothGatt.GATT_SUCCESS, BluetoothGatt.STATE_DISCONNECTED)
+
+        assertTrue("Expected disconnect callback", disconnectedLatch.await(2, TimeUnit.SECONDS))
+        verify(exactly = 1) {
+            deviceSession.markDisconnect(
+                BleDeviceSession.DisconnectReason.PAIRING_INFORMATION_REMOVED,
+                BluetoothGatt.GATT_SUCCESS
+            )
+        }
+    }
+
+    @Test
+    fun onConnectionStateChange_whenL2cConnectionFails_classifiesPairingNegotiationFailed() {
+        val connectionHandler = mockk<ConnectionHandler>()
+        val sessions = mockk<BDDeviceList>()
+        val gatt = mockk<BluetoothGatt>()
+        val deviceSession = mockk<BDDeviceSessionImpl>(relaxed = true)
+        val bluetoothDevice = mockk<BluetoothDevice>()
+
+        every { sessions.getSession(gatt) } returns deviceSession
+        every { gatt.device } returns bluetoothDevice
+        every { bluetoothDevice.address } returns "AA:BB:CC:DD:EE:FF"
+        every { deviceSession.bluetoothDevice } returns bluetoothDevice
+        every { deviceSession.pairingInformationWasRemoved() } returns false
+        every { deviceSession.disconnectReason } returns BleDeviceSession.DisconnectReason.NONE
+
+        val disconnectedLatch = CountDownLatch(1)
+        every { connectionHandler.deviceDisconnected(deviceSession) } answers {
+            disconnectedLatch.countDown()
+        }
+
+        val sut = GattCallback(connectionHandler, sessions)
+
+        sut.onConnectionStateChange(gatt, 22, BluetoothGatt.STATE_DISCONNECTED)
+
+        assertTrue("Expected disconnect callback", disconnectedLatch.await(2, TimeUnit.SECONDS))
+        verify(exactly = 1) {
+            deviceSession.markDisconnect(
+                BleDeviceSession.DisconnectReason.PAIRING_NEGOTIATION_FAILED,
+                22
+            )
+        }
     }
 
     @Test

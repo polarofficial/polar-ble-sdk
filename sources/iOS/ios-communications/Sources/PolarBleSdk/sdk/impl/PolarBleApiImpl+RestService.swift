@@ -186,7 +186,7 @@ extension PolarBleApiImpl: PolarRestServiceApi {
     func receiveRestApiEvents<T: Decodable>(identifier: String) -> AsyncThrowingStream<[T], Error> {
         logApiCall("receiveRestApiEvents", ("identifier", identifier))
         return AsyncThrowingStream { continuation in
-            Task {
+            let task = Task {
                 do {
                     let session = try self.serviceClientUtils.sessionFtpClientReady(identifier)
                     guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
@@ -201,6 +201,7 @@ extension PolarBleApiImpl: PolarRestServiceApi {
                     continuation.finish(throwing: error)
                 }
             }
+            continuation.onTermination = { _ in task.cancel() }
         }
     }
 }

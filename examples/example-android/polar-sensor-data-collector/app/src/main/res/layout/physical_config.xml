@@ -34,21 +34,21 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="sexual" />
+                            android:text="@string/physical_gender_sexual" />
 
                         <RadioButton
                             android:id="@+id/radioButtonFemale"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Female" />
+                            android:text="@string/physical_gender_female" />
 
                         <RadioButton
                             android:id="@+id/radioButtonMale"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Male" />
+                            android:text="@string/physical_gender_male" />
                     </RadioGroup>
 
                 </LinearLayout>
@@ -62,7 +62,7 @@
                         android:layout_width="25dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Birthday" />
+                        android:text="@string/physical_birthday" />
 
                     <TextView
                         android:id="@+id/textViewBirthday"
@@ -83,7 +83,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="height" />
+                        android:text="@string/physical_height" />
 
                     <EditText
                         android:id="@+id/editTextHeight"
@@ -104,7 +104,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="weight" />
+                        android:text="@string/physical_weight" />
 
                     <EditText
                         android:id="@+id/editTextWeight"
@@ -124,7 +124,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Training Background" />
+                        android:text="@string/physical_training_background" />
 
                     <Spinner
                         android:id="@+id/spinnerTrainingBackground"
@@ -142,7 +142,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="maxium heart rate" />
+                        android:text="@string/physical_max_heart_rate" />
 
                     <Spinner
                         android:id="@+id/spinnerMaxHeartRate"
@@ -160,7 +160,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="resting heart rate" />
+                        android:text="@string/physical_resting_heart_rate" />
 
                     <Spinner
                         android:id="@+id/spinnerRestingHeartRate"
@@ -178,7 +178,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="vo2Max" />
+                        android:text="@string/physical_vo2_max" />
 
                     <NumberPicker
                         android:id="@+id/numberPickerVO2max"
@@ -254,7 +254,7 @@
                     android:id="@+id/submit_physical_button"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="submit" />
+                    android:text="@string/submit_lowercase" />
             </LinearLayout>
         </androidx.core.widget.NestedScrollView>
 

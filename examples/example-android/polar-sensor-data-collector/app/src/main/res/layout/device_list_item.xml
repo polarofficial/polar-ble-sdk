@@ -9,17 +9,34 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-    <TextView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="-"
-        android:textColor="@android:color/black"
-        android:id="@+id/device_name" />
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/placeholder_dash"
+            android:textColor="@android:color/black"
+            android:id="@+id/device_name" />
+
+        <TextView
+            android:id="@+id/device_connected_badge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="● CONNECTED"
+            android:textColor="@color/color_already_connected"
+            android:textSize="11sp"
+            android:visibility="gone" />
+
+    </LinearLayout>
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="-"
+        android:text="@string/placeholder_dash"
         android:textColor="@android:color/holo_red_dark"
         android:id="@+id/device_rssi" />
 

@@ -35,189 +35,105 @@ class OnlineOfflineAdapter(fragment: Fragment) : FragmentStateAdapter(fragment) 
         return items[position].second.hashCode().toLong()
     }
 
-    fun hasExerciseV2Fragment(): Boolean {
-        return items.any { it.second is ExerciseV2Fragment }
-    }
+    fun hasExerciseV2Fragment(): Boolean = items.any { it.second is ExerciseV2Fragment }
 
     fun addOfflineRecordingFragment(deviceId: String) {
-        if (!items.any { it.second is OfflineRecFragment }) {
-            Log.d(TAG, "Add OfflineRecordingFragment")
-            val fragment = OfflineRecFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ONLINE_OFFLINE_KEY_DEVICE_ID, deviceId)
-                }
-            }
-            if (items.isNotEmpty()) {
-                items.add(1, "OFFLINE" to fragment)
-            } else {
-                items.add(0, "OFFLINE" to fragment)
-            }
-            this.notifyItemInserted(items.size - 1)
-        } else {
+        if (items.any { it.second is OfflineRecFragment }) {
             Log.w(TAG, "trying to add OfflineRecordingFragment but found already")
+            return
         }
+        Log.d(TAG, "Add OfflineRecordingFragment for $deviceId")
+        val fragment = OfflineRecFragment().apply {
+            arguments = Bundle().apply { putString(ONLINE_OFFLINE_KEY_DEVICE_ID, deviceId) }
+        }
+        // Insert at position 1 (after ONLINE tab) so ONLINE always comes first.
+        val insertIndex = if (items.isNotEmpty()) 1 else 0
+        items.add(insertIndex, "OFFLINE" to fragment)
+        notifyItemInserted(insertIndex)
     }
 
     fun addOnlineRecordingFragment(deviceId: String) {
-        if (!items.any { it.second is OnlineRecFragment }) {
-            Log.d(TAG, "Add OnlineRecordingFragment")
-            val fragment = OnlineRecFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ONLINE_OFFLINE_KEY_DEVICE_ID, deviceId)
-                }
-            }
-            items.add(0, "ONLINE" to fragment)
-            notifyItemInserted(0)
-        } else {
+        if (items.any { it.second is OnlineRecFragment }) {
             Log.w(TAG, "trying to add OnlineRecordingFragment but found already")
+            return
         }
+        Log.d(TAG, "Add OnlineRecordingFragment for $deviceId")
+        val fragment = OnlineRecFragment().apply {
+            arguments = Bundle().apply { putString(ONLINE_OFFLINE_KEY_DEVICE_ID, deviceId) }
+        }
+        items.add(0, "ONLINE" to fragment)
+        notifyItemInserted(0)
     }
 
     fun addDeviceSettingsFragment(deviceId: String) {
-        if (!items.any { it.second is DeviceSettingsFragment }) {
-            Log.d(TAG, "Add DeviceSettingsFragment")
-            val fragment = DeviceSettingsFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ONLINE_OFFLINE_KEY_DEVICE_ID, deviceId)
-                }
-            }
-            items.add(Pair("SETTINGS", fragment))
-            this.notifyItemInserted(items.size - 1)
-        } else {
+        if (items.any { it.second is DeviceSettingsFragment }) {
             Log.w(TAG, "trying to add DeviceSettingsFragment but found already")
+            return
         }
+        Log.d(TAG, "Add DeviceSettingsFragment for $deviceId")
+        val fragment = DeviceSettingsFragment().apply {
+            arguments = Bundle().apply { putString(ONLINE_OFFLINE_KEY_DEVICE_ID, deviceId) }
+        }
+        items.add("SETTINGS" to fragment)
+        notifyItemInserted(items.size - 1)
     }
 
     fun addLoggingFragment(deviceId: String) {
-        if (!items.any { it.second is LoggingFragment }) {
-            Log.d(TAG, "Add LoggingFragment")
-            val fragment = LoggingFragment()
-            fragment.arguments = Bundle().apply {
-                putString(ONLINE_OFFLINE_KEY_DEVICE_ID, deviceId)
-            }
-            items.add(Pair("LOGGING", fragment))
-            this.notifyItemInserted(items.size - 1)
-        } else {
+        if (items.any { it.second is LoggingFragment }) {
             Log.w(TAG, "trying to add LoggingFragment but found already")
+            return
         }
+        Log.d(TAG, "Add LoggingFragment for $deviceId")
+        val fragment = LoggingFragment().apply {
+            arguments = Bundle().apply { putString(ONLINE_OFFLINE_KEY_DEVICE_ID, deviceId) }
+        }
+        items.add("LOGGING" to fragment)
+        notifyItemInserted(items.size - 1)
     }
 
     fun addActivityFragment(deviceId: String) {
-        if (!items.any { it.second is ActivityRecordingFragment }) {
-            Log.d(TAG, "Add ActivityFragment")
-            val fragment = ActivityRecordingFragment()
-            fragment.arguments = Bundle().apply {
-                putString(ONLINE_OFFLINE_KEY_DEVICE_ID, deviceId)
-            }
-            items.add(Pair("LOAD", fragment))
-            this.notifyItemInserted(items.size - 1)
-        } else {
+        if (items.any { it.second is ActivityRecordingFragment }) {
             Log.w(TAG, "trying to add ActivityFragment but found already")
+            return
         }
+        Log.d(TAG, "Add ActivityFragment for $deviceId")
+        val fragment = ActivityRecordingFragment().apply {
+            arguments = Bundle().apply { putString(ONLINE_OFFLINE_KEY_DEVICE_ID, deviceId) }
+        }
+        items.add("LOAD" to fragment)
+        notifyItemInserted(items.size - 1)
     }
 
     fun addH10ExerciseFragment(deviceId: String) {
-        if (!items.any { it.second is H10ExerciseFragment }) {
-            Log.d(TAG, "Add H10ExerciseFragment")
-            val fragment = H10ExerciseFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ONLINE_OFFLINE_KEY_DEVICE_ID, deviceId)
-                }
-            }
-            items.add(Pair("H10 EXERCISE", fragment))
-            this.notifyItemInserted(items.size - 1)
-        } else {
+        if (items.any { it.second is H10ExerciseFragment }) {
             Log.w(TAG, "trying to add H10ExerciseFragment but found already")
-        }
-    }
-
-    fun addExerciseV2Fragment(deviceId: String, isSupported: Boolean = true) {
-        Log.d(TAG, "addExerciseV2Fragment called: deviceId=$deviceId, isSupported=$isSupported")
-        if (!isSupported) {
-            Log.d(TAG, "Exercise V2 not supported for this device, skipping")
             return
         }
-        if (!items.any { it.second is ExerciseV2Fragment }) {
-            Log.d(TAG, "Add ExerciseV2Fragment for device $deviceId")
-            val fragment = ExerciseV2Fragment().apply {
-                arguments = Bundle().apply {
-                    putString(ONLINE_OFFLINE_KEY_DEVICE_ID, deviceId)
-                }
-            }
-            items.add(Pair("EXERCISE", fragment))
-            Log.d(TAG, "ExerciseV2Fragment added successfully, total fragments: ${items.size}")
-            this.notifyItemInserted(items.size - 1)
-        } else {
+        Log.d(TAG, "Add H10ExerciseFragment for $deviceId")
+        val fragment = H10ExerciseFragment().apply {
+            arguments = Bundle().apply { putString(ONLINE_OFFLINE_KEY_DEVICE_ID, deviceId) }
+        }
+        items.add("H10 EXERCISE" to fragment)
+        notifyItemInserted(items.size - 1)
+    }
+
+    fun addExerciseV2Fragment(deviceId: String) {
+        if (items.any { it.second is ExerciseV2Fragment }) {
             Log.w(TAG, "trying to add ExerciseV2Fragment but found already")
+            return
         }
+        Log.d(TAG, "Add ExerciseV2Fragment for $deviceId")
+        val fragment = ExerciseV2Fragment().apply {
+            arguments = Bundle().apply { putString(ONLINE_OFFLINE_KEY_DEVICE_ID, deviceId) }
+        }
+        items.add("EXERCISE" to fragment)
+        notifyItemInserted(items.size - 1)
     }
 
-    private fun removeOfflineRecordingFragment() {
-        val index = items.indexOfFirst { it.second is OfflineRecFragment }
-        if (index > -1) {
-            items.removeAt(index)
-            this.notifyItemRemoved(index)
-        }
-    }
-
-    private fun removeOnlineRecordingFragment() {
-        val index = items.indexOfFirst { it.second is OnlineRecFragment }
-        if (index > -1) {
-            items.removeAt(index)
-            this.notifyItemRemoved(index)
-        }
-    }
-
-    private fun removeDeviceSettingsFragment() {
-        val index = items.indexOfFirst { it.second is DeviceSettingsFragment }
-        if (index > -1) {
-            items.removeAt(index)
-            this.notifyItemRemoved(index)
-        }
-    }
-
-    private fun removeLoggingFragment() {
-        val index = items.indexOfFirst { it.second is LoggingFragment }
-        if (index > -1) {
-            items.removeAt(index)
-            this.notifyItemRemoved(index)
-        }
-    }
-
-    private fun removeActivityFragment() {
-        val index = items.indexOfFirst { it.second is ActivityRecordingFragment }
-        if (index > -1) {
-            items.removeAt(index)
-            this.notifyItemRemoved(index)
-        }
-    }
-
-    private fun removeExerciseV2Fragment() {
-        val index = items.indexOfFirst { it.second is ExerciseV2Fragment }
-        if (index > -1) {
-            items.removeAt(index)
-            this.notifyItemRemoved(index)
-        }
-    }
-
-    private fun removeH10ExerciseFragment() {
-        val index = items.indexOfFirst { it.second is H10ExerciseFragment }
-        if (index > -1) {
-            items.removeAt(index)
-            this.notifyItemRemoved(index)
-        }
-    }
-
-    fun removeFragments(isAlreadyConnected: Boolean = false) {
-        Log.d(TAG, "removeFragments(), isAlreadyConnected: $isAlreadyConnected")
-        removeOfflineRecordingFragment()
-        removeOnlineRecordingFragment()
-        if (!isAlreadyConnected) {
-            removeDeviceSettingsFragment()
-        }
-        removeLoggingFragment()
-        removeActivityFragment()
-        removeExerciseV2Fragment()
-        removeH10ExerciseFragment()
+    /** Called when DeviceSettingsFragment signals a device operation (restart, factory reset, etc.) */
+    fun removeFragments() {
+        Log.d(TAG, "removeFragments()")
+        items.clear()
+        notifyDataSetChanged()
     }
 }

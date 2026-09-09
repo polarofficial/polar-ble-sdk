@@ -160,13 +160,13 @@ internal class PolarTrainingSessionApiImpl(
         }
     }
 
-    override suspend fun stopExercise(identifier: String) {
-        BleLogger.d(TAG, "Stop exercise pressed for $identifier")
+    override suspend fun stopExercise(identifier: String, save: Boolean) {
+        BleLogger.d(TAG, "Stop exercise pressed for $identifier (save=$save)")
         val session = PolarServiceClientUtils.sessionPsFtpClientReady(identifier, listener)
         val client = (session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as? BlePsFtpClient)
             ?: throw PolarServiceNotAvailable()
         try {
-            val params = PftpRequest.PbPFtpStopExerciseParams.newBuilder().setSave(true).build()
+            val params = PftpRequest.PbPFtpStopExerciseParams.newBuilder().setSave(save).build()
             client.query(PftpRequest.PbPFtpQuery.STOP_EXERCISE_VALUE, params.toByteArray())
             BleLogger.d(TAG, "Stop exercise succeeded for $identifier")
         } catch (t: Throwable) {

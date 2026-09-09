@@ -19,6 +19,108 @@ abstract class BleDeviceSession
  * Class constructor
  */
 protected constructor() {
+    enum class DisconnectReason {
+        NONE,
+        CONNECTION_LOST,
+        INSUFFICIENT_ENCRYPTION,
+        INSUFFICIENT_AUTHENTICATION,
+        // Reserved for parity with iOS's CBError.encryptionTimedOut; no known Android GATT
+        // status currently maps to this, so it is never produced by GattCallback today. If a
+        // producer is added, mirror iOS: only RETRY_CONNECTION when the session never reached
+        // markConnectionEstablished()-equivalent state, otherwise NONE (routine reconnect).
+        ENCRYPTION_TIMEOUT,
+        PAIRING_INFORMATION_REMOVED,
+        PAIRING_NEGOTIATION_FAILED,
+        SERVICE_DISCOVERY_FAILED,
+        GATT_ERROR,
+        // The remote device actively terminated the link (e.g. HCI "remote user terminated" /
+        // "remote power off"), as opposed to the connection merely timing out.
+        PEER_TERMINATED,
+        // Disconnect is the expected outcome of a device-control command (restart, factory
+        // reset, warehouse sleep, hibernate, turn off) whose success path was already reached.
+        DEVICE_COMMAND,
+        UNKNOWN
+    }
+
+    /** Device-control command that a DEVICE_COMMAND disconnect is expected to follow. */
+    enum class DeviceCommand {
+        RESTART,
+        FACTORY_RESET,
+        WAREHOUSE_SLEEP,
+        HIBERNATE,
+        TURN_OFF
+    }
+
+    var disconnectReason: DisconnectReason = DisconnectReason.NONE
+        protected set
+    var disconnectStatus: Int? = null
+        protected set
+    var isIntentionalDisconnect: Boolean = false
+        protected set
+    // Deadline until which a pending DEVICE_COMMAND marking is honored; prevents a stale mark
+    // from mislabeling a later, unrelated disconnect if the expected one never arrives.
+    var deviceCommandDisconnectDeadlineMs: Long = 0L
+        protected set
+    var pendingDeviceCommand: DeviceCommand? = null
+        protected set
+    var wasBondedAtConnection: Boolean = false
+        protected set
+    var hasEstablishedBond: Boolean = false
+        protected set
+    var securityRecoveryAttempts: Int = 0
+        protected set
+    var securityRecoveryExhausted: Boolean = false
+        protected set
+
+    fun markBondedAtConnection(bonded: Boolean) {
+        wasBondedAtConnection = bonded
+        if (bonded) {
+            hasEstablishedBond = true
+        }
+        securityRecoveryAttempts = 0
+        securityRecoveryExhausted = false
+    }
+
+    fun recordSecurityRecoveryAttempt(maxAttempts: Int = 2): Boolean {
+        securityRecoveryAttempts += 1
+        securityRecoveryExhausted = securityRecoveryAttempts >= maxAttempts
+        return securityRecoveryExhausted
+    }
+
+    fun markDisconnect(reason: DisconnectReason, status: Int? = null) {
+        disconnectReason = reason
+        disconnectStatus = status
+    }
+
+    fun markIntentionalDisconnect() {
+        isIntentionalDisconnect = true
+        markDisconnect(DisconnectReason.CONNECTION_LOST)
+    }
+
+    /** Call right after a device-control command's success path (e.g. GATT write acked) to mark the disconnect that is expected to follow as non-actionable. */
+    fun markExpectedDeviceCommandDisconnect(command: DeviceCommand, validForMs: Long = 60_000L) {
+        // Once accepted, a reset-family command already has the device on its way out; a second
+        // such command issued before that disconnect arrives is unlikely to be the real cause, so
+        // keep attributing the upcoming disconnect to whichever command was marked first.
+        if (isExpectedDeviceCommandDisconnectStillValid()) {
+            return
+        }
+        pendingDeviceCommand = command
+        deviceCommandDisconnectDeadlineMs = System.currentTimeMillis() + validForMs
+        markDisconnect(DisconnectReason.DEVICE_COMMAND)
+    }
+
+    fun isExpectedDeviceCommandDisconnectStillValid(): Boolean =
+        disconnectReason == DisconnectReason.DEVICE_COMMAND && System.currentTimeMillis() <= deviceCommandDisconnectDeadlineMs
+
+    fun clearDisconnectReason() {
+        disconnectReason = DisconnectReason.NONE
+        disconnectStatus = null
+        isIntentionalDisconnect = false
+        deviceCommandDisconnectDeadlineMs = 0L
+        pendingDeviceCommand = null
+    }
+
     /**
      * Connection state
      */
@@ -123,7 +225,7 @@ protected constructor() {
     /**
      * @return true if device is in non-connectable advertisement<BR></BR>
      * Notes: Depending on Android API version,it's impossible to know this.<BR></BR>
-     * So this would work only for Polar Devices that follows Polar SAGRFC31
+    * So this would work only for Polar Devices that follows Polar BLE Advertising data spec
      */
     abstract val isNonConnectableAdvertisement: Boolean
 
@@ -131,7 +233,7 @@ protected constructor() {
         /**
          * @return true if device is connectable advertisement<BR></BR>
          * Notes: Depending on Android API version,it's impossible to know this.<BR></BR>
-         * So this would work only for Polar Devices that follows Polar SAGRFC31
+         * So this would work only for Polar Devices that follows Polar BLE Advertising data spec
          */
         get() = !isNonConnectableAdvertisement
 

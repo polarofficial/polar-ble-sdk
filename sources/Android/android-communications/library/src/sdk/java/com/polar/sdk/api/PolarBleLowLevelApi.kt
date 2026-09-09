@@ -58,7 +58,7 @@ interface PolarBleLowLevelApi {
     @OptIn
     suspend fun getFileList(
         identifier: String,
-        filePath: String,
+        directoryPath: String,
         recurseDeep: Boolean
     ): List<String>
 
@@ -76,3 +76,18 @@ interface PolarBleLowLevelApi {
         folderPath: String
     )
 }
+
+/**
+ * @deprecated Parameter `filePath` has been renamed to `directoryPath` for clarity.
+ * Use [PolarBleLowLevelApi.getFileList] with `directoryPath` instead.
+ */
+@Deprecated(
+    "Parameter renamed from 'filePath' to 'directoryPath' for API alignment",
+    ReplaceWith("getFileList(identifier = identifier, directoryPath = filePath, recurseDeep = recurseDeep)")
+)
+suspend fun PolarBleLowLevelApi.getFileList(
+    identifier: String,
+    filePath: String,
+    recurseDeep: Boolean
+): List<String> = getFileList(identifier = identifier, directoryPath = filePath, recurseDeep = recurseDeep)
+

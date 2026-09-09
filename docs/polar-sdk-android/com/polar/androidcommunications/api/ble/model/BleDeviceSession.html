@@ -151,6 +151,20 @@ public abstract class <span class="typeNameLabel"><a href=BleDeviceSession.html>
                                         
                                         <tr class="altColor">
                                             <td class="colFirst"><code>public enum</code></td>
+                                            <th class="colSecond" scope="row"><code><a href="BleDeviceSession.DisconnectReason.html">BleDeviceSession.DisconnectReason</a></span></code>
+                                            </th>
+                                            <td class="colLast"></td>
+                                        </tr>
+                                        
+                                        <tr class="rowColor">
+                                            <td class="colFirst"><code>public enum</code></td>
+                                            <th class="colSecond" scope="row"><code><a href="BleDeviceSession.DeviceCommand.html">BleDeviceSession.DeviceCommand</a></span></code>
+                                            </th>
+                                            <td class="colLast"><p>Device-control command that a DEVICE_COMMAND disconnect is expected to follow.</p></td>
+                                        </tr>
+                                        
+                                        <tr class="altColor">
+                                            <td class="colFirst"><code>public enum</code></td>
                                             <th class="colSecond" scope="row"><code><a href="BleDeviceSession.DeviceSessionState.html">BleDeviceSession.DeviceSessionState</a></span></code>
                                             </th>
                                             <td class="colLast"><p>Connection state</p></td>
@@ -180,102 +194,156 @@ public abstract class <span class="typeNameLabel"><a href=BleDeviceSession.html>
                                         </tr>
                                         
                                         <tr class="altColor">
-                                            <td class="colFirst"><code>private  <a href=BleDeviceSession.DeviceSessionState.html>BleDeviceSession.DeviceSessionState</a></code></td>
-                                            <th class="colSecond" scope="row"><code><a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#sessionState>sessionState</a></code></th>
+                                            <td class="colFirst"><code>private final <a href=BleDeviceSession.DisconnectReason.html>BleDeviceSession.DisconnectReason</a></code></td>
+                                            <th class="colSecond" scope="row"><code><a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#disconnectReason>disconnectReason</a></code></th>
                                             <td class="colLast"></td>
                                         </tr>
                                         
                                         <tr class="rowColor">
-                                            <td class="colFirst"><code>private final <a href=BleDeviceSession.DeviceSessionState.html>BleDeviceSession.DeviceSessionState</a></code></td>
-                                            <th class="colSecond" scope="row"><code><a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#previousState>previousState</a></code></th>
-                                            <td class="colLast"></td>
-                                        </tr>
-                                        
-                                        <tr class="altColor">
-                                            <td class="colFirst"><code>private  <a href=advertisement/BleAdvertisementContent.html>BleAdvertisementContent</a></code></td>
-                                            <th class="colSecond" scope="row"><code><a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#advertisementContent>advertisementContent</a></code></th>
-                                            <td class="colLast"></td>
-                                        </tr>
-                                        
-                                        <tr class="rowColor">
-                                            <td class="colFirst"><code>private final <a href=advertisement/BleAdvertisementContent.html>BleAdvertisementContent</a></code></td>
-                                            <th class="colSecond" scope="row"><code><a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#getAdvertisementContent()>getAdvertisementContent</a></code></th>
-                                            <td class="colLast"></td>
-                                        </tr>
-                                        
-                                        <tr class="altColor">
-                                            <td class="colFirst"><code>private  <a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a>&gt;</code></td>
-                                            <th class="colSecond" scope="row"><code><a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#connectionUuids>connectionUuids</a></code></th>
-                                            <td class="colLast"></td>
-                                        </tr>
-                                        
-                                        <tr class="rowColor">
-                                            <td class="colFirst"><code>private final <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a></code></td>
-                                            <th class="colSecond" scope="row"><code><a href=BleDeviceSession.html#isNonConnectableAdvertisement()>isNonConnectableAdvertisement</a></code></th>
+                                            <td class="colFirst"><code>private final <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a></code></td>
+                                            <th class="colSecond" scope="row"><code><a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#disconnectStatus>disconnectStatus</a></code></th>
                                             <td class="colLast"></td>
                                         </tr>
                                         
                                         <tr class="altColor">
                                             <td class="colFirst"><code>private final <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a></code></td>
-                                            <th class="colSecond" scope="row"><code><a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#isConnectableAdvertisement()>isConnectableAdvertisement</a></code></th>
-                                            <td class="colLast"></td>
-                                        </tr>
-                                        
-                                        <tr class="rowColor">
-                                            <td class="colFirst"><code>private final <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a></code></td>
-                                            <th class="colSecond" scope="row"><code><a href=BleDeviceSession.html#address>address</a></code></th>
-                                            <td class="colLast"></td>
-                                        </tr>
-                                        
-                                        <tr class="altColor">
-                                            <td class="colFirst"><code>private final <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a></code></td>
-                                            <th class="colSecond" scope="row"><code><a href=BleDeviceSession.html#isAuthenticated()>isAuthenticated</a></code></th>
-                                            <td class="colLast"></td>
-                                        </tr>
-                                        
-                                        <tr class="rowColor">
-                                            <td class="colFirst"><code>private final <a href=https://developer.android.com/reference/kotlin/android/bluetooth/BluetoothDevice.html>BluetoothDevice</a></code></td>
-                                            <th class="colSecond" scope="row"><code><a href=BleDeviceSession.html#bluetoothDevice>bluetoothDevice</a></code></th>
-                                            <td class="colLast"></td>
-                                        </tr>
-                                        
-                                        <tr class="altColor">
-                                            <td class="colFirst"><code>private final <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a></code></td>
-                                            <th class="colSecond" scope="row"><code><a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#name>name</a></code></th>
-                                            <td class="colLast"></td>
-                                        </tr>
-                                        
-                                        <tr class="rowColor">
-                                            <td class="colFirst"><code>private final <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a></code></td>
-                                            <th class="colSecond" scope="row"><code><a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#polarDeviceId>polarDeviceId</a></code></th>
-                                            <td class="colLast"></td>
-                                        </tr>
-                                        
-                                        <tr class="altColor">
-                                            <td class="colFirst"><code>private final <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a></code></td>
-                                            <th class="colSecond" scope="row"><code><a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#polarDeviceType>polarDeviceType</a></code></th>
+                                            <th class="colSecond" scope="row"><code><a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#isIntentionalDisconnect()>isIntentionalDisconnect</a></code></th>
                                             <td class="colLast"></td>
                                         </tr>
                                         
                                         <tr class="rowColor">
                                             <td class="colFirst"><code>private final <a href=https://developer.android.com/reference/kotlin/java/lang/Long.html>Long</a></code></td>
-                                            <th class="colSecond" scope="row"><code><a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#polarDeviceIdInt>polarDeviceIdInt</a></code></th>
+                                            <th class="colSecond" scope="row"><code><a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#deviceCommandDisconnectDeadlineMs>deviceCommandDisconnectDeadlineMs</a></code></th>
                                             <td class="colLast"></td>
                                         </tr>
                                         
                                         <tr class="altColor">
-                                            <td class="colFirst"><code>private final <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a></code></td>
-                                            <th class="colSecond" scope="row"><code><a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#medianRssi>medianRssi</a></code></th>
+                                            <td class="colFirst"><code>private final <a href=BleDeviceSession.DeviceCommand.html>BleDeviceSession.DeviceCommand</a></code></td>
+                                            <th class="colSecond" scope="row"><code><a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#pendingDeviceCommand>pendingDeviceCommand</a></code></th>
+                                            <td class="colLast"></td>
+                                        </tr>
+                                        
+                                        <tr class="rowColor">
+                                            <td class="colFirst"><code>private final <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a></code></td>
+                                            <th class="colSecond" scope="row"><code><a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#wasBondedAtConnection>wasBondedAtConnection</a></code></th>
+                                            <td class="colLast"></td>
+                                        </tr>
+                                        
+                                        <tr class="altColor">
+                                            <td class="colFirst"><code>private final <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a></code></td>
+                                            <th class="colSecond" scope="row"><code><a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#hasEstablishedBond>hasEstablishedBond</a></code></th>
                                             <td class="colLast"></td>
                                         </tr>
                                         
                                         <tr class="rowColor">
                                             <td class="colFirst"><code>private final <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a></code></td>
-                                            <th class="colSecond" scope="row"><code><a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#rssi>rssi</a></code></th>
+                                            <th class="colSecond" scope="row"><code><a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#securityRecoveryAttempts>securityRecoveryAttempts</a></code></th>
                                             <td class="colLast"></td>
                                         </tr>
                                         
                                         <tr class="altColor">
+                                            <td class="colFirst"><code>private final <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a></code></td>
+                                            <th class="colSecond" scope="row"><code><a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#securityRecoveryExhausted>securityRecoveryExhausted</a></code></th>
+                                            <td class="colLast"></td>
+                                        </tr>
+                                        
+                                        <tr class="rowColor">
+                                            <td class="colFirst"><code>private  <a href=BleDeviceSession.DeviceSessionState.html>BleDeviceSession.DeviceSessionState</a></code></td>
+                                            <th class="colSecond" scope="row"><code><a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#sessionState>sessionState</a></code></th>
+                                            <td class="colLast"></td>
+                                        </tr>
+                                        
+                                        <tr class="altColor">
+                                            <td class="colFirst"><code>private final <a href=BleDeviceSession.DeviceSessionState.html>BleDeviceSession.DeviceSessionState</a></code></td>
+                                            <th class="colSecond" scope="row"><code><a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#previousState>previousState</a></code></th>
+                                            <td class="colLast"></td>
+                                        </tr>
+                                        
+                                        <tr class="rowColor">
+                                            <td class="colFirst"><code>private  <a href=advertisement/BleAdvertisementContent.html>BleAdvertisementContent</a></code></td>
+                                            <th class="colSecond" scope="row"><code><a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#advertisementContent>advertisementContent</a></code></th>
+                                            <td class="colLast"></td>
+                                        </tr>
+                                        
+                                        <tr class="altColor">
+                                            <td class="colFirst"><code>private final <a href=advertisement/BleAdvertisementContent.html>BleAdvertisementContent</a></code></td>
+                                            <th class="colSecond" scope="row"><code><a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#getAdvertisementContent()>getAdvertisementContent</a></code></th>
+                                            <td class="colLast"></td>
+                                        </tr>
+                                        
+                                        <tr class="rowColor">
+                                            <td class="colFirst"><code>private  <a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a>&gt;</code></td>
+                                            <th class="colSecond" scope="row"><code><a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#connectionUuids>connectionUuids</a></code></th>
+                                            <td class="colLast"></td>
+                                        </tr>
+                                        
+                                        <tr class="altColor">
+                                            <td class="colFirst"><code>private final <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a></code></td>
+                                            <th class="colSecond" scope="row"><code><a href=BleDeviceSession.html#isNonConnectableAdvertisement()>isNonConnectableAdvertisement</a></code></th>
+                                            <td class="colLast"></td>
+                                        </tr>
+                                        
+                                        <tr class="rowColor">
+                                            <td class="colFirst"><code>private final <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a></code></td>
+                                            <th class="colSecond" scope="row"><code><a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#isConnectableAdvertisement()>isConnectableAdvertisement</a></code></th>
+                                            <td class="colLast"></td>
+                                        </tr>
+                                        
+                                        <tr class="altColor">
+                                            <td class="colFirst"><code>private final <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a></code></td>
+                                            <th class="colSecond" scope="row"><code><a href=BleDeviceSession.html#address>address</a></code></th>
+                                            <td class="colLast"></td>
+                                        </tr>
+                                        
+                                        <tr class="rowColor">
+                                            <td class="colFirst"><code>private final <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a></code></td>
+                                            <th class="colSecond" scope="row"><code><a href=BleDeviceSession.html#isAuthenticated()>isAuthenticated</a></code></th>
+                                            <td class="colLast"></td>
+                                        </tr>
+                                        
+                                        <tr class="altColor">
+                                            <td class="colFirst"><code>private final <a href=https://developer.android.com/reference/kotlin/android/bluetooth/BluetoothDevice.html>BluetoothDevice</a></code></td>
+                                            <th class="colSecond" scope="row"><code><a href=BleDeviceSession.html#bluetoothDevice>bluetoothDevice</a></code></th>
+                                            <td class="colLast"></td>
+                                        </tr>
+                                        
+                                        <tr class="rowColor">
+                                            <td class="colFirst"><code>private final <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a></code></td>
+                                            <th class="colSecond" scope="row"><code><a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#name>name</a></code></th>
+                                            <td class="colLast"></td>
+                                        </tr>
+                                        
+                                        <tr class="altColor">
+                                            <td class="colFirst"><code>private final <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a></code></td>
+                                            <th class="colSecond" scope="row"><code><a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#polarDeviceId>polarDeviceId</a></code></th>
+                                            <td class="colLast"></td>
+                                        </tr>
+                                        
+                                        <tr class="rowColor">
+                                            <td class="colFirst"><code>private final <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a></code></td>
+                                            <th class="colSecond" scope="row"><code><a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#polarDeviceType>polarDeviceType</a></code></th>
+                                            <td class="colLast"></td>
+                                        </tr>
+                                        
+                                        <tr class="altColor">
+                                            <td class="colFirst"><code>private final <a href=https://developer.android.com/reference/kotlin/java/lang/Long.html>Long</a></code></td>
+                                            <th class="colSecond" scope="row"><code><a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#polarDeviceIdInt>polarDeviceIdInt</a></code></th>
+                                            <td class="colLast"></td>
+                                        </tr>
+                                        
+                                        <tr class="rowColor">
+                                            <td class="colFirst"><code>private final <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a></code></td>
+                                            <th class="colSecond" scope="row"><code><a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#medianRssi>medianRssi</a></code></th>
+                                            <td class="colLast"></td>
+                                        </tr>
+                                        
+                                        <tr class="altColor">
+                                            <td class="colFirst"><code>private final <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a></code></td>
+                                            <th class="colSecond" scope="row"><code><a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#rssi>rssi</a></code></th>
+                                            <td class="colLast"></td>
+                                        </tr>
+                                        
+                                        <tr class="rowColor">
                                             <td class="colFirst"><code>private final <a href=advertisement/BlePolarHrAdvertisement.html>BlePolarHrAdvertisement</a></code></td>
                                             <th class="colSecond" scope="row"><code><a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#blePolarHrAdvertisement>blePolarHrAdvertisement</a></code></th>
                                             <td class="colLast"></td>
@@ -355,6 +423,78 @@ public abstract class <span class="typeNameLabel"><a href=BleDeviceSession.html>
                                         </tr>
                                         
                                         <tr id="i0" class="altColor">
+                                            <td class="colFirst"><code>final <a href=BleDeviceSession.DisconnectReason.html>BleDeviceSession.DisconnectReason</a></code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#getDisconnectReason()>getDisconnectReason</a>() </code>
+                                            </th>
+                                            <td class="colLast"></td>
+                                        </tr>
+                                        
+                                        <tr id="i1" class="rowColor">
+                                            <td class="colFirst"><code>final <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a></code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#getDisconnectStatus()>getDisconnectStatus</a>() </code>
+                                            </th>
+                                            <td class="colLast"></td>
+                                        </tr>
+                                        
+                                        <tr id="i2" class="altColor">
+                                            <td class="colFirst"><code>final <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a></code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#isIntentionalDisconnect()>isIntentionalDisconnect</a>() </code>
+                                            </th>
+                                            <td class="colLast"></td>
+                                        </tr>
+                                        
+                                        <tr id="i3" class="rowColor">
+                                            <td class="colFirst"><code>final <a href=https://developer.android.com/reference/kotlin/java/lang/Long.html>Long</a></code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#getDeviceCommandDisconnectDeadlineMs()>getDeviceCommandDisconnectDeadlineMs</a>() </code>
+                                            </th>
+                                            <td class="colLast"></td>
+                                        </tr>
+                                        
+                                        <tr id="i4" class="altColor">
+                                            <td class="colFirst"><code>final <a href=BleDeviceSession.DeviceCommand.html>BleDeviceSession.DeviceCommand</a></code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#getPendingDeviceCommand()>getPendingDeviceCommand</a>() </code>
+                                            </th>
+                                            <td class="colLast"></td>
+                                        </tr>
+                                        
+                                        <tr id="i5" class="rowColor">
+                                            <td class="colFirst"><code>final <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a></code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#getWasBondedAtConnection()>getWasBondedAtConnection</a>() </code>
+                                            </th>
+                                            <td class="colLast"></td>
+                                        </tr>
+                                        
+                                        <tr id="i6" class="altColor">
+                                            <td class="colFirst"><code>final <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a></code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#getHasEstablishedBond()>getHasEstablishedBond</a>() </code>
+                                            </th>
+                                            <td class="colLast"></td>
+                                        </tr>
+                                        
+                                        <tr id="i7" class="rowColor">
+                                            <td class="colFirst"><code>final <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a></code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#getSecurityRecoveryAttempts()>getSecurityRecoveryAttempts</a>() </code>
+                                            </th>
+                                            <td class="colLast"></td>
+                                        </tr>
+                                        
+                                        <tr id="i8" class="altColor">
+                                            <td class="colFirst"><code>final <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a></code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#getSecurityRecoveryExhausted()>getSecurityRecoveryExhausted</a>() </code>
+                                            </th>
+                                            <td class="colLast"></td>
+                                        </tr>
+                                        
+                                        <tr id="i9" class="rowColor">
                                             <td class="colFirst"><code>final <a href=BleDeviceSession.DeviceSessionState.html>BleDeviceSession.DeviceSessionState</a></code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#getSessionState()>getSessionState</a>() </code>
@@ -362,7 +502,7 @@ public abstract class <span class="typeNameLabel"><a href=BleDeviceSession.html>
                                             <td class="colLast">Members</td>
                                         </tr>
                                         
-                                        <tr id="i1" class="rowColor">
+                                        <tr id="i10" class="altColor">
                                             <td class="colFirst"><code>final <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#setSessionState(com.polar.androidcommunications.api.ble.model.BleDeviceSession.DeviceSessionState)>setSessionState</a>(<a href=BleDeviceSession.DeviceSessionState.html>BleDeviceSession.DeviceSessionState</a> sessionState) </code>
@@ -370,7 +510,7 @@ public abstract class <span class="typeNameLabel"><a href=BleDeviceSession.html>
                                             <td class="colLast">Members</td>
                                         </tr>
                                         
-                                        <tr id="i2" class="altColor">
+                                        <tr id="i11" class="rowColor">
                                             <td class="colFirst"><code>final <a href=BleDeviceSession.DeviceSessionState.html>BleDeviceSession.DeviceSessionState</a></code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#getPreviousState()>getPreviousState</a>() </code>
@@ -378,7 +518,7 @@ public abstract class <span class="typeNameLabel"><a href=BleDeviceSession.html>
                                             <td class="colLast"></td>
                                         </tr>
                                         
-                                        <tr id="i3" class="rowColor">
+                                        <tr id="i12" class="altColor">
                                             <td class="colFirst"><code>final <a href=advertisement/BleAdvertisementContent.html>BleAdvertisementContent</a></code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#getAdvertisementContent()>getAdvertisementContent</a>() </code>
@@ -386,7 +526,7 @@ public abstract class <span class="typeNameLabel"><a href=BleDeviceSession.html>
                                             <td class="colLast"></td>
                                         </tr>
                                         
-                                        <tr id="i4" class="altColor">
+                                        <tr id="i13" class="rowColor">
                                             <td class="colFirst"><code>final <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#setAdvertisementContent(com.polar.androidcommunications.api.ble.model.advertisement.BleAdvertisementContent)>setAdvertisementContent</a>(<a href=advertisement/BleAdvertisementContent.html>BleAdvertisementContent</a> advertisementContent) </code>
@@ -394,7 +534,7 @@ public abstract class <span class="typeNameLabel"><a href=BleDeviceSession.html>
                                             <td class="colLast"></td>
                                         </tr>
                                         
-                                        <tr id="i5" class="rowColor">
+                                        <tr id="i14" class="altColor">
                                             <td class="colFirst"><code>final <a href=advertisement/BleAdvertisementContent.html>BleAdvertisementContent</a></code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#getGetAdvertisementContent()>getGetAdvertisementContent</a>() </code>
@@ -402,7 +542,7 @@ public abstract class <span class="typeNameLabel"><a href=BleDeviceSession.html>
                                             <td class="colLast"></td>
                                         </tr>
                                         
-                                        <tr id="i6" class="altColor">
+                                        <tr id="i15" class="rowColor">
                                             <td class="colFirst"><code>final <a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a>&gt;</code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#getConnectionUuids()>getConnectionUuids</a>() </code>
@@ -410,7 +550,7 @@ public abstract class <span class="typeNameLabel"><a href=BleDeviceSession.html>
                                             <td class="colLast"></td>
                                         </tr>
                                         
-                                        <tr id="i7" class="rowColor">
+                                        <tr id="i16" class="altColor">
                                             <td class="colFirst"><code>final <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#setConnectionUuids(java.util.List)>setConnectionUuids</a>(<a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a>&gt; connectionUuids) </code>
@@ -418,7 +558,7 @@ public abstract class <span class="typeNameLabel"><a href=BleDeviceSession.html>
                                             <td class="colLast"></td>
                                         </tr>
                                         
-                                        <tr id="i8" class="altColor">
+                                        <tr id="i17" class="rowColor">
                                             <td class="colFirst"><code>abstract <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a></code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=BleDeviceSession.html#isNonConnectableAdvertisement()>isNonConnectableAdvertisement</a>() </code>
@@ -426,7 +566,7 @@ public abstract class <span class="typeNameLabel"><a href=BleDeviceSession.html>
                                             <td class="colLast"></td>
                                         </tr>
                                         
-                                        <tr id="i9" class="rowColor">
+                                        <tr id="i18" class="altColor">
                                             <td class="colFirst"><code>final <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a></code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#isConnectableAdvertisement()>isConnectableAdvertisement</a>() </code>
@@ -434,7 +574,7 @@ public abstract class <span class="typeNameLabel"><a href=BleDeviceSession.html>
                                             <td class="colLast"></td>
                                         </tr>
                                         
-                                        <tr id="i10" class="altColor">
+                                        <tr id="i19" class="rowColor">
                                             <td class="colFirst"><code>abstract <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a></code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=BleDeviceSession.html#getAddress()>getAddress</a>() </code>
@@ -442,7 +582,7 @@ public abstract class <span class="typeNameLabel"><a href=BleDeviceSession.html>
                                             <td class="colLast"></td>
                                         </tr>
                                         
-                                        <tr id="i11" class="rowColor">
+                                        <tr id="i20" class="altColor">
                                             <td class="colFirst"><code>abstract <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a></code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=BleDeviceSession.html#isAuthenticated()>isAuthenticated</a>() </code>
@@ -450,7 +590,7 @@ public abstract class <span class="typeNameLabel"><a href=BleDeviceSession.html>
                                             <td class="colLast"></td>
                                         </tr>
                                         
-                                        <tr id="i12" class="altColor">
+                                        <tr id="i21" class="rowColor">
                                             <td class="colFirst"><code>abstract <a href=https://developer.android.com/reference/kotlin/android/bluetooth/BluetoothDevice.html>BluetoothDevice</a></code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=BleDeviceSession.html#getBluetoothDevice()>getBluetoothDevice</a>() </code>
@@ -458,7 +598,7 @@ public abstract class <span class="typeNameLabel"><a href=BleDeviceSession.html>
                                             <td class="colLast"></td>
                                         </tr>
                                         
-                                        <tr id="i13" class="rowColor">
+                                        <tr id="i22" class="altColor">
                                             <td class="colFirst"><code>final <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a></code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#getName()>getName</a>() </code>
@@ -466,7 +606,7 @@ public abstract class <span class="typeNameLabel"><a href=BleDeviceSession.html>
                                             <td class="colLast"></td>
                                         </tr>
                                         
-                                        <tr id="i14" class="altColor">
+                                        <tr id="i23" class="rowColor">
                                             <td class="colFirst"><code>final <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a></code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#getPolarDeviceId()>getPolarDeviceId</a>() </code>
@@ -474,7 +614,7 @@ public abstract class <span class="typeNameLabel"><a href=BleDeviceSession.html>
                                             <td class="colLast"></td>
                                         </tr>
                                         
-                                        <tr id="i15" class="rowColor">
+                                        <tr id="i24" class="altColor">
                                             <td class="colFirst"><code><a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a></code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#getPolarDeviceType()>getPolarDeviceType</a>() </code>
@@ -482,7 +622,7 @@ public abstract class <span class="typeNameLabel"><a href=BleDeviceSession.html>
                                             <td class="colLast"></td>
                                         </tr>
                                         
-                                        <tr id="i16" class="altColor">
+                                        <tr id="i25" class="rowColor">
                                             <td class="colFirst"><code>final <a href=https://developer.android.com/reference/kotlin/java/lang/Long.html>Long</a></code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#getPolarDeviceIdInt()>getPolarDeviceIdInt</a>() </code>
@@ -490,7 +630,7 @@ public abstract class <span class="typeNameLabel"><a href=BleDeviceSession.html>
                                             <td class="colLast"></td>
                                         </tr>
                                         
-                                        <tr id="i17" class="rowColor">
+                                        <tr id="i26" class="altColor">
                                             <td class="colFirst"><code>final <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a></code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#getMedianRssi()>getMedianRssi</a>() </code>
@@ -498,7 +638,7 @@ public abstract class <span class="typeNameLabel"><a href=BleDeviceSession.html>
                                             <td class="colLast"></td>
                                         </tr>
                                         
-                                        <tr id="i18" class="altColor">
+                                        <tr id="i27" class="rowColor">
                                             <td class="colFirst"><code>final <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a></code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#getRssi()>getRssi</a>() </code>
@@ -506,7 +646,7 @@ public abstract class <span class="typeNameLabel"><a href=BleDeviceSession.html>
                                             <td class="colLast"></td>
                                         </tr>
                                         
-                                        <tr id="i19" class="rowColor">
+                                        <tr id="i28" class="altColor">
                                             <td class="colFirst"><code>final <a href=advertisement/BlePolarHrAdvertisement.html>BlePolarHrAdvertisement</a></code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#getBlePolarHrAdvertisement()>getBlePolarHrAdvertisement</a>() </code>
@@ -514,7 +654,63 @@ public abstract class <span class="typeNameLabel"><a href=BleDeviceSession.html>
                                             <td class="colLast"></td>
                                         </tr>
                                         
-                                        <tr id="i20" class="altColor">
+                                        <tr id="i29" class="rowColor">
+                                            <td class="colFirst"><code>final <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#markBondedAtConnection(java.lang.Boolean)>markBondedAtConnection</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> bonded) </code>
+                                            </th>
+                                            <td class="colLast"></td>
+                                        </tr>
+                                        
+                                        <tr id="i30" class="altColor">
+                                            <td class="colFirst"><code>final <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a></code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#recordSecurityRecoveryAttempt(java.lang.Integer)>recordSecurityRecoveryAttempt</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> maxAttempts) </code>
+                                            </th>
+                                            <td class="colLast"></td>
+                                        </tr>
+                                        
+                                        <tr id="i31" class="rowColor">
+                                            <td class="colFirst"><code>final <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#markDisconnect(com.polar.androidcommunications.api.ble.model.BleDeviceSession.DisconnectReason,java.lang.Integer)>markDisconnect</a>(<a href=BleDeviceSession.DisconnectReason.html>BleDeviceSession.DisconnectReason</a> reason, <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> status) </code>
+                                            </th>
+                                            <td class="colLast"></td>
+                                        </tr>
+                                        
+                                        <tr id="i32" class="altColor">
+                                            <td class="colFirst"><code>final <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#markIntentionalDisconnect()>markIntentionalDisconnect</a>() </code>
+                                            </th>
+                                            <td class="colLast"></td>
+                                        </tr>
+                                        
+                                        <tr id="i33" class="rowColor">
+                                            <td class="colFirst"><code>final <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#markExpectedDeviceCommandDisconnect(com.polar.androidcommunications.api.ble.model.BleDeviceSession.DeviceCommand,java.lang.Long)>markExpectedDeviceCommandDisconnect</a>(<a href=BleDeviceSession.DeviceCommand.html>BleDeviceSession.DeviceCommand</a> command, <a href=https://developer.android.com/reference/kotlin/java/lang/Long.html>Long</a> validForMs) </code>
+                                            </th>
+                                            <td class="colLast">Call right after a device-control command's success path (e.g.</td>
+                                        </tr>
+                                        
+                                        <tr id="i34" class="altColor">
+                                            <td class="colFirst"><code>final <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a></code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#isExpectedDeviceCommandDisconnectStillValid()>isExpectedDeviceCommandDisconnectStillValid</a>() </code>
+                                            </th>
+                                            <td class="colLast"></td>
+                                        </tr>
+                                        
+                                        <tr id="i35" class="rowColor">
+                                            <td class="colFirst"><code>final <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#clearDisconnectReason()>clearDisconnectReason</a>() </code>
+                                            </th>
+                                            <td class="colLast"></td>
+                                        </tr>
+                                        
+                                        <tr id="i36" class="altColor">
                                             <td class="colFirst"><code>final <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a></code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#isDeviceAlive(java.lang.Long,java.util.concurrent.TimeUnit)>isDeviceAlive</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/Long.html>Long</a> time, <a href=https://developer.android.com/reference/kotlin/java/util/concurrent/TimeUnit.html>TimeUnit</a> timeUnit) </code>
@@ -522,7 +718,7 @@ public abstract class <span class="typeNameLabel"><a href=BleDeviceSession.html>
                                             <td class="colLast"></td>
                                         </tr>
                                         
-                                        <tr id="i21" class="rowColor">
+                                        <tr id="i37" class="rowColor">
                                             <td class="colFirst"><code>final <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a></code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#isAdvertising(java.lang.Long,java.util.concurrent.TimeUnit)>isAdvertising</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/Long.html>Long</a> time, <a href=https://developer.android.com/reference/kotlin/java/util/concurrent/TimeUnit.html>TimeUnit</a> timeUnit) </code>
@@ -530,7 +726,7 @@ public abstract class <span class="typeNameLabel"><a href=BleDeviceSession.html>
                                             <td class="colLast"></td>
                                         </tr>
                                         
-                                        <tr id="i22" class="altColor">
+                                        <tr id="i38" class="altColor">
                                             <td class="colFirst"><code>abstract <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=BleDeviceSession.html#authenticate()>authenticate</a>() </code>
@@ -538,7 +734,7 @@ public abstract class <span class="typeNameLabel"><a href=BleDeviceSession.html>
                                             <td class="colLast">start pairing and optionally bonding procedure with the device</td>
                                         </tr>
                                         
-                                        <tr id="i23" class="rowColor">
+                                        <tr id="i39" class="rowColor">
                                             <td class="colFirst"><code>abstract Deferred&lt;<a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=https://developer.android.com/reference/kotlin/java/util/UUID.html>UUID</a>&gt;&gt;</code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=BleDeviceSession.html#monitorServicesDiscovered(java.lang.Boolean)>monitorServicesDiscovered</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> checkConnection) </code>
@@ -546,7 +742,7 @@ public abstract class <span class="typeNameLabel"><a href=BleDeviceSession.html>
                                             <td class="colLast">Monitor services discovered</td>
                                         </tr>
                                         
-                                        <tr id="i24" class="altColor">
+                                        <tr id="i40" class="altColor">
                                             <td class="colFirst"><code>abstract <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a></code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=BleDeviceSession.html#clearGattCache()>clearGattCache</a>() </code>
@@ -554,7 +750,7 @@ public abstract class <span class="typeNameLabel"><a href=BleDeviceSession.html>
                                             <td class="colLast"></td>
                                         </tr>
                                         
-                                        <tr id="i25" class="rowColor">
+                                        <tr id="i41" class="rowColor">
                                             <td class="colFirst"><code>abstract Deferred&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a>&gt;</code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=BleDeviceSession.html#readRssiValue()>readRssiValue</a>() </code>
@@ -562,7 +758,7 @@ public abstract class <span class="typeNameLabel"><a href=BleDeviceSession.html>
                                             <td class="colLast"></td>
                                         </tr>
                                         
-                                        <tr id="i26" class="altColor">
+                                        <tr id="i42" class="altColor">
                                             <td class="colFirst"><code>abstract <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-pair/index.html>Pair</a>&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a>, <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a>&gt;</code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=BleDeviceSession.html#getIndicatesPairingProblem()>getIndicatesPairingProblem</a>() </code>
@@ -570,7 +766,7 @@ public abstract class <span class="typeNameLabel"><a href=BleDeviceSession.html>
                                             <td class="colLast">Checks if session indicates pairing problem.</td>
                                         </tr>
                                         
-                                        <tr id="i27" class="rowColor">
+                                        <tr id="i43" class="rowColor">
                                             <td class="colFirst"><code>final <a href=gatt/BleGattBase.html>BleGattBase</a></code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#fetchClient(java.util.UUID)>fetchClient</a>(<a href=https://developer.android.com/reference/kotlin/java/util/UUID.html>UUID</a> uuid) </code>
@@ -578,7 +774,7 @@ public abstract class <span class="typeNameLabel"><a href=BleDeviceSession.html>
                                             <td class="colLast"></td>
                                         </tr>
                                         
-                                        <tr id="i28" class="altColor">
+                                        <tr id="i44" class="altColor">
                                             <td class="colFirst"><code>final <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#clientsReady(java.lang.Boolean)>clientsReady</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> checkConnection) </code>
@@ -629,6 +825,213 @@ public abstract class <span class="typeNameLabel"><a href=BleDeviceSession.html>
                                 <!--   -->
                             </a>
                                 <h3>Method Detail</h3>
+                                
+                                <a id="getDisconnectReason()">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockList"
+                                          >
+                                    <li class="blockList">
+                                        <h4>getDisconnectReason</h4>
+                                        <pre class="methodSignature"> final <a href=BleDeviceSession.DisconnectReason.html>BleDeviceSession.DisconnectReason</a> <a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#getDisconnectReason()>getDisconnectReason</a>()</pre>
+                                        <div class="block"></div>
+
+                                        <dl>
+
+                                        
+
+                                        
+
+                                        
+
+                                        </dl>
+                                    </li>
+                                </ul>
+                                
+                                <a id="getDisconnectStatus()">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockList"
+                                          >
+                                    <li class="blockList">
+                                        <h4>getDisconnectStatus</h4>
+                                        <pre class="methodSignature"> final <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> <a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#getDisconnectStatus()>getDisconnectStatus</a>()</pre>
+                                        <div class="block"></div>
+
+                                        <dl>
+
+                                        
+
+                                        
+
+                                        
+
+                                        </dl>
+                                    </li>
+                                </ul>
+                                
+                                <a id="isIntentionalDisconnect()">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockList"
+                                          >
+                                    <li class="blockList">
+                                        <h4>isIntentionalDisconnect</h4>
+                                        <pre class="methodSignature"> final <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> <a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#isIntentionalDisconnect()>isIntentionalDisconnect</a>()</pre>
+                                        <div class="block"></div>
+
+                                        <dl>
+
+                                        
+
+                                        
+
+                                        
+
+                                        </dl>
+                                    </li>
+                                </ul>
+                                
+                                <a id="getDeviceCommandDisconnectDeadlineMs()">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockList"
+                                          >
+                                    <li class="blockList">
+                                        <h4>getDeviceCommandDisconnectDeadlineMs</h4>
+                                        <pre class="methodSignature"> final <a href=https://developer.android.com/reference/kotlin/java/lang/Long.html>Long</a> <a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#getDeviceCommandDisconnectDeadlineMs()>getDeviceCommandDisconnectDeadlineMs</a>()</pre>
+                                        <div class="block"></div>
+
+                                        <dl>
+
+                                        
+
+                                        
+
+                                        
+
+                                        </dl>
+                                    </li>
+                                </ul>
+                                
+                                <a id="getPendingDeviceCommand()">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockList"
+                                          >
+                                    <li class="blockList">
+                                        <h4>getPendingDeviceCommand</h4>
+                                        <pre class="methodSignature"> final <a href=BleDeviceSession.DeviceCommand.html>BleDeviceSession.DeviceCommand</a> <a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#getPendingDeviceCommand()>getPendingDeviceCommand</a>()</pre>
+                                        <div class="block"></div>
+
+                                        <dl>
+
+                                        
+
+                                        
+
+                                        
+
+                                        </dl>
+                                    </li>
+                                </ul>
+                                
+                                <a id="getWasBondedAtConnection()">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockList"
+                                          >
+                                    <li class="blockList">
+                                        <h4>getWasBondedAtConnection</h4>
+                                        <pre class="methodSignature"> final <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> <a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#getWasBondedAtConnection()>getWasBondedAtConnection</a>()</pre>
+                                        <div class="block"></div>
+
+                                        <dl>
+
+                                        
+
+                                        
+
+                                        
+
+                                        </dl>
+                                    </li>
+                                </ul>
+                                
+                                <a id="getHasEstablishedBond()">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockList"
+                                          >
+                                    <li class="blockList">
+                                        <h4>getHasEstablishedBond</h4>
+                                        <pre class="methodSignature"> final <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> <a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#getHasEstablishedBond()>getHasEstablishedBond</a>()</pre>
+                                        <div class="block"></div>
+
+                                        <dl>
+
+                                        
+
+                                        
+
+                                        
+
+                                        </dl>
+                                    </li>
+                                </ul>
+                                
+                                <a id="getSecurityRecoveryAttempts()">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockList"
+                                          >
+                                    <li class="blockList">
+                                        <h4>getSecurityRecoveryAttempts</h4>
+                                        <pre class="methodSignature"> final <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> <a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#getSecurityRecoveryAttempts()>getSecurityRecoveryAttempts</a>()</pre>
+                                        <div class="block"></div>
+
+                                        <dl>
+
+                                        
+
+                                        
+
+                                        
+
+                                        </dl>
+                                    </li>
+                                </ul>
+                                
+                                <a id="getSecurityRecoveryExhausted()">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockList"
+                                          >
+                                    <li class="blockList">
+                                        <h4>getSecurityRecoveryExhausted</h4>
+                                        <pre class="methodSignature"> final <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> <a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#getSecurityRecoveryExhausted()>getSecurityRecoveryExhausted</a>()</pre>
+                                        <div class="block"></div>
+
+                                        <dl>
+
+                                        
+
+                                        
+
+                                        
+
+                                        </dl>
+                                    </li>
+                                </ul>
                                 
                                 <a id="getSessionState()">
                                     <!--   -->
@@ -844,7 +1247,7 @@ public abstract class <span class="typeNameLabel"><a href=BleDeviceSession.html>
 
                                         
                                             <dt><span class="returnLabel">Returns:</span></dt>
-                                            <dd><p>true if device is in non-connectable advertisement&lt;BR&gt;&lt;/BR&gt; Notes: Depending on Android API version,it's impossible to know this.&lt;BR&gt;&lt;/BR&gt; So this would work only for Polar Devices that follows Polar SAGRFC31</p></dd>
+                                            <dd><p>true if device is in non-connectable advertisement&lt;BR&gt;&lt;/BR&gt; Notes: Depending on Android API version,it's impossible to know this.&lt;BR&gt;&lt;/BR&gt; So this would work only for Polar Devices that follows Polar BLE Advertising data spec</p></dd>
                                         
 
                                         
@@ -870,7 +1273,7 @@ public abstract class <span class="typeNameLabel"><a href=BleDeviceSession.html>
 
                                         
                                             <dt><span class="returnLabel">Returns:</span></dt>
-                                            <dd><p>true if device is connectable advertisement&lt;BR&gt;&lt;/BR&gt; Notes: Depending on Android API version,it's impossible to know this.&lt;BR&gt;&lt;/BR&gt; So this would work only for Polar Devices that follows Polar SAGRFC31</p></dd>
+                                            <dd><p>true if device is connectable advertisement&lt;BR&gt;&lt;/BR&gt; Notes: Depending on Android API version,it's impossible to know this.&lt;BR&gt;&lt;/BR&gt; So this would work only for Polar Devices that follows Polar BLE Advertising data spec</p></dd>
                                         
 
                                         
@@ -1128,6 +1531,167 @@ public abstract class <span class="typeNameLabel"><a href=BleDeviceSession.html>
                                         
                                             <dt><span class="returnLabel">Returns:</span></dt>
                                             <dd><p>polar hr advertisement content @see BlePolarHrAdvertisement</p></dd>
+                                        
+
+                                        
+
+                                        </dl>
+                                    </li>
+                                </ul>
+                                
+                                <a id="markBondedAtConnection(java.lang.Boolean)">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockList"
+                                          >
+                                    <li class="blockList">
+                                        <h4>markBondedAtConnection</h4>
+                                        <pre class="methodSignature"> final <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a> <a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#markBondedAtConnection(java.lang.Boolean)>markBondedAtConnection</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> bonded)</pre>
+                                        <div class="block"></div>
+
+                                        <dl>
+
+                                        
+
+                                        
+
+                                        
+
+                                        </dl>
+                                    </li>
+                                </ul>
+                                
+                                <a id="recordSecurityRecoveryAttempt(java.lang.Integer)">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockList"
+                                          >
+                                    <li class="blockList">
+                                        <h4>recordSecurityRecoveryAttempt</h4>
+                                        <pre class="methodSignature"> final <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> <a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#recordSecurityRecoveryAttempt(java.lang.Integer)>recordSecurityRecoveryAttempt</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> maxAttempts)</pre>
+                                        <div class="block"></div>
+
+                                        <dl>
+
+                                        
+
+                                        
+
+                                        
+
+                                        </dl>
+                                    </li>
+                                </ul>
+                                
+                                <a id="markDisconnect(com.polar.androidcommunications.api.ble.model.BleDeviceSession.DisconnectReason,java.lang.Integer)">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockList"
+                                          >
+                                    <li class="blockList">
+                                        <h4>markDisconnect</h4>
+                                        <pre class="methodSignature"> final <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a> <a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#markDisconnect(com.polar.androidcommunications.api.ble.model.BleDeviceSession.DisconnectReason,java.lang.Integer)>markDisconnect</a>(<a href=BleDeviceSession.DisconnectReason.html>BleDeviceSession.DisconnectReason</a> reason, <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> status)</pre>
+                                        <div class="block"></div>
+
+                                        <dl>
+
+                                        
+
+                                        
+
+                                        
+
+                                        </dl>
+                                    </li>
+                                </ul>
+                                
+                                <a id="markIntentionalDisconnect()">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockList"
+                                          >
+                                    <li class="blockList">
+                                        <h4>markIntentionalDisconnect</h4>
+                                        <pre class="methodSignature"> final <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a> <a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#markIntentionalDisconnect()>markIntentionalDisconnect</a>()</pre>
+                                        <div class="block"></div>
+
+                                        <dl>
+
+                                        
+
+                                        
+
+                                        
+
+                                        </dl>
+                                    </li>
+                                </ul>
+                                
+                                <a id="markExpectedDeviceCommandDisconnect(com.polar.androidcommunications.api.ble.model.BleDeviceSession.DeviceCommand,java.lang.Long)">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockList"
+                                          >
+                                    <li class="blockList">
+                                        <h4>markExpectedDeviceCommandDisconnect</h4>
+                                        <pre class="methodSignature"> final <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a> <a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#markExpectedDeviceCommandDisconnect(com.polar.androidcommunications.api.ble.model.BleDeviceSession.DeviceCommand,java.lang.Long)>markExpectedDeviceCommandDisconnect</a>(<a href=BleDeviceSession.DeviceCommand.html>BleDeviceSession.DeviceCommand</a> command, <a href=https://developer.android.com/reference/kotlin/java/lang/Long.html>Long</a> validForMs)</pre>
+                                        <div class="block"><p>Call right after a device-control command's success path (e.g. GATT write acked) to mark the disconnect that is expected to follow as non-actionable.</p></div>
+
+                                        <dl>
+
+                                        
+
+                                        
+
+                                        
+
+                                        </dl>
+                                    </li>
+                                </ul>
+                                
+                                <a id="isExpectedDeviceCommandDisconnectStillValid()">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockList"
+                                          >
+                                    <li class="blockList">
+                                        <h4>isExpectedDeviceCommandDisconnectStillValid</h4>
+                                        <pre class="methodSignature"> final <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> <a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#isExpectedDeviceCommandDisconnectStillValid()>isExpectedDeviceCommandDisconnectStillValid</a>()</pre>
+                                        <div class="block"></div>
+
+                                        <dl>
+
+                                        
+
+                                        
+
+                                        
+
+                                        </dl>
+                                    </li>
+                                </ul>
+                                
+                                <a id="clearDisconnectReason()">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockList"
+                                          >
+                                    <li class="blockList">
+                                        <h4>clearDisconnectReason</h4>
+                                        <pre class="methodSignature"> final <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a> <a href=../../../enpoints/ble/bluedroid/host/BDDeviceSessionImpl.html#clearDisconnectReason()>clearDisconnectReason</a>()</pre>
+                                        <div class="block"></div>
+
+                                        <dl>
+
+                                        
+
                                         
 
                                         

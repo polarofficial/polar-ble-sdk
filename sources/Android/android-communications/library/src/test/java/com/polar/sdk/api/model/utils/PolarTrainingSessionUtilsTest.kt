@@ -398,6 +398,75 @@ class PolarTrainingSessionUtilsTest {
         confirmVerified(client)
     }
 
+
+    @Test
+    fun `getTrainingSessionReferences() should return all sessions when multiple sessions exist on the same date`() = runTest {
+        // Arrange – two sessions on 2026-08-24: 114623 and 133106
+        val client = mockk<BlePsFtpClient>()
+
+        // /U/0/ → one date directory
+        val rootDir = ByteArrayOutputStream().apply {
+            PbPFtpDirectory.newBuilder()
+                .addAllEntries(listOf(PbPFtpEntry.newBuilder().setName("20260824/").setSize(0L).build()))
+                .build().writeTo(this)
+        }
+
+        // /U/0/20260824/ → only E/ is relevant for training sessions
+        val dateDir = ByteArrayOutputStream().apply {
+            PbPFtpDirectory.newBuilder()
+                .addAllEntries(listOf(PbPFtpEntry.newBuilder().setName("E/").setSize(0L).build()))
+                .build().writeTo(this)
+        }
+
+        // /U/0/20260824/E/ → two time-folders
+        val exerciseDir = ByteArrayOutputStream().apply {
+            PbPFtpDirectory.newBuilder()
+                .addAllEntries(listOf(
+                    PbPFtpEntry.newBuilder().setName("114623/").setSize(0L).build(),
+                    PbPFtpEntry.newBuilder().setName("133106/").setSize(0L).build()
+                )).build().writeTo(this)
+        }
+
+        // Each session folder contains only TSESS.BPB (no exercises)
+        val sessionDir = ByteArrayOutputStream().apply {
+            PbPFtpDirectory.newBuilder()
+                .addAllEntries(listOf(PbPFtpEntry.newBuilder().setName("TSESS.BPB").setSize(145L).build()))
+                .build().writeTo(this)
+        }
+
+        // fetchRecursively visits in depth-first order:
+        // 1. /U/0/
+        // 2. /U/0/20260824/
+        // 3. /U/0/20260824/E/
+        // 4. /U/0/20260824/E/114623/
+        // 5. /U/0/20260824/E/133106/
+        coEvery { client.request(any<ByteArray>()) } answers { rootDir } andThen
+                dateDir andThen exerciseDir andThen sessionDir andThen sessionDir
+
+        // Act
+        val emitted = mutableListOf<PolarTrainingSessionReference>()
+        val job = launch {
+            PolarTrainingSessionUtils.getTrainingSessionReferences(client).collect { emitted.add(it) }
+        }
+        job.join()
+
+        // Assert – both sessions must be present, not just one
+        assertEquals(2, emitted.size)
+
+        val paths = emitted.map { it.path }.toSet()
+        assert("/U/0/20260824/E/114623/TSESS.BPB" in paths) {
+            "Expected session 114623 in results but got: $paths"
+        }
+        assert("/U/0/20260824/E/133106/TSESS.BPB" in paths) {
+            "Expected session 133106 in results but got: $paths"
+        }
+
+        // Both must land on the correct date
+        emitted.forEach { ref ->
+            assertEquals(LocalDate.of(2026, 8, 24), ref.date)
+        }
+    }
+
     // ──────────────────────────────────────────────────────────────────
     // deleteTrainingSession — path bounds checks
     // ──────────────────────────────────────────────────────────────────

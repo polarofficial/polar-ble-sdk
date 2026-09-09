@@ -4,6 +4,7 @@
     <string name="stop_streaming">Stop streaming</string>
     <string name="start_offline_recording">Start offline recording</string>
     <string name="search">Search</string>
+    <string name="disconnect_all">Disconnect All</string>
     <string name="filter_by_name_prefix">Filter by name prefix</string>
     <string name="device_settings_header">Settings</string>
     <string name="ok_button">OK</string>
@@ -40,6 +41,9 @@
     <string name="acc_logging_enable">Enable ACC logging</string>
     <string name="acc_logging_disable">Disable ACC logging</string>
     <string name="skin_temp_logging_enable">Enable Skin Temperature logging</string>
+    <string name="offline_recorded_data">Offline recorded data</string>
+    <string name="deleted_path">Deleted %1$s</string>
+    <string name="offline_recording">Offline Recording</string>
     <string name="skin_temp_logging_disable">Disable Skin Temperature logging</string>
     <string name="calories_logging_enable">Enable Calories logging</string>
     <string name="calories_logging_disable">Disable Calories logging</string>
@@ -106,6 +110,7 @@
     <string name="status_sync_required">Sync required</string>
 
     <string name="exercise_start_time">Exercise start time: %1$s</string>
+    <string name="exercise_save_on_stop">Save exercise on stop</string>
 
     <string name="observe_exercise_state_button">Observe exercise state notifications</string>
     <string name="stop_observing_button">Stop observing</string>
@@ -297,6 +302,12 @@
     <string name="failed_to_load_settings">Failed to load settings: %1$s</string>
     <string name="failed_to_save_settings">Failed to save settings: %1$s</string>
     <string name="autos_file_generation">AUTOS file generation</string>
+    <string name="cannot_open_user_device_settings">Cannot open user device settings</string>
+    <string name="user_device_settings_file_not_readable">User device settings file is not readable on device.</string>
+    <string name="user_device_settings_device_session_not_found">Device session not found. Reconnect the device and try again.</string>
+    <string name="user_device_settings_device_not_connected">Device is not connected.</string>
+    <string name="user_device_settings_service_not_found">Required service was not found on device.</string>
+    <string name="unknown_error">Unknown error</string>
 
     <!-- H10 Exercise -->
     <string name="list_exercises">List Exercises</string>
@@ -323,6 +334,41 @@
     <string name="start_listening">Start listening</string>
     <string name="hr_value">Hr: %1$s bpm</string>
     <string name="close">CLOSE</string>
+    <string name="physical_gender_sexual">sexual</string>
+    <string name="physical_gender_female">Female</string>
+    <string name="physical_gender_male">Male</string>
+    <string name="physical_birthday">Birthday</string>
+    <string name="physical_height">height</string>
+    <string name="physical_weight">weight</string>
+    <string name="physical_training_background">Training Background</string>
+    <string name="physical_max_heart_rate">maximum heart rate</string>
+    <string name="physical_resting_heart_rate">resting heart rate</string>
+    <string name="physical_vo2_max">VO2 Max</string>
+    <string name="sample_rate">Sample rate</string>
+    <string name="resolution">Resolution</string>
+    <string name="range">Range</string>
+    <string name="channels">Channels</string>
+    <string name="measured_sample_rate">Measured sample rate (Hz):</string>
+    <string name="get_recordings">Get recordings</string>
+    <string name="triggers_setting">Trigger settings</string>
+    <string name="debug_options">Debug options</string>
+    <string name="get_trigger_status">Get trigger status</string>
+    <string name="set_acc_offline_trigger_max_settings">Set ACC offline trigger with maximum settings</string>
+    <string name="currently_set_triggers">Currently set triggers</string>
+    <string name="trigger_mode">Trigger mode</string>
+    <string name="enabled_triggers_and_settings">Enabled triggers and settings</string>
+    <string name="marker_start">Marker start</string>
+    <string name="start_uppercase">START</string>
+    <string name="setup_trigger">Set up the trigger:</string>
+    <string name="setup_triggers">Set up triggers</string>
+    <string name="get_lowercase">Get</string>
+    <string name="time_settings">Time settings</string>
+    <string name="read">Read</string>
+    <string name="offline_recording_enable_encryption">Offline recording enable encryption</string>
+    <string name="do_firmware_update_short">Do FWU</string>
+    <string name="firmware_update_status">Firmware update status:</string>
+    <string name="status_not_started_lowercase">Not started</string>
+    <string name="submit_lowercase">submit</string>
 
     <!-- Graphs -->
     <string name="graph">Graph</string>
@@ -452,6 +498,37 @@
     <string name="sampling_rate">Sampling rate</string>
 
     <string name="n_a">N/A</string>
+    <string name="recording_settings">Recording settings</string>
+    <string name="downloaded_with_rate">Downloaded with rate</string>
+    <string name="size">Size</string>
+    <string name="start_time_label">Start time</string>
+    <string name="sample_rate_label">Sample rate:</string>
+    <string name="resolution_label">Resolution:</string>
+    <string name="range_label">Range:</string>
+    <string name="channels_label">Channels:</string>
+    <string name="share_action">Share</string>
+    <string name="delete_file">Delete file</string>
+    <string name="fetching_status">Fetching status</string>
+    <string name="none_selected">None selected</string>
+    <string name="start_selected">START SELECTED</string>
+    <string name="wait_for_status">WAIT FOR THE STATUS</string>
+    <string name="stop_uppercase">STOP</string>
+    <string name="device_id_not_found">Device ID not found</string>
+    <string name="physical_data_sent_successfully">Physical data sent successfully</string>
+    <string name="error_sending_physical_data">Error sending Physical data</string>
+    <string name="retry_uppercase">RETRY</string>
+    <string name="details_label">Details:</string>
+    <string name="no_recordings">No recordings</string>
+    <string name="size_kb">Size: %1$s KB</string>
+    <string name="path_label">Path</string>
+    <string name="delete">Delete</string>
+    <string name="warning">warning</string>
+    <string name="placeholder_dash">-</string>
+    <string name="placeholder_double_dash">--</string>
+    <string name="select_date_range">Select date range</string>
+    <string name="offline_trigger_set_successfully">Successfully set the offline trigger</string>
+    <string name="no_device_selected">No device selected</string>
+    <string name="no_data_stream_selected">No data stream selected</string>
     <string name="dsacc">DSACC</string>
 
     <!-- Export device logs -->
@@ -460,5 +537,12 @@
     <string name="export_device_logs_sharing_title">Device Logs</string>
     <string name="export_device_logs_error">Failed to export device logs</string>
     <string name="export_device_logs_empty">No log files found on device</string>
+
+    <!-- Disconnect recovery guidance -->
+    <string name="disconnect_guidance_remove_pairing_and_pair_again">Pairing for %1$s is no longer valid. Reconnecting will usually re-pair automatically — try selecting the device again. If it keeps failing, remove/forget any pairing still present on the Android phone and sensor/watch; if the device is no longer listed on the phone, skip that phone step. Then put the device into pairing mode and select it again in PSDC to pair and reconnect.</string>
+    <string name="disconnect_guidance_retry_pairing">Pairing negotiation with %1$s failed. Remove/forget any old pairing still present on the Android phone and sensor/watch; if the device is no longer listed on the phone, skip that phone step. Then put the device into explicit Bluetooth pairing mode and select it again in PSDC to pair and reconnect.</string>
+    <string name="disconnect_guidance_retry_operation">The secure connection to %1$s was interrupted. Keep the device nearby, wait for reconnection, and retry the operation.</string>
+    <string name="disconnect_guidance_retry_connection">The connection to %1$s was interrupted. Keep the device nearby and powered on, then reconnect.</string>
+    <string name="disconnect_guidance_none">Connection to %1$s was lost. Keep the device nearby and powered on, then reconnect.</string>
 
 </resources>

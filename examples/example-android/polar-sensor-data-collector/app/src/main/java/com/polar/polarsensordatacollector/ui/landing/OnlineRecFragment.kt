@@ -93,7 +93,6 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
     private var marker = false
 
     private lateinit var selectedDeviceId: String
-    private val outputFileUris = ArrayList<Uri>()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         selectedDeviceId = arguments?.getString(ONLINE_OFFLINE_KEY_DEVICE_ID)
@@ -150,6 +149,23 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 onlineViewModel.shareFiles.collect {
                     shareFilesToUser(it)
+                }
+            }
+        }
+
+        // Collect validated URIs from ViewModel so viewButton/shareButton work even after
+        // Fragment view recreation (e.g. ViewPager2 destroys off-screen tabs).
+        viewLifecycleOwner.lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                onlineViewModel.validatedFileUris.collect { uris ->
+                    if (uris.isNotEmpty()) {
+                        for (fileUri in uris) {
+                            val streamFileMetadata = parseStreamFileMetadata(fileUri) ?: continue
+                            if (streamFileMetadata.streamType == DataCollector.StreamType.MARKER) continue
+                            val dataType = polarDataTypeForStreamType(streamFileMetadata.streamType) ?: continue
+                            setupOnlineRecShareButtons(dataType, makeVisible = true)
+                        }
+                    }
                 }
             }
         }
@@ -250,11 +266,7 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
                 requireContext().contentResolver.openFileDescriptor(fileUri, readMode)
                     ?.use { descriptor ->
                         if (descriptor.statSize > 0) {
-                            if ( !outputFileUris.contains(fileUri) ) {
-                               outputFileUris.add(fileUri)
-                            } else {
-                                // DO NOT ADD THEN
-                            }
+                            onlineViewModel.addValidatedFileUri(fileUri)
                         } else {
                             val deleted =
                                 requireContext().contentResolver.delete(fileUri, null, null)
@@ -279,6 +291,8 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
             availableStreamSettingsUiState.settings.allPossibleSettings == null
         ) return
 
+        onlineViewModel.clearOnlineRequestedSettings()
+
         viewLifecycleOwner.lifecycleScope.launch {
             try {
                 val (settings, _) = showAllSettingsDialog(
@@ -297,10 +311,14 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
                     settings
                 )
 
-                recordingLiveSettingsView(
-                    getLiveSectionView(availableStreamSettingsUiState.feature),
-                    settings
-                )
+                try {
+                    recordingLiveSettingsView(
+                        getLiveSectionView(availableStreamSettingsUiState.feature),
+                        settings
+                    )
+                } catch (e: IllegalArgumentException) {
+                    Log.e(TAG,"Failed to get live section view for ${availableStreamSettingsUiState.feature}", e)
+                }
             } catch (e: Throwable) {
                 val settingsSelectionFailed =
                     "Error while selecting settings for feature: ${availableStreamSettingsUiState.feature} error: $e"
@@ -376,7 +394,10 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
         val recordingsToStart = mutableListOf<PolarDeviceDataType>()
 
         for (feature in PolarDeviceDataType.entries) {
-            val cb = getOnlineRecordingCheckBox(feature)
+            if (feature == PolarDeviceDataType.DERIVED_MEASUREMENT) {
+                continue
+            }
+            val cb = getOnlineRecordingCheckBox(feature) ?: continue
             if (cb.isChecked) {
                 recordingsToStart.add(feature)
             }
@@ -386,7 +407,7 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
         OnlineStreamService.startService(requireContext())
 
         for (feature in recordingsToStart) {
-            if (getOnlineRecordingCheckBox(feature).isChecked) {
+            if (getOnlineRecordingCheckBox(feature)?.isChecked == true) {
                 onlineViewModel.startStream(feature)
             } else {
                 onlineViewModel.stopStream(feature)
@@ -404,7 +425,7 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
             startRecordingButton.setOnClickListener {
                 viewModel.selectedDevice?.let {
                     for (feature in PolarDeviceDataType.entries) {
-                        val cb = getOnlineRecordingCheckBox(feature)
+                        val cb = getOnlineRecordingCheckBox(feature) ?: continue
                         if (cb.isChecked) {
                             onlineViewModel.stopStream(feature)
                             setupOnlineRecShareButtons(feature, true)
@@ -417,7 +438,7 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
                     }
                     onlineViewModel.clearAllChecked()
                 } ?: run {
-                    showToast("No device selected")
+                    showToast(getString(R.string.no_device_selected))
                 }
             }
         } else {
@@ -426,10 +447,10 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
                 viewModel.selectedDevice?.let {
                     val isRecordingStarted = startStreams()
                     if (!isRecordingStarted) {
-                        showToast("No data stream selected")
+                        showToast(getString(R.string.no_data_stream_selected))
                     }
                 } ?: run {
-                    showToast("No device selected")
+                    showToast(getString(R.string.no_device_selected))
                 }
             }
         }
@@ -450,6 +471,7 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
         if (isStreamRecordingOn) {
             streamingFeatureUiState.streamingRecordingState
                 .filter { it.value.state == StreamingFeatureState.STATES.STOPPED }
+                .filter { it.key != PolarDeviceDataType.DERIVED_MEASUREMENT }
                 .map {
                     streamingFeatureCheckBoxDisable(it.key)
                     setupStreamLiveStopped(it.key)
@@ -486,6 +508,10 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
             streamSettingHeader.visibility = VISIBLE
             streamingFeatureUiState.streamingFeaturesAvailable
                 .map {
+                    if (it.key == PolarDeviceDataType.DERIVED_MEASUREMENT) {
+                        // Derived measurements are not supported for online streaming, so we skip them
+                        return@map
+                    }
                     if (it.value) {
                         setupOnlineRecStatusAndSettingsView(it.key, makeVisible = true)
                     } else {
@@ -499,8 +525,9 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
             streamSettingHeader.visibility = GONE
         }
 
-        if (outputFileUris.isNotEmpty()) {
-            for (fileUri in outputFileUris) {
+        val validatedUris = onlineViewModel.validatedFileUris.value
+        if (validatedUris.isNotEmpty()) {
+            for (fileUri in validatedUris) {
                 val streamFileMetadata = parseStreamFileMetadata(fileUri) ?: continue
                 if (streamFileMetadata.streamType == DataCollector.StreamType.MARKER) {
                     // Marker file, do not show in sharing options for marker file. Instead share with the other files when they are shared.
@@ -537,13 +564,13 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
 
     private fun streamingFeatureCheckBoxEnable(feature: PolarDeviceDataType) {
         val cb = getOnlineRecordingCheckBox(feature)
-        cb.visibility = VISIBLE
-        cb.isEnabled = true
+        cb?.visibility = VISIBLE
+        cb?.isEnabled = true
     }
 
     private fun streamingFeatureCheckBoxDisable(feature: PolarDeviceDataType) {
         val cb = getOnlineRecordingCheckBox(feature)
-        cb.isEnabled = false
+        cb?.isEnabled = false
     }
 
     private fun hrNotificationReceived(heartRateInformationUiState: HeartRateInformationUiState) {
@@ -970,23 +997,36 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
     }
 
     private fun setupStreamLiveStopped(feature: PolarDeviceDataType) {
-        val liveSection = getLiveSectionView(feature)
-        liveSection.visibility = GONE
+        try {
+            val liveSection = getLiveSectionView(feature)
+            liveSection.visibility = GONE
+        } catch (e: IllegalArgumentException) {
+            Log.e(TAG, "Failed to get live section view for $feature", e)
+        }
     }
 
     private fun setupStreamLivePaused(feature: PolarDeviceDataType) {
-        val liveSection = getLiveSectionView(feature)
-        val recordingLiveHeader = liveSection.findViewById<TextView>(R.id.recording_live_data_header)
-        val currentText = recordingLiveHeader.text
-        val newText = "$currentText - PAUSED"
-        recordingLiveHeader.text = newText
+        try {
+            val liveSection = getLiveSectionView(feature)
+            val recordingLiveHeader = liveSection.findViewById<TextView>(R.id.recording_live_data_header)
+            val currentText = recordingLiveHeader.text
+            val newText = "$currentText - PAUSED"
+            recordingLiveHeader.text = newText
+        } catch (e: IllegalArgumentException) {
+            Log.e(TAG, "Failed to get live section view for $feature", e)
+        }
     }
 
     private fun setupStreamLiveRecording(
         feature: PolarDeviceDataType,
         settings: Map<SettingType, Int> = emptyMap()
     ) {
-        val liveSection = getLiveSectionView(feature)
+        val liveSection = try {
+            getLiveSectionView(feature)
+        } catch (e: IllegalArgumentException) {
+            Log.e(TAG, "Failed to get live section view for $feature", e)
+            return
+        }
         liveSection.visibility = VISIBLE
         recordingLiveSettingsView(liveSection, settings)
         val measSampleRateHeader = liveSection.findViewById<TextView>(R.id.meas_sampleRate_header)
@@ -1107,6 +1147,8 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
                 recordingLiveData2.visibility = GONE
                 measSampleRateHeader.visibility = GONE
             }
+
+            PolarDeviceDataType.DERIVED_MEASUREMENT -> {}
         }
     }
 
@@ -1123,6 +1165,7 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
             PolarDeviceDataType.TEMPERATURE -> temperatureRecordingLive
             PolarDeviceDataType.SKIN_TEMPERATURE -> skinTemperatureRecordingLive
             PolarDeviceDataType.HR -> hrRecordingLive
+            PolarDeviceDataType.DERIVED_MEASUREMENT -> throw IllegalArgumentException("Derived measurement does not have a live section")
         }
     }
 
@@ -1188,11 +1231,17 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
             PolarDeviceDataType.TEMPERATURE -> temperatureStatusAndSettings
             PolarDeviceDataType.SKIN_TEMPERATURE -> skinTemperatureStatusAndSettings
             PolarDeviceDataType.HR -> hrStatusAndSettings
+            PolarDeviceDataType.DERIVED_MEASUREMENT -> throw IllegalArgumentException("Derived measurement does not have a status and settings view")
         }
     }
 
     private fun getOnlineRecSettingsButtonView(feature: PolarDeviceDataType): Button? {
-        val recordingSettingsView = getRecStatusAndSettingsView(feature)
+        val recordingSettingsView = try {
+            getRecStatusAndSettingsView(feature)
+        } catch (e: IllegalArgumentException) {
+            Log.e(TAG, "Failed to get recording status and settings view for $feature", e)
+            return null
+        }
         return when (feature) {
             PolarDeviceDataType.HR,
             PolarDeviceDataType.PPI -> null
@@ -1200,13 +1249,23 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
         }
     }
 
-    private fun getOnlineRecordingCheckBox(feature: PolarDeviceDataType): CheckBox {
-        val recordingSettingsView = getRecStatusAndSettingsView(feature)
+    private fun getOnlineRecordingCheckBox(feature: PolarDeviceDataType): CheckBox? {
+        val recordingSettingsView = try {
+            getRecStatusAndSettingsView(feature)
+        } catch (e: IllegalArgumentException) {
+            Log.e(TAG, "Failed to get recording status and settings view for $feature", e)
+            return null
+        }
         return recordingSettingsView.findViewById(R.id.online_recording_controls_select_check_box)
     }
 
-    private fun getOnlineRecStartStopButton(feature: PolarDeviceDataType): Button {
-        val recordingSettingsView = getRecStatusAndSettingsView(feature)
+    private fun getOnlineRecStartStopButton(feature: PolarDeviceDataType): Button? {
+        val recordingSettingsView = try {
+            getRecStatusAndSettingsView(feature)
+        } catch (e: IllegalArgumentException) {
+            Log.e(TAG, "Failed to get recording status and settings view for $feature", e)
+            return null
+        }
         return recordingSettingsView.findViewById(R.id.online_recording_controls_start_stop_button)
     }
 
@@ -1223,6 +1282,7 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
             PolarDeviceDataType.TEMPERATURE -> "TEM"
             PolarDeviceDataType.SKIN_TEMPERATURE -> "SKIN_TEM"
             PolarDeviceDataType.HR -> "HR"
+            PolarDeviceDataType.DERIVED_MEASUREMENT -> throw IllegalArgumentException("Derived measurement does not have a status and settings view")
         }
     }
 
@@ -1230,18 +1290,28 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
         feature: PolarDeviceDataType,
         makeVisible: Boolean
     ) {
-        val view = getRecStatusAndSettingsView(feature)
+        val view = try {
+            getRecStatusAndSettingsView(feature)
+        } catch (e: IllegalArgumentException) {
+            Log.e(TAG, "Failed to get recording status and settings view for $feature", e)
+            return
+        }
         if (makeVisible) {
             val header: TextView = view.findViewById(R.id.online_recording_controls_header)
-            header.text = getOnlineRecHeaderText(feature)
+            try {
+                header.text = getOnlineRecHeaderText(feature)
+            } catch (e: IllegalArgumentException) {
+                Log.e(TAG, "Failed to get online recording header text for $feature", e)
+                return
+            }
             view.visibility = VISIBLE
-            getOnlineRecStartStopButton(feature).visibility = GONE
+            getOnlineRecStartStopButton(feature)?.visibility = GONE
             setupOnlineRecSettings(feature)
 
             val cb = getOnlineRecordingCheckBox(feature)
-            cb.setOnCheckedChangeListener(null)
-            cb.isChecked = onlineViewModel.checkedDataTypes.value.contains(feature)
-            cb.setOnCheckedChangeListener { _, isChecked ->
+            cb?.setOnCheckedChangeListener(null)
+            cb?.isChecked = onlineViewModel.checkedDataTypes.value.contains(feature)
+            cb?.setOnCheckedChangeListener { _, isChecked ->
                 onlineViewModel.setChecked(feature, isChecked)
             }
         } else {
@@ -1254,7 +1324,12 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
             setupShareButton(feature)
             setupViewButton(feature)
         } else {
-            val view = getRecStatusAndSettingsView(feature)
+            val view = try {
+                getRecStatusAndSettingsView(feature)
+            } catch (e: IllegalArgumentException) {
+                Log.e(TAG, "Failed to get recording status and settings view for $feature", e)
+                return
+            }
             shareButton = view.findViewById(R.id.online_recording_controls_share_button)
             viewButton = view.findViewById(R.id.online_recording_controls_view_button)
             shareButton.visibility = GONE
@@ -1264,7 +1339,12 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
 
     private fun setupViewButton(feature: PolarDeviceDataType) {
 
-        val view = getRecStatusAndSettingsView(feature)
+        val view = try {
+            getRecStatusAndSettingsView(feature)
+        } catch (e: IllegalArgumentException) {
+            Log.e(TAG, "Failed to get recording status and settings view for $feature", e)
+            return
+        }
 
         viewButton = view.findViewById(R.id.online_recording_controls_view_button)
         viewButton.visibility = VISIBLE
@@ -1291,12 +1371,18 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
 
     private fun setupShareButton(feature: PolarDeviceDataType) {
 
-        val view = getRecStatusAndSettingsView(feature)
+        val view = try {
+            getRecStatusAndSettingsView(feature)
+        } catch (e: IllegalArgumentException) {
+            Log.e(TAG, "Failed to get recording status and settings view for $feature", e)
+            return
+        }
         shareButton = view.findViewById(R.id.online_recording_controls_share_button)
         shareButton.visibility = VISIBLE
         shareButton.isEnabled = true
         shareButton.setOnClickListener {
-            if (outputFileUris.isNotEmpty()) {
+            val validatedUris = onlineViewModel.validatedFileUris.value
+            if (validatedUris.isNotEmpty()) {
                 val dataUri = getUriByDataType(feature)
                 // Marker file is a special file that is created if users adds markers during streaming.
                 val markerUri = getUriForMarkerFile()
@@ -1345,7 +1431,7 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
                         startActivity(shareIntent)
                         onlineViewModel.fileShareCompleted()
                     }
-                    Log.d(TAG, "Shared ${outputFileUris.size} files")
+                    Log.d(TAG, "Shared ${validatedUris.size} files")
                 }
             } else {
                 Log.i(TAG, "No valid files to share")
@@ -1365,7 +1451,7 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
      * Finds the newest Uri for the desired PolarDeviceDataType
      */
     private fun getUriByDataType(desiredDataType: PolarDeviceDataType): Uri? {
-        return outputFileUris
+        return onlineViewModel.validatedFileUris.value
             .asSequence()
             .mapNotNull { fileUri ->
                 parseStreamFileMetadata(fileUri)
@@ -1381,7 +1467,7 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
      * Finds the Uri for the MARKER file.
      */
     private fun getUriForMarkerFile(): Uri? {
-        return outputFileUris
+        return onlineViewModel.validatedFileUris.value
             .asSequence()
             .mapNotNull { fileUri ->
                 parseStreamFileMetadata(fileUri)
@@ -1398,6 +1484,10 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
         val timestamp: LocalDateTime
     )
 
+    /** Parses stream type and session timestamp from a file URI produced by [DataCollector].
+     *  Works with the per-device directory layout: sensorDataLogs/<streamType>/<deviceId>/file.
+     *  Scans all path segments for a match with a known [DataCollector.StreamType] name so the
+     *  parser is resilient to nesting depth changes. */
     private fun parseStreamFileMetadata(fileUri: Uri): StreamFileMetadata? {
         val decodedSegments = fileUri.pathSegments
             .map { Uri.decode(it) }
@@ -1407,6 +1497,8 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
             return null
         }
 
+        // The last segment may be the plain filename, or an encoded relative path like
+        // "sensorDataLogs/HR/deviceId/filename.txt".  Split on "/" to get all path parts.
         val filePathParts = decodedSegments.last().split("/").filter { it.isNotBlank() }
         val fileName = filePathParts.lastOrNull()
         if (fileName == null) {
@@ -1414,11 +1506,12 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
             return null
         }
 
-        val streamTypeName = filePathParts.getOrNull(filePathParts.lastIndex - 1)
-            ?: decodedSegments.getOrNull(decodedSegments.lastIndex - 1)
-        val streamType = streamTypeName?.let { candidate ->
-            DataCollector.StreamType.entries.firstOrNull { it.name == candidate }
-        }
+        // Scan all directory segments (from innermost outward, skipping the filename itself)
+        // looking for a segment whose name matches a known StreamType.
+        val allSegments = (decodedSegments.dropLast(1) + filePathParts.dropLast(1)).distinct()
+        val streamType = allSegments.reversed()
+            .mapNotNull { seg -> DataCollector.StreamType.entries.firstOrNull { it.name == seg } }
+            .firstOrNull()
         if (streamType == null) {
             Log.w(TAG, "Unable to determine stream type from uri: $fileUri")
             return null

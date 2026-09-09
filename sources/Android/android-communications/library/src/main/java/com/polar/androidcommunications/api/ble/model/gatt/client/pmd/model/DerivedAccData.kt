@@ -1,7 +1,7 @@
 package com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model
 
-import com.polar.androidcommunications.api.ble.BleLogger
 import com.polar.androidcommunications.api.ble.exceptions.PmdDataParseException
+import com.polar.androidcommunications.api.ble.exceptions.PmdDataParseException.Companion.toHex
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdDataFrame
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdMeasurementType
 import com.polar.androidcommunications.common.ble.TypeUtils
@@ -63,8 +63,8 @@ internal class DerivedAccData(val activeMethods: Set<Int> = emptySet()) {
          * This header is present ONLY for spec-compliant type-15 (DERIVED_MEASUREMENT) frames.
          * Current firmware stores derived output as type-2 ACC frames with no such header.
          */
-        private const val DERIVED_FRAME_HEADER_SIZE = 5
-        private const val DERIVED_FRAME_METHOD_BITS_OFFSET = 3
+        private const val DERIVED_FRAME_HEADER_SIZE = 4
+        private const val DERIVED_FRAME_METHOD_BITS_OFFSET = 2
 
         fun parseDataFromDataFrame(frame: PmdDataFrame, activeMethods: Set<Int>): DerivedAccData {
             val result = DerivedAccData(activeMethods)
@@ -99,9 +99,10 @@ internal class DerivedAccData(val activeMethods: Set<Int> = emptySet()) {
                     }
                 }
                 if (trimmed.size < sortedHint.size) {
-                    BleLogger.w("DerivedAccData",
-                        "parseDataFromDataFrame: hint $sortedHint trimmed to $trimmed " +
-                        "to fit ${frame.dataContent.size} bytes (sampleSizeInBytes=$sampleSizeInBytes)")
+                    throw PmdDataParseException(
+                        "DerivedAccData expected methods $sortedHint to fit in ${frame.dataContent.size} bytes " +
+                        "for frame type ${frame.frameType} and sample size $sampleSizeInBytes, but only $trimmed fit."
+                    )
                 }
                 effectiveMethods = trimmed
                 sampleDataBytes = frame.dataContent
@@ -115,6 +116,14 @@ internal class DerivedAccData(val activeMethods: Set<Int> = emptySet()) {
             val valuesPerSample: Int = effectiveMethods.fold(0) { acc, m -> acc + if (m in componentMethods) 3 else 1 }
             val bytesPerSample: Int = valuesPerSample * sampleSizeInBytes
             if (bytesPerSample == 0) return result
+
+            if (sampleDataBytes.size % bytesPerSample != 0) {
+                throw PmdDataParseException(
+                    "DerivedAccData payload length ${sampleDataBytes.size} bytes is not a multiple of " +
+                    "expected sample size $bytesPerSample bytes for methods $effectiveMethods. " +
+                    "Data: ${sampleDataBytes.toHex()}"
+                )
+            }
 
             val samplesSize: Int = sampleDataBytes.size / bytesPerSample
             if (samplesSize <= 0) return result

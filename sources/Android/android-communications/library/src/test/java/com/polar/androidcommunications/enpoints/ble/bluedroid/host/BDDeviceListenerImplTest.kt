@@ -457,15 +457,15 @@ class BDDeviceListenerImplTest {
         testScheduler.advanceUntilIdle()
 
         val session = sut.sessionByAddress(address)
-        // Inject a pairing problem into the session via reflection
-        val sessionField = session.javaClass.getDeclaredField("indicatesPairingProblem")
-            .also { it.isAccessible = true }
-        sessionField.set(session, Pair(true, 133))
+        session.markDisconnect(
+            BleDeviceSession.DisconnectReason.PAIRING_INFORMATION_REMOVED,
+            133
+        )
 
         // Act
         val result = sut.getIndicatesPairingProblem(address)
 
-        // Assert – session branch wins
+        // Assert – confirmed removed pairing is returned
         assertEquals(true, result.first)
         assertEquals(133, result.second)
         searchJob.cancel()
@@ -481,7 +481,7 @@ class BDDeviceListenerImplTest {
         val searchJob = launch { sut.search(true).collect { } }
         testScheduler.advanceUntilIdle()
 
-        // Inject a pairing problem into gattCallback via reflection
+        // Inject a generic GATT failure into gattCallback via reflection
         val gattCallbackField = sut.javaClass.getDeclaredField("gattCallback")
             .also { it.isAccessible = true }
         val gattCallback = gattCallbackField.get(sut) as GattCallback
@@ -492,9 +492,9 @@ class BDDeviceListenerImplTest {
         // Act
         val result = sut.getIndicatesPairingProblem(address)
 
-        // Assert – gattCallback branch wins (session has no problem)
-        assertEquals(true, result.first)
-        assertEquals(19, result.second)
+        // Generic GATT failures are not confirmed pairing loss.
+        assertEquals(false, result.first)
+        assertEquals(-1, result.second)
         searchJob.cancel()
     }
 
@@ -522,7 +522,7 @@ class BDDeviceListenerImplTest {
         val searchJob = launch { sut.search(true).collect { } }
         testScheduler.advanceUntilIdle()
 
-        // Session has no pairing problem; inject gattCallback problem
+        // Session has no pairing problem; inject a generic GATT problem
         val gattCallbackField = sut.javaClass.getDeclaredField("gattCallback")
             .also { it.isAccessible = true }
         val gattCallback = gattCallbackField.get(sut) as GattCallback
@@ -533,9 +533,9 @@ class BDDeviceListenerImplTest {
         // Act
         val result = sut.getIndicatesPairingProblem(address)
 
-        // Assert – gattCallback pair is returned
-        assertEquals(true, result.first)
-        assertEquals(8, result.second)
+        // Generic GATT failures are not confirmed pairing loss.
+        assertEquals(false, result.first)
+        assertEquals(-1, result.second)
         searchJob.cancel()
     }
 
@@ -556,6 +556,7 @@ class BDDeviceListenerImplTest {
 
         every { context.getSystemService(Context.BLUETOOTH_SERVICE) } returns bluetoothManager
         every { context.registerReceiver(any(), any()) } returns null
+        every { context.registerReceiver(any(), any(), any(), any()) } returns null
         every { context.unregisterReceiver(any()) } just runs
         every { context.mainLooper } returns mockk<Looper>(relaxed = true)
         every { bluetoothManager.adapter } returns bluetoothAdapter

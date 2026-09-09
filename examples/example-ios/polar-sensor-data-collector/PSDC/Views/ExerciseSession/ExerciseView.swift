@@ -7,7 +7,7 @@ struct ExerciseView: View {
     @EnvironmentObject private var bleSdkManager: PolarBleSdkManager
 
     @State private var selectedIndex: Int = 0
-
+    @State private var saveOnStop: Bool = true
     @State private var toast: String? = nil
 
     var body: some View {
@@ -51,10 +51,21 @@ struct ExerciseView: View {
 
                     Button("Stop") {
                         toast = "Stopping…"
-                        bleSdkManager.stopExercise()
+                        bleSdkManager.stopExercise(save: saveOnStop)
                     }
                     .buttonStyle(.bordered)
                     .disabled(!bleSdkManager.exerciseState.canStop)
+                }
+
+                if bleSdkManager.exerciseState.canStop {
+                    HStack(spacing: 8) {
+                        Toggle("", isOn: $saveOnStop)
+                            .labelsHidden()
+                            .toggleStyle(.automatic)
+                        Text("Save exercise on stop")
+                            .font(.subheadline)
+                    }
+                    .padding(.top, 4)
                 }
 
                 let startTimeString: String? = {
@@ -124,6 +135,9 @@ struct ExerciseView: View {
         .onDisappear {
             bleSdkManager.stopExerciseAutoRefresh()
             bleSdkManager.stopObservingExerciseNotifications()
+        }
+        .onChange(of: bleSdkManager.exerciseState.canStop) { canStop in
+            if !canStop { saveOnStop = true }
         }
         .onChange(of: bleSdkManager.exerciseState.status) { newStatus in
             switch newStatus {

@@ -31,8 +31,8 @@ public class DerivedAccData {
     // Methods whose outputs are unsigned-promoted.
     private static let unsignedMethods: Set<Int> = [4, 5, 6, 7, 8, 9]
 
-    private static let derivedFrameHeaderSize = 5
-    private static let derivedFrameMethodBitsOffset = 3
+    private static let derivedFrameHeaderSize = 4
+    private static let derivedFrameMethodBitsOffset = 2
 
     static func parseDataFromDataFrame(frame: PmdDataFrame, activeMethods: Set<Int>) throws -> DerivedAccData {
         let result = DerivedAccData(activeMethods: activeMethods)

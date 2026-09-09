@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>PolarBleDisconnectReason Enumeration Reference</title>
+    <link rel="stylesheet" type="text/css" href="../css/jazzy.css" />
+    <link rel="stylesheet" type="text/css" href="../css/highlight.css" />
+    <meta charset='utf-8'>
+    <script src="../js/jquery.min.js" defer></script>
+    <script src="../js/jazzy.js" defer></script>
+    
+    <script src="../js/lunr.min.js" defer></script>
+    <script src="../js/typeahead.jquery.js" defer></script>
+    <script src="../js/jazzy.search.js" defer></script>
+  </head>
+  <body>
+    <a name="//apple_ref/swift/Enum/PolarBleDisconnectReason" class="dashAnchor"></a>
+    <a title="PolarBleDisconnectReason Enumeration Reference"></a>
+    <header>
+      <div class="content-wrapper">
+        <p><a href="../index.html">PolarBleSdk 8.2.4 Docs</a> (43% documented)</p>
+        <div class="header-right">
+          <form role="search" action="../search.json">
+            <input type="text" placeholder="Search documentation" data-typeahead>
+          </form>
+        </div>
+      </div>
+    </header>
+    <div class="content-wrapper">
+      <p id="breadcrumbs">
+        <a href="../index.html">PolarBleSdk</a>
+        <img id="carat" src="../img/carat.png" alt=""/>
+        <a href="../Enums.html">Enumerations</a>
+        <img id="carat" src="../img/carat.png" alt=""/>
+        PolarBleDisconnectReason Enumeration Reference
+      </p>
+    </div>
+    <div class="content-wrapper">
+      <nav class="sidebar">
+        <ul class="nav-groups">
+          <li class="nav-group-name">
+            <a href="../Classes.html">Classes</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="../Classes/PolarActivityData.html">PolarActivityData</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/PolarActivityData/PolarActivitySamples.html">– PolarActivitySamples</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/PolarActivityData/PolarActivityInfo.html">– PolarActivityInfo</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/PolarActivityData/PolarActivityClass.html">– PolarActivityClass</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/PolarBackupManager.html">PolarBackupManager</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/PolarBackupManager.html#/s:11PolarBleSdk0A13BackupManagerC0D8FileDataV">– BackupFileData</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/PolarBleApiDefaultImpl.html">PolarBleApiDefaultImpl</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/PolarSkinTemperatureData.html">PolarSkinTemperatureData</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/PolarSkinTemperatureData/SkinTemperatureMeasurementType.html">– SkinTemperatureMeasurementType</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/PolarSkinTemperatureData/SkinTemperatureSensorLocation.html">– SkinTemperatureSensorLocation</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/PolarSkinTemperatureData/PolarSkinTemperatureDataSample.html">– PolarSkinTemperatureDataSample</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/PolarSkinTemperatureData/PolarSkinTemperatureResult.html">– PolarSkinTemperatureResult</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/PolarSleepData.html">PolarSleepData</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/PolarSleepData/SleepWakeState.html">– SleepWakeState</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/PolarSleepData/SleepRating.html">– SleepRating</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/PolarSleepData/PolarSleepAnalysisResult.html">– PolarSleepAnalysisResult</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/PolarSleepData/SleepWakePhase.html">– SleepWakePhase</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/PolarSleepData/SleepCycle.html">– SleepCycle</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/PolarSleepData/OriginalSleepRange.html">– OriginalSleepRange</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/PolarSleepData/SleepSkinTemperatureResult.html">– SleepSkinTemperatureResult</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/PolarStoredDataType.html">PolarStoredDataType</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/PolarStoredDataType/StoredDataType.html">– StoredDataType</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/PolarStoredDataType/PolarStoredDataTypeResult.html">– PolarStoredDataTypeResult</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/PolarUserDeviceSettings.html">PolarUserDeviceSettings</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/PolarUserDeviceSettings/DeviceLocation.html">– DeviceLocation</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/PolarUserDeviceSettings/UsbConnectionMode.html">– UsbConnectionMode</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/PolarUserDeviceSettings/AutomaticTrainingDetectionMode.html">– AutomaticTrainingDetectionMode</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Classes/PolarUserDeviceSettings/PolarUserDeviceSettingsResult.html">– PolarUserDeviceSettingsResult</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a href="../Global%20Variables.html">Global Variables</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="../Global%20Variables.html#/s:11PolarBleSdk25DEVICE_SETTINGS_FILE_PATHSSvp">DEVICE_SETTINGS_FILE_PATH</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Global%20Variables.html#/s:11PolarBleSdk25SENSOR_SETTINGS_FILE_PATHSSvp">SENSOR_SETTINGS_FILE_PATH</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Global%20Variables.html#/s:11PolarBleSdk17polarDailySummaryAA0aeF0VSgvp">polarDailySummary</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a href="../Enums.html">Enumerations</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="../Enums/CaloriesType.html">CaloriesType</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Enums/CheckFirmwareUpdateStatus.html">CheckFirmwareUpdateStatus</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Enums/Communications_PbPFtpError.html">Communications_PbPFtpError</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Enums/DeviceTelemetryConfiguration.html">DeviceTelemetryConfiguration</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Enums/FirmwareUpdateStatus.html">FirmwareUpdateStatus</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Enums/OfflineExerciseStartResultType.html">OfflineExerciseStartResultType</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Enums/PolarActivityDataType.html">PolarActivityDataType</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Enums/PolarBleDeviceCommand.html">PolarBleDeviceCommand</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Enums/PolarBleDisconnectReason.html">PolarBleDisconnectReason</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Enums/PolarBleRecoveryAction.html">PolarBleRecoveryAction</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Enums/PolarBleSdkFeature.html">PolarBleSdkFeature</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Enums/PolarDailyBalanceFeedBack.html">PolarDailyBalanceFeedBack</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Enums/PolarDerivedMeasurementMethod.html">PolarDerivedMeasurementMethod</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Enums/PolarDeviceDataType.html">PolarDeviceDataType</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Enums/PolarDeviceTelemetryType.html">PolarDeviceTelemetryType</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Enums/PolarDeviceToHostNotification.html">PolarDeviceToHostNotification</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Enums/PolarErrors.html">PolarErrors</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Enums/PolarExerciseDataTypes.html">PolarExerciseDataTypes</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Enums/PolarExerciseSession.html">PolarExerciseSession</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Enums/PolarExerciseSession/SportProfile.html">– SportProfile</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Enums/PolarExerciseSession/ExerciseStatus.html">– ExerciseStatus</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Enums/PolarExerciseSession/ExerciseInfo.html">– ExerciseInfo</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Enums/PolarOfflineRecordingData.html">PolarOfflineRecordingData</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Enums/PolarOfflineRecordingResult.html">PolarOfflineRecordingResult</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Enums/PolarOfflineRecordingTriggerMode.html">PolarOfflineRecordingTriggerMode</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Enums/PolarReadinessForSpeedAndStrengthTraining.html">PolarReadinessForSpeedAndStrengthTraining</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Enums/PolarTrainingSessionDataTypes.html">PolarTrainingSessionDataTypes</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Enums/PolarTrainingSessionFetchResult.html">PolarTrainingSessionFetchResult</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Enums/PolarWatchFaceComplication.html">PolarWatchFaceComplication</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Enums/PpgDataType.html">PpgDataType</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Enums/RecordingInterval.html">RecordingInterval</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Enums/SampleType.html">SampleType</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a href="../Extensions.html">Extensions</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="../Extensions/DateComponents.html">DateComponents</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a href="../Protocols.html">Protocols</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="../Protocols/PolarActivityApi.html">PolarActivityApi</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/PolarBleApi.html">PolarBleApi</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/PolarBleApiDeviceFeaturesObserver.html">PolarBleApiDeviceFeaturesObserver</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/PolarBleApiDeviceHrObserver.html">PolarBleApiDeviceHrObserver</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/PolarBleApiDeviceInfoObserver.html">PolarBleApiDeviceInfoObserver</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/PolarBleApiLogger.html">PolarBleApiLogger</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/PolarBleApiObserver.html">PolarBleApiObserver</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/PolarBleApiPowerStateObserver.html">PolarBleApiPowerStateObserver</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/PolarBleLowLevelApi.html">PolarBleLowLevelApi</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/PolarDerivedMeasurementApi.html">PolarDerivedMeasurementApi</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/PolarDeviceTelemetryApi.html">PolarDeviceTelemetryApi</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/PolarDeviceToHostNotificationsApi.html">PolarDeviceToHostNotificationsApi</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/PolarFirmwareUpdateApi.html">PolarFirmwareUpdateApi</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/PolarH10OfflineExerciseApi.html">PolarH10OfflineExerciseApi</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/PolarLoggingApi.html">PolarLoggingApi</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/PolarOfflineExerciseV2Api.html">PolarOfflineExerciseV2Api</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/PolarOfflineRecordingApi.html">PolarOfflineRecordingApi</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/PolarOnlineStreamingApi.html">PolarOnlineStreamingApi</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/PolarRestServiceApi.html">PolarRestServiceApi</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/PolarSdkModeApi.html">PolarSdkModeApi</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/PolarSleepApi.html">PolarSleepApi</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/PolarTemperatureApi.html">PolarTemperatureApi</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/PolarTestApi.html">PolarTestApi</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/PolarTrainingSessionApi.html">PolarTrainingSessionApi</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Protocols/PolarWatchFaceApi.html">PolarWatchFaceApi</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a href="../Structs.html">Structures</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="../Structs/AutomaticSamples.html">AutomaticSamples</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/DeviceTelemetryEvent.html">DeviceTelemetryEvent</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/DeviceTelemetrySupport.html">DeviceTelemetrySupport</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/LedConfig.html">LedConfig</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/LogConfig.html">LogConfig</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/OfflineExerciseStartResult.html">OfflineExerciseStartResult</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/Polar247HrSamplesData.html">Polar247HrSamplesData</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/Polar247HrSamplesData/Polar247HrSample.html">– Polar247HrSample</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/Polar247HrSamplesData/AutomaticSampleTriggerType.html">– AutomaticSampleTriggerType</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/Polar247PPiSamplesData.html">Polar247PPiSamplesData</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/Polar247PPiSamplesData/PolarPpiDataSample.html">– PolarPpiDataSample</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/Polar247PPiSamplesData/PPiSampleTriggerType.html">– PPiSampleTriggerType</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/Polar247PPiSamplesData/SkinContact.html">– SkinContact</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/Polar247PPiSamplesData/Movement.html">– Movement</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/Polar247PPiSamplesData/IntervalStatus.html">– IntervalStatus</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/Polar247PPiSamplesData/PPiSampleStatus.html">– PPiSampleStatus</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/PolarActiveTime.html">PolarActiveTime</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/PolarActiveTimeData.html">PolarActiveTimeData</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/PolarActivityDayData.html">PolarActivityDayData</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs.html#/s:11PolarBleSdk0A19ActivityGoalSummaryV">PolarActivityGoalSummary</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/PolarBleDisconnectInfo.html">PolarBleDisconnectInfo</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/PolarCaloriesData.html">PolarCaloriesData</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/PolarD2HNotificationData.html">PolarD2HNotificationData</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/PolarDailySummary.html">PolarDailySummary</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/PolarDerivedAccData.html">PolarDerivedAccData</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/PolarDerivedMeasurementSettings.html">PolarDerivedMeasurementSettings</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/PolarDerivedMeasurementSettingsGroup.html">PolarDerivedMeasurementSettingsGroup</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/PolarDerivedSample.html">PolarDerivedSample</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/PolarDeviceLog.html">PolarDeviceLog</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/PolarDeviceRestApiServiceDescription.html">PolarDeviceRestApiServiceDescription</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs.html#/s:11PolarBleSdk0A21DeviceRestApiServicesV">PolarDeviceRestApiServices</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/PolarDiskSpaceData.html">PolarDiskSpaceData</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/PolarDistanceData.html">PolarDistanceData</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/PolarExercise.html">PolarExercise</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/PolarFirstTimeUseConfig.html">PolarFirstTimeUseConfig</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/PolarFirstTimeUseConfig/Gender.html">– Gender</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/PolarFirstTimeUseConfig/TypicalDay.html">– TypicalDay</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/PolarFirstTimeUseConfig/TrainingBackground.html">– TrainingBackground</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/PolarNightlyRechargeData.html">PolarNightlyRechargeData</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/PolarOfflineRecordingEntry.html">PolarOfflineRecordingEntry</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/PolarOfflineRecordingProgress.html">PolarOfflineRecordingProgress</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/PolarOfflineRecordingTrigger.html">PolarOfflineRecordingTrigger</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/PolarPhysicalConfiguration.html">PolarPhysicalConfiguration</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/PolarPhysicalConfiguration/Gender.html">– Gender</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/PolarPhysicalConfiguration/TypicalDay.html">– TypicalDay</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/PolarPlainDate.html">PolarPlainDate</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/PolarRecordingSecret.html">PolarRecordingSecret</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/PolarSensorSetting.html">PolarSensorSetting</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/PolarSensorSetting/SettingType.html">– SettingType</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/PolarSpo2TestData.html">PolarSpo2TestData</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/PolarSpo2TestData/Spo2Class.html">– Spo2Class</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/PolarSpo2TestData/Spo2TestTriggerType.html">– Spo2TestTriggerType</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/PolarSpo2TestData/Spo2TestStatus.html">– Spo2TestStatus</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/PolarSpo2TestData/DeviationFromBaseline.html">– DeviationFromBaseline</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/PolarStepsData.html">PolarStepsData</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/PolarTrainingSession.html">PolarTrainingSession</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/PolarTrainingSessionProgress.html">PolarTrainingSessionProgress</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/PolarTrainingSessionReference.html">PolarTrainingSessionReference</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/PolarUserDeviceSettingsData.html">PolarUserDeviceSettingsData</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/PolarWatchFaceConfig.html">PolarWatchFaceConfig</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/UserIdentifierType.html">UserIdentifierType</a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-group-name">
+            <a href="../Typealiases.html">Type Aliases</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a href="../Typealiases.html#/s:11PolarBleSdk0A7AccDataa">PolarAccData</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Typealiases.html#/s:11PolarBleSdk0A10DeviceInfoa">PolarDeviceInfo</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Typealiases.html#/s:11PolarBleSdk0A7EcgDataa">PolarEcgData</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Typealiases.html#/s:11PolarBleSdk0A12ExerciseDataa">PolarExerciseData</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Typealiases.html#/s:11PolarBleSdk0A13ExerciseEntrya">PolarExerciseEntry</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Typealiases.html#/s:11PolarBleSdk0A8GyroDataa">PolarGyroData</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Typealiases.html#/s:11PolarBleSdk0A15HrBroadcastDataa">PolarHrBroadcastData</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Typealiases.html#/s:11PolarBleSdk0A6HrDataa">PolarHrData</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Typealiases.html#/s:11PolarBleSdk0A16MagnetometerDataa">PolarMagnetometerData</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Typealiases.html#/s:11PolarBleSdk0A7PpgDataa">PolarPpgData</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Typealiases.html#/s:11PolarBleSdk0A7PpiDataa">PolarPpiData</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Typealiases.html#/s:11PolarBleSdk0A12PressureDataa">PolarPressureData</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Typealiases.html#/s:11PolarBleSdk0A15RecordingStatusa">PolarRecordingStatus</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Typealiases.html#/s:11PolarBleSdk0A15TemperatureDataa">PolarTemperatureData</a>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+      <article class="main-content">
+        <section>
+          <section class="section">
+            <h1>PolarBleDisconnectReason</h1>
+              <div class="declaration">
+                <div class="language">
+                  
+                  <pre class="highlight swift"><code><span class="kd">public</span> <span class="kd">enum</span> <span class="kt">PolarBleDisconnectReason</span> <span class="p">:</span> <span class="kt">Equatable</span></code></pre>
+
+                </div>
+              </div>
+            <p>Undocumented</p>
+
+          </section>
+          <section class="section task-group-section">
+            <div class="task-group">
+              <ul>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0aB16DisconnectReasonO14connectionLostyA2CmF"></a>
+                    <a name="//apple_ref/swift/Element/connectionLost" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB16DisconnectReasonO14connectionLostyA2CmF">connectionLost</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>The connection was lost without a classified pairing/security condition.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="k">case</span> <span class="n">connectionLost</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0aB16DisconnectReasonO22insufficientEncryptionyA2CmF"></a>
+                    <a name="//apple_ref/swift/Element/insufficientEncryption" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB16DisconnectReasonO22insufficientEncryptionyA2CmF">insufficientEncryption</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>A protected ATT operation lacked link encryption. During an initial
+connection attempt, the SDK keeps this condition retryable so pairing or
+security negotiation can complete. After a session that had previously
+connected successfully, the same condition is treated as a stale or
+unusable pairing: automatic reconnection stops and the application should
+remove the pairing from iOS and the device when required, pair again, and
+reconnect before retrying the operation.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="k">case</span> <span class="n">insufficientEncryption</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0aB16DisconnectReasonO18encryptionTimedOutyA2CmF"></a>
+                    <a name="//apple_ref/swift/Element/encryptionTimedOut" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB16DisconnectReasonO18encryptionTimedOutyA2CmF">encryptionTimedOut</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>The BLE encryption handshake timed out. Reconnect/security establishment
+should be retried before asking the user to re-pair.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="k">case</span> <span class="n">encryptionTimedOut</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0aB16DisconnectReasonO25pairingInformationRemovedyA2CmF"></a>
+                    <a name="//apple_ref/swift/Element/pairingInformationRemoved" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB16DisconnectReasonO25pairingInformationRemovedyA2CmF">pairingInformationRemoved</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>CoreBluetooth reported that the peer pairing information was removed or
+can no longer be used. User-driven pairing recovery is required.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="k">case</span> <span class="n">pairingInformationRemoved</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0aB16DisconnectReasonO24pairingNegotiationFailedyA2CmF"></a>
+                    <a name="//apple_ref/swift/Element/pairingNegotiationFailed" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB16DisconnectReasonO24pairingNegotiationFailedyA2CmF">pairingNegotiationFailed</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>iOS started pairing after an encrypted ATT failure, but the peripheral
+rejected the pairing negotiation. This does not prove that pairing
+information was removed.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="k">case</span> <span class="n">pairingNegotiationFailed</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0aB16DisconnectReasonO14uuidNotAllowedyA2CmF"></a>
+                    <a name="//apple_ref/swift/Element/uuidNotAllowed" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB16DisconnectReasonO14uuidNotAllowedyA2CmF">uuidNotAllowed</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>CoreBluetooth rejected a UUID during service/security handling. Service
+discovery or the affected operation should be retried; this is not proof
+that pairing must be removed.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="k">case</span> <span class="n">uuidNotAllowed</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0aB16DisconnectReasonO7unknownyA2CmF"></a>
+                    <a name="//apple_ref/swift/Element/unknown" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB16DisconnectReasonO7unknownyA2CmF">unknown</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>An error did not match a known SDK classification.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="k">case</span> <span class="n">unknown</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0aB16DisconnectReasonO13deviceCommandyA2CmF"></a>
+                    <a name="//apple_ref/swift/Element/deviceCommand" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0aB16DisconnectReasonO13deviceCommandyA2CmF">deviceCommand</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Disconnect is the expected outcome of a device-control command (restart, factory reset,
+warehouse sleep, hibernate, turn off) that already reached its success path.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="k">case</span> <span class="n">deviceCommand</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </section>
+        </section>
+        <section id="footer">
+          <p>&copy; 2026 <a class="link" href="https://github.com/polarofficial/polar-ble-sdk" target="_blank" rel="external noopener">Polar Electro Oy</a>. All rights reserved. (Last updated: 2026-09-09)</p>
+          <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external noopener">jazzy ♪♫ v0.15.3</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external noopener">Realm</a> project.</p>
+        </section>
+      </article>
+    </div>
+  </body>
+</html>

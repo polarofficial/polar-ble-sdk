@@ -9,6 +9,12 @@ class CBDeviceSessionImpl: BleDeviceSession, CBPeripheralDelegate, BleAttributeT
     private let serviceMonitors = StreamContinuationList<CBUUID>()
     private var serviceCount = AtomicInteger.init(initialValue: 0)
     private var attNotifyQueue = AtomicList<CBCharacteristic>()
+    private var securityRetryWorkItem: DispatchWorkItem?
+    private enum SecurityRetryOperation {
+        case read(CBCharacteristic)
+        case notify(CBCharacteristic)
+    }
+    private var pendingSecurityOperation: SecurityRetryOperation?
     private let queueBle: DispatchQueue
     private let queue: DispatchQueue
     
@@ -83,8 +89,17 @@ class CBDeviceSessionImpl: BleDeviceSession, CBPeripheralDelegate, BleAttributeT
             self.peripheral(peripheral, didDiscoverServices: nil)
         }
     }
+
+    override func retryServiceDiscovery() {
+        serviceCount.set(0)
+        serviceMonitors.finish(throwing: BleGattException.gattDisconnected)
+        peripheral.discoverServices(nil)
+    }
     
     func reset() {
+        securityRetryWorkItem?.cancel()
+        securityRetryWorkItem = nil
+        pendingSecurityOperation = nil
         for client in gattClients {
             client.disconnected()
         }
@@ -319,6 +334,12 @@ class CBDeviceSessionImpl: BleDeviceSession, CBPeripheralDelegate, BleAttributeT
     func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
         BleLogger.trace_if_error("didUpdateValueFor \(characteristic.uuid): ", error: error)
         handlePeripheralError(error)
+        if let error,
+           (error as NSError).domain == CBATTError.errorDomain,
+           CBATTError(_nsError: error as NSError).code == .insufficientEncryption,
+           !hasEstablishedConnection {
+            retryInitialSecurityOperation(.read(characteristic))
+        }
         if let serviceUuid = characteristic.service?.uuid, let client = fetchGattClient(serviceUuid) {
             if client.containsCharacteristic(characteristic.uuid) {
                 let errorCode = (error as NSError?)?.code ?? 0
@@ -342,6 +363,12 @@ class CBDeviceSessionImpl: BleDeviceSession, CBPeripheralDelegate, BleAttributeT
     func peripheral(_ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?) {
         BleLogger.trace_if_error("didUpdateNotificationStateForCharacteristic \(characteristic.uuid.uuidString): ", error: error)
         handlePeripheralError(error)
+        if let error,
+           (error as NSError).domain == CBATTError.errorDomain,
+           CBATTError(_nsError: error as NSError).code == .insufficientEncryption,
+           !hasEstablishedConnection {
+            retryInitialSecurityOperation(.notify(characteristic))
+        }
         let errorCode = (error as NSError?)?.code ?? 0
         if let serviceUuid = characteristic.service?.uuid, let client = fetchGattClient(serviceUuid) {
             if client.containsCharacteristic(characteristic.uuid) {
@@ -378,6 +405,12 @@ class CBDeviceSessionImpl: BleDeviceSession, CBPeripheralDelegate, BleAttributeT
             let cbAttError = CBATTError(_nsError: error as NSError)
             if cbAttError.code == .insufficientEncryption { // pairing removed from iOS
                 BleLogger.trace("Special handling needed for security re-establish")
+                if !hasEstablishedConnection {
+                    // During first pairing, keep the link alive so CoreBluetooth
+                    // can complete security negotiation instead of tearing down
+                    // the connection before the user can pair the device.
+                    return
+                }
                 attNotifyQueue.removeAll()
                 serviceCount.set(0)
                 central.cancelPeripheralConnection(peripheral)
@@ -415,6 +448,43 @@ class CBDeviceSessionImpl: BleDeviceSession, CBPeripheralDelegate, BleAttributeT
             pending.parent.serviceDataWritten(pending.characteristicUuid, err: 0)
         }
     }
+
+    private func retryInitialSecurityOperation(_ operation: SecurityRetryOperation) {
+        // Several protected characteristics can fail in the same callback
+        // burst. Treat that burst as one recovery attempt, otherwise the retry
+        // budget is exhausted before the first retry is sent.
+        guard securityRetryWorkItem == nil else {
+            BleLogger.trace("Security recovery already scheduled; preserving the first failed operation")
+            return
+        }
+        pendingSecurityOperation = operation
+        if recordSecurityRecoveryAttempt() {
+            central.cancelPeripheralConnection(peripheral)
+            let encryptionError = NSError(
+                domain: CBATTError.errorDomain,
+                code: CBATTError.Code.insufficientEncryption.rawValue
+            )
+            central.delegate?.centralManager?(central, didDisconnectPeripheral: peripheral, error: encryptionError)
+            return
+        }
+        let workItem = DispatchWorkItem { [weak self] in
+            guard let self else { return }
+            self.securityRetryWorkItem = nil
+            guard let operation = self.pendingSecurityOperation,
+                  self.peripheral.state == .connected else { return }
+            self.pendingSecurityOperation = nil
+            switch operation {
+            case .read(let characteristic):
+                BleLogger.trace("Retrying protected read after security recovery: \(characteristic.uuid.uuidString)")
+                self.peripheral.readValue(for: characteristic)
+            case .notify(let characteristic):
+                BleLogger.trace("Retrying protected notification after security recovery: \(characteristic.uuid.uuidString)")
+                self.peripheral.setNotifyValue(true, for: characteristic)
+            }
+        }
+        securityRetryWorkItem = workItem
+        queue.asyncAfter(deadline: .now() + 0.5, execute: workItem)
+    }
 }
 
 func == (lhs: CBDeviceSessionImpl, rhs: CBDeviceSessionImpl) -> Bool {
@@ -423,30 +493,32 @@ func == (lhs: CBDeviceSessionImpl, rhs: CBDeviceSessionImpl) -> Bool {
 
 
 extension Error {
-    
-    var indicatesBLEPairingProblem: Bool {
-        
+
+    var bleDisconnectReason: BleDisconnectReason {
         if (self as NSError).domain == CBATTError.errorDomain {
             let cbAttError = CBATTError(_nsError: self as NSError)
             if cbAttError.code == .insufficientEncryption {
-                return true
+                return .insufficientEncryption
             }
         }
-        if (self as NSError).domain == CBError.errorDomain{
+        if (self as NSError).domain == CBError.errorDomain {
             let cbError = CBError(_nsError: self as NSError)
             if cbError.code == .encryptionTimedOut {
-                return true
+                return .encryptionTimedOut
             }
-            
+
             if cbError.code == .peerRemovedPairingInformation {
-                return true
+                return .pairingInformationRemoved
             }
             if cbError.code == .uuidNotAllowed {
-                return true
+                return .uuidNotAllowed
             }
         }
-        // Add more conditions indicating need to re-pair(bond) BLE devices ...
-        
-        return false
+
+        return .unknown
+    }
+
+    var indicatesBLEPairingProblem: Bool {
+        return bleDisconnectReason == .pairingInformationRemoved
     }
 }

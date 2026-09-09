@@ -23,20 +23,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.findNavController
-import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
+import com.polar.polarsensordatacollector.R
 import com.polar.polarsensordatacollector.ui.theme.PolarsensordatacollectorTheme
 import com.polar.sdk.api.PolarBleApi
 import com.polar.sdk.api.model.PolarOfflineRecordingEntry
@@ -144,7 +142,7 @@ private fun ListingFailed(fetchStatus: OfflineRecordingFetch.Failure) {
 
                 if (fetchStatus.throwable != null) {
                     Column {
-                        Text(text = "Details:")
+                        Text(text = stringResource(R.string.details_label))
                         Text(text = "${fetchStatus.throwable}")
                     }
                 }
@@ -161,7 +159,7 @@ private fun ListingEmpty() {
             .padding(10.dp)
     ) {
         Column(modifier = Modifier.align(Alignment.Center)) {
-            Text(text = "No recordings", color = Color.Yellow, textAlign = TextAlign.Center)
+            Text(text = stringResource(R.string.no_recordings), color = Color.Yellow, textAlign = TextAlign.Center)
         }
     }
 }
@@ -206,7 +204,7 @@ fun Recording(
                 }
                 Row {
                     val sizeInKb = String.format(Locale.ENGLISH, "%.2f", (recordingEntry.size / 1024.0))
-                    Text(text = "Size: $sizeInKb KB")
+                    Text(text = stringResource(R.string.size_kb, sizeInKb))
                 }
             }
         },
@@ -220,7 +218,7 @@ fun Recording(
                 IconButton(onClick = { onDelete(recordingEntry.path) }) {
                     Icon(
                         imageVector = Icons.Filled.Delete,
-                        contentDescription = "Delete file",
+                        contentDescription = stringResource(R.string.delete_file),
                         tint = Color.Red
                     )
                 }

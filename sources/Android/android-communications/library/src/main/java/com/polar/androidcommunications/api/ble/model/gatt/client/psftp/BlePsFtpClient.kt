@@ -17,6 +17,7 @@ import com.polar.androidcommunications.api.ble.model.gatt.client.psftp.BlePsFtpU
 import com.polar.androidcommunications.api.ble.model.gatt.client.psftp.BlePsFtpUtils.Rfc76SequenceNumber
 import com.polar.androidcommunications.api.ble.model.proto.CommunicationsPftpRequest
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -27,6 +28,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.shareIn
+import kotlinx.coroutines.selects.select
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
@@ -39,6 +41,39 @@ import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * Polar simple file transfer client declaration.
+ *
+ * ## Disconnect-cancellation mechanism
+ *
+ * Operations ([request], [query], [write], [sendNotification]) can suspend for up to 90 seconds
+ * while waiting for BLE packets from the device. Without an early-exit path, a BLE disconnection
+ * would leave those coroutines blocked on the internal channels — holding [operationMutex] and
+ * preventing any subsequent operation from starting.
+ *
+ * To solve this, every operation participates in a two-sided race via Kotlin's [select]:
+ *
+ * ```
+ * withTimeoutOrNull(timeoutMillis) {
+ *     select {
+ *         channel.onReceive { ... }           // normal path: BLE packet arrives
+ *         disconnectSignal.onAwait { ... }    // fast path: disconnect fires
+ *     }
+ * }
+ * ```
+ *
+ * **`disconnectSignal`** is a snapshot of [disconnectDeferred] taken at the start of each
+ * operation, *before* the mutex is acquired. When [reset] is called on disconnection:
+ * 1. [disconnectDeferred] is replaced with a fresh `CompletableDeferred` for the next connection.
+ * 2. The *old* deferred is completed exceptionally with [BleDisconnected].
+ *
+ * Any coroutine suspended in `onAwait` on the old deferred is immediately unblocked: because the
+ * deferred completed *exceptionally*, `onAwait` re-throws [BleDisconnected] rather than executing
+ * its lambda. That exception propagates through `withTimeoutOrNull` (which only catches
+ * `TimeoutCancellationException`), out of the suspend helper, and up to `operationMutex.withLock`,
+ * whose `finally` block releases the lock — freeing the next waiting operation immediately.
+ *
+ * **Capture-before-lock ordering** prevents a race: even if [reset] runs between the snapshot
+ * (`val disconnectSignal = disconnectDeferred`) and the first suspension point, the old deferred
+ * is already completed exceptionally, so `onAwait` throws the moment the `select` starts.
  */
 class BlePsFtpClient(txInterface: BleGattTxInterface) :
     BleGattBase(txInterface, BlePsFtpUtils.RFC77_PFTP_SERVICE, true) {
@@ -62,6 +97,13 @@ class BlePsFtpClient(txInterface: BleGattTxInterface) :
     private val operationMutex = Mutex()
     private val notificationWriteMutex = Mutex()
     private val notificationMutex = Mutex()
+    /**
+     * Disconnect signal shared by all in-flight operations. Each operation captures a snapshot of
+     * this field before acquiring the mutex; [reset] swaps in a fresh instance and completes the
+     * old one exceptionally with [BleDisconnected], immediately unblocking any `select.onAwait`
+     * waiting on the old deferred. See the class-level KDoc for the full mechanism.
+     */
+    @Volatile private var disconnectDeferred = CompletableDeferred<Unit>()
     // Single-producer hot SharedFlow: one coroutine consumes from notificationChannel and
     // broadcasts to ALL subscribers, eliminating competition between concurrent consumers.
     private var notificationScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -103,6 +145,13 @@ class BlePsFtpClient(txInterface: BleGattTxInterface) :
 
     override fun reset() {
         super.reset()
+        // Swap to a fresh signal first so new operations after reconnect get an incomplete deferred,
+        // then complete the old one exceptionally to unblock any coroutine currently suspended in
+        // a select.onAwait. The exception propagates through withTimeoutOrNull (which only catches
+        // TimeoutCancellationException) and releases operationMutex via its finally block.
+        val oldDeferred = disconnectDeferred
+        disconnectDeferred = CompletableDeferred()
+        oldDeferred.completeExceptionally(BleDisconnected("Device disconnected"))
         currentOperationWrite.set(false)
         while (mtuResponseChannel.tryReceive().isSuccess) { /* drain pending MTU responses */ }
         while (packetsWrittenChannel.tryReceive().isSuccess) { /* drain pending write acks */ }
@@ -171,6 +220,7 @@ class BlePsFtpClient(txInterface: BleGattTxInterface) :
         d(TAG, "mtu reseted")
         while (mtuResponseChannel.tryReceive().isSuccess) { /* drain */ }
         while (packetsWrittenChannel.tryReceive().isSuccess) { /* drain */ }
+        while (packetsWrittenWithResponseChannel.tryReceive().isSuccess) { /* drain stale write-with-response acks */ }
         mtuWaiting.set(false)
     }
 
@@ -195,6 +245,7 @@ class BlePsFtpClient(txInterface: BleGattTxInterface) :
         progressCallback: ProgressCallback? = null
     ): ByteArrayOutputStream = withContext(Dispatchers.IO) {
         txInterface.gattClientRequestStopScanning()
+        val disconnectSignal = disconnectDeferred
         try {
             operationMutex.withLock {
                 if (pftpMtuEnabled?.get() == ATT_SUCCESS) {
@@ -219,8 +270,8 @@ class BlePsFtpClient(txInterface: BleGattTxInterface) :
                             BlePsFtpUtils.RFC77_PFTP_MTU_CHARACTERISTIC,
                             requestData, false
                         )
-                        suspendWaitPacketsWritten(packetsWrittenChannel, requestData.size, PROTOCOL_TIMEOUT_SECONDS * 1000L)
-                        suspendReadResponse(outputStream, PROTOCOL_TIMEOUT_SECONDS * 1000L)
+                        suspendWaitPacketsWritten(packetsWrittenChannel, requestData.size, PROTOCOL_TIMEOUT_SECONDS * 1000L, disconnectSignal)
+                        suspendReadResponse(outputStream, PROTOCOL_TIMEOUT_SECONDS * 1000L, disconnectSignal)
                         this@BlePsFtpClient.progressCallback = previousCallback
                         outputStream
                     } catch (ex: CancellationException) {
@@ -244,20 +295,24 @@ class BlePsFtpClient(txInterface: BleGattTxInterface) :
     private suspend fun suspendWaitPacketsWritten(
         channel: Channel<Unit>,
         count: Int,
-        timeoutMillis: Long
+        timeoutMillis: Long,
+        disconnectSignal: CompletableDeferred<Unit>
     ) {
         mtuWaiting.set(true)
         try {
             repeat(count) {
                 withTimeoutOrNull(timeoutMillis) {
-                    channel.receive()
+                    select<Unit> {
+                        channel.onReceive { }
+                        // When reset() fires, disconnectSignal completes exceptionally with
+                        // BleDisconnected. onAwait re-throws that exception into the select,
+                        // bypassing withTimeoutOrNull and unblocking this coroutine immediately.
+                        disconnectSignal.onAwait { }
+                    }
                 } ?: if (!txInterface.isConnected()) {
                     throw BleDisconnected("Connection lost during waiting packets to be written")
                 } else {
                     throw PftpOperationTimeout("Operation timeout while waiting packets written")
-                }
-                if (!txInterface.isConnected()) {
-                    throw BleDisconnected("Connection lost during waiting packets to be written")
                 }
             }
         } finally {
@@ -278,6 +333,7 @@ class BlePsFtpClient(txInterface: BleGattTxInterface) :
         data: ByteArrayInputStream?
     ): Flow<Long> = channelFlow {
         txInterface.gattClientRequestStopScanning()
+        val disconnectSignal = disconnectDeferred
         try {
             operationMutex.withLock {
                 if (pftpMtuEnabled?.get() == ATT_SUCCESS) {
@@ -312,7 +368,7 @@ class BlePsFtpClient(txInterface: BleGattTxInterface) :
                         )
                         if (totalStream.available() != 0) {
                             if (useAttributeLevelResponse.get()) {
-                                suspendWaitPacketsWritten(packetsWrittenWithResponseChannel, 1, timeoutSeconds * 1000L)
+                                suspendWaitPacketsWritten(packetsWrittenWithResponseChannel, 1, timeoutSeconds * 1000L, disconnectSignal)
                                 while (packetsWrittenChannel.tryReceive().isSuccess) { /* drain accumulated write acks */ }
                             }
                             val cancelPacket = mtuResponseChannel.tryReceive().getOrNull()
@@ -339,12 +395,16 @@ class BlePsFtpClient(txInterface: BleGattTxInterface) :
 
                     currentOperationWrite.set(false)
                     val response = ByteArrayOutputStream()
-                    suspendReadResponse(response, timeoutSeconds * 1000L)
+                    suspendReadResponse(response, timeoutSeconds * 1000L, disconnectSignal)
                     // channel completes naturally on scope exit
                 } else {
                     throw BleCharacteristicNotificationNotEnabled("PS-FTP MTU not enabled")
                 }
             }
+        } catch (ex: CancellationException) {
+            throw ex
+        } catch (ex: Exception) {
+            throw ex
         } finally {
             txInterface.gattClientResumeScanning()
             currentOperationWrite.set(false)
@@ -369,6 +429,7 @@ class BlePsFtpClient(txInterface: BleGattTxInterface) :
      * @throws Throwable on any error
      */
     suspend fun query(id: Int, parameters: ByteArray?): ByteArrayOutputStream = withContext(Dispatchers.IO) {
+        val disconnectSignal = disconnectDeferred
         try {
             operationMutex.withLock {
                 if (pftpMtuEnabled?.get() == ATT_SUCCESS) {
@@ -388,8 +449,8 @@ class BlePsFtpClient(txInterface: BleGattTxInterface) :
                         BlePsFtpUtils.RFC77_PFTP_MTU_CHARACTERISTIC,
                         requs, false
                     )
-                    suspendWaitPacketsWritten(packetsWrittenChannel, requs.size, PROTOCOL_TIMEOUT_SECONDS * 1000L)
-                    suspendReadResponse(response, PROTOCOL_TIMEOUT_SECONDS * 1000L)
+                    suspendWaitPacketsWritten(packetsWrittenChannel, requs.size, PROTOCOL_TIMEOUT_SECONDS * 1000L, disconnectSignal)
+                    suspendReadResponse(response, PROTOCOL_TIMEOUT_SECONDS * 1000L, disconnectSignal)
                     response
                 } else {
                     e(TAG, "Query $id failed. PS-FTP MTU not enabled")
@@ -412,6 +473,7 @@ class BlePsFtpClient(txInterface: BleGattTxInterface) :
      * @throws Throwable on any error
      */
     suspend fun sendNotification(id: Int, parameters: ByteArray?) = withContext(Dispatchers.IO) {
+        val disconnectSignal = disconnectDeferred
         try {
             notificationWriteMutex.withLock {
                 if (txInterface.isConnected()) {
@@ -431,7 +493,7 @@ class BlePsFtpClient(txInterface: BleGattTxInterface) :
                             BlePsFtpUtils.RFC77_PFTP_H2D_CHARACTERISTIC,
                             requs, false
                         )
-                        suspendWaitPacketsWritten(notificationPacketsWrittenChannel, requs.size, PROTOCOL_TIMEOUT_SECONDS * 1000L)
+                        suspendWaitPacketsWritten(notificationPacketsWrittenChannel, requs.size, PROTOCOL_TIMEOUT_SECONDS * 1000L, disconnectSignal)
                     } else {
                         e(TAG, "Send notification id: $id failed. PS-FTP notification not enabled")
                         throw BleCharacteristicNotificationNotEnabled("PS-FTP notification not enabled")
@@ -514,7 +576,11 @@ class BlePsFtpClient(txInterface: BleGattTxInterface) :
 
     @VisibleForTesting
     @Throws(Exception::class)
-    suspend fun suspendReadResponse(outputStream: ByteArrayOutputStream, timeoutMillis: Long) {
+    suspend fun suspendReadResponse(
+        outputStream: ByteArrayOutputStream,
+        timeoutMillis: Long,
+        disconnectSignal: CompletableDeferred<Unit>
+    ) {
         var status: Long = 0
         var next = 0
         val sequenceNumber = Rfc76SequenceNumber()
@@ -523,8 +589,14 @@ class BlePsFtpClient(txInterface: BleGattTxInterface) :
             if (!txInterface.isConnected()) {
                 throw BleDisconnected("Connection lost during read response")
             }
-            val packet = withTimeoutOrNull(timeoutMillis) {
-                mtuResponseChannel.receive()
+            val packet: Pair<ByteArray, Int>? = withTimeoutOrNull(timeoutMillis) {
+                select {
+                    mtuResponseChannel.onReceive { it }
+                    // When reset() fires, disconnectSignal completes exceptionally with
+                    // BleDisconnected. onAwait re-throws that exception into the select,
+                    // bypassing withTimeoutOrNull and unblocking this coroutine immediately.
+                    disconnectSignal.onAwait { null }
+                }
             }
             if (packet != null && packet.second == 0) {
                 BlePsFtpUtils.processRfc76MessageFrameHeader(response, packet.first)
@@ -536,8 +608,10 @@ class BlePsFtpClient(txInterface: BleGattTxInterface) :
                             BlePsFtpUtils.RFC77_PFTP_MTU_CHARACTERISTIC,
                             listOf(cancelPacket), true
                         )
-                        suspendWaitPacketsWritten(packetsWrittenChannel, 1, timeoutMillis)
+                        suspendWaitPacketsWritten(packetsWrittenChannel, 1, timeoutMillis, disconnectSignal)
                         d(TAG, "Sequence number mismatch. Stream cancel has been successfully send")
+                    } else {
+                        while (mtuResponseChannel.tryReceive().isSuccess) { /* drain stale packets */ }
                     }
                     throw PftpResponseError("Air packet lost!", 303)
                 }

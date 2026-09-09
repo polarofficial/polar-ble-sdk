@@ -1,12 +1,16 @@
 package com.polar.androidcommunications.api.ble.model.gatt.client.pfc
 
+import com.polar.androidcommunications.api.ble.model.gatt.BleGattBase
 import com.polar.androidcommunications.api.ble.model.gatt.BleGattTxInterface
 import com.polar.androidcommunications.api.ble.model.gatt.client.BlePfcClient
 import com.polar.androidcommunications.testrules.BleLoggerTestRule
 import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
+import io.mockk.just
+import io.mockk.runs
 import io.mockk.unmockkAll
+import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
@@ -174,28 +178,71 @@ internal class BlePfcClientTest {
     }
 
     @Test
-    fun `PfcResponse parses sensor initiated security mode request correctly`() {
+    fun `PfcResponse parses sensor initiated security mode disabled correctly`() {
         // Arrange
-        // Response: F0 0F 01 01
+        // Response: F0 0F 01 00
         val responseData = byteArrayOf(
             0xF0.toByte(),
             0x0F.toByte(),
             0x01.toByte(),
-            0x01.toByte()
+            0x00.toByte()
         )
 
         // Act
         val pfcResponse = BlePfcClient.PfcResponse(responseData)
 
         // Assert
-        Assert.assertEquals(BlePfcClient.RESPONSE_CODE, pfcResponse.responseCode)
-        Assert.assertEquals(
-            BlePfcClient.PfcMessage.PFC_REQUEST_SENSOR_INITIATED_SECURITY_MODE,
-            pfcResponse.opCode
-        )
         Assert.assertEquals(BlePfcClient.SUCCESS, pfcResponse.status)
-        Assert.assertNotNull(pfcResponse.payload)
-        Assert.assertEquals(1, pfcResponse.payload!!.size)
-        Assert.assertEquals(0x01.toByte(), pfcResponse.payload!![0])
+        Assert.assertEquals(0x00.toByte(), pfcResponse.payload!![0])
+    }
+
+    // --- sendControlPointCommand ---
+
+    @Test
+    fun `sendControlPointCommand with REQUEST command and null params sends BLE command and returns device response`() = runTest {
+        // Arrange: enable CP notifications and mock transmitMessages.
+        // Without the fix, sendControlPointCommand would return early with an empty PfcResponse() when params is null,
+        // meaning payload would be null and the device would never be contacted.
+        blePfcClient.descriptorWritten(BlePfcClient.PFC_CP, true, BleGattBase.ATT_SUCCESS)
+        every { mockGattTxInterface.transmitMessages(any(), any(), any(), any()) } just runs
+        // Response bytes: [0xF0=responseCode, 0x09=PFC_REQUEST_MULTI_CONNECTION_SETTING opCode, 0x01=SUCCESS, 0x01=payload(enabled)]
+        val responseData = byteArrayOf(0xF0.toByte(), 0x09.toByte(), 0x01.toByte(), 0x01.toByte())
+        // Deliver the response from a background thread after the internal drain loop has run
+        // and sendControlPointCommand is blocked on pfcCpResponseChannel.receive().
+        Thread {
+            Thread.sleep(50)
+            blePfcClient.processServiceData(BlePfcClient.PFC_CP, responseData, BleGattBase.ATT_SUCCESS, true)
+        }.start()
+
+        // Act
+        val response = blePfcClient.sendControlPointCommand(
+            BlePfcClient.PfcMessage.PFC_REQUEST_MULTI_CONNECTION_SETTING,
+            null
+        )
+
+        // Assert: actual device response received, not an empty PfcResponse with null payload
+        Assert.assertNotNull(response.payload)
+        Assert.assertEquals(0x01.toByte(), response.payload!![0])
+    }
+
+    @Test
+    fun `sendControlPointCommand with CONFIGURE command and null params throws IllegalArgumentException`() = runTest {
+        // Arrange
+        blePfcClient.descriptorWritten(BlePfcClient.PFC_CP, true, BleGattBase.ATT_SUCCESS)
+        var caughtException: Throwable? = null
+
+        // Act
+        try {
+            blePfcClient.sendControlPointCommand(
+                BlePfcClient.PfcMessage.PFC_CONFIGURE_MULTI_CONNECTION_SETTING,
+                null
+            )
+        } catch (e: Throwable) {
+            caughtException = e
+        }
+
+        // Assert
+        Assert.assertNotNull(caughtException)
+        Assert.assertTrue(caughtException is IllegalArgumentException)
     }
 }

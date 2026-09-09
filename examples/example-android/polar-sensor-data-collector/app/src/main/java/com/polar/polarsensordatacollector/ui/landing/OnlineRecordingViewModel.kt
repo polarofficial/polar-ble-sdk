@@ -15,6 +15,7 @@ import com.polar.polarsensordatacollector.ui.graph.HrDataHolder
 import com.polar.polarsensordatacollector.ui.utils.MessageUiState
 import com.polar.polarsensordatacollector.utils.StreamUtils
 import com.polar.sdk.api.PolarBleApi
+import com.polar.sdk.api.PolarBleRecoveryAction
 import com.polar.sdk.api.errors.PolarDeviceDisconnected
 import com.polar.sdk.api.model.*
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -234,6 +235,15 @@ class OnlineRecordingViewModel @Inject constructor(
     private val _shareFiles: MutableStateFlow<ArrayList<Uri>> = MutableStateFlow(ArrayList<Uri>())
     val shareFiles: StateFlow<ArrayList<Uri>> = _shareFiles.asStateFlow()
 
+    // Accumulates all validated (non-empty) file URIs produced by this device's recording sessions.
+    // Lives in the ViewModel so it survives Fragment view recreation (e.g. ViewPager2 off-screen destroy).
+    private val _validatedFileUris: MutableStateFlow<List<Uri>> = MutableStateFlow(emptyList())
+    val validatedFileUris: StateFlow<List<Uri>> = _validatedFileUris.asStateFlow()
+
+    fun addValidatedFileUri(uri: Uri) {
+        _validatedFileUris.update { current -> if (current.contains(uri)) current else current + uri }
+    }
+
     private var recordingTimerJob: Job? = null
     private var recordingSessionStartTime: LocalDateTime? = null
 
@@ -241,6 +251,7 @@ class OnlineRecordingViewModel @Inject constructor(
 
         viewModelScope.launch {
             polarDeviceStreamingRepository.availableFeatures
+                .filter { it.identifier == identifier }
                 .collect { deviceStreamsAvailable ->
                     updateStreamingFeatureAvailableUiState(deviceStreamsAvailable.identifier, featuresAvailable = deviceStreamsAvailable.availableStreamingFeatures)
                 }
@@ -248,6 +259,7 @@ class OnlineRecordingViewModel @Inject constructor(
 
         viewModelScope.launch {
             polarDeviceStreamingRepository.deviceConnectionStatus
+                .filter { it.identifier == identifier }
                 .collect { deviceConnectionState ->
                     when (deviceConnectionState) {
                         is DeviceConnectionState.DeviceDisconnecting -> {
@@ -265,7 +277,7 @@ class OnlineRecordingViewModel @Inject constructor(
                                         if (waitForFeatureReady(feature)) {
                                             startStream(feature)
                                         } else {
-                                            showError("Device was disconnected during ${feature} stream. Ble problem? ${polarDeviceStreamingRepository.checkIfDeviceDisconnectedDueRemovedPairing(identifier)}. Try to reconnect the device and start the stream again.")
+                                            showError(disconnectGuidance(feature))
                                         }
                                     }
                                 }
@@ -276,6 +288,21 @@ class OnlineRecordingViewModel @Inject constructor(
                         }
                     }
                 }
+        }
+    }
+
+    private fun disconnectGuidance(feature: PolarBleApi.PolarDeviceDataType): String {
+        return when (polarDeviceStreamingRepository.lastDisconnectInfo.value?.recoveryAction) {
+            PolarBleRecoveryAction.REMOVE_PAIRING_AND_PAIR_AGAIN ->
+                "Device was disconnected during $feature stream because pairing information is no longer usable. Remove the device from Android Bluetooth settings and from the sensor/watch if required, pair it again, then restart the stream."
+            PolarBleRecoveryAction.RETRY_PAIRING ->
+                "Device was disconnected during $feature stream because pairing negotiation failed. Remove/forget any old pairing on both the Android phone and the sensor/watch, put the device into pairing mode, then select it again in PSDC and restart the stream."
+            PolarBleRecoveryAction.RETRY_OPERATION ->
+                "Device was disconnected during $feature stream while security was being restored. Keep the device nearby, wait for reconnection, then restart the stream."
+            PolarBleRecoveryAction.RETRY_CONNECTION ->
+                "The secure connection was interrupted during $feature stream. Keep the device nearby and powered on, wait for reconnection, then restart the stream."
+            PolarBleRecoveryAction.NONE, null ->
+                "Device was disconnected during $feature stream. Keep the device nearby and powered on, then reconnect and restart the stream."
         }
     }
 
@@ -307,6 +334,10 @@ class OnlineRecordingViewModel @Inject constructor(
                 updateSelectedStreamSettings(feature, selectedSettings)
                 selectedSettings
             }
+    }
+
+    fun clearOnlineRequestedSettings() {
+        _uiOnlineRequestedSettingsState.value = null
     }
 
     fun updateSelectedStreamSettings(feature: PolarBleApi.PolarDeviceDataType, settings: Map<PolarSensorSetting.SettingType, Int>) {
@@ -394,6 +425,7 @@ class OnlineRecordingViewModel @Inject constructor(
             PolarBleApi.PolarDeviceDataType.TEMPERATURE -> startTemperatureStream(startTime)
             PolarBleApi.PolarDeviceDataType.SKIN_TEMPERATURE -> startSkinTemperatureStream(startTime)
             PolarBleApi.PolarDeviceDataType.HR -> startHrStream(startTime)
+            PolarBleApi.PolarDeviceDataType.DERIVED_MEASUREMENT -> Log.d(TAG, "Derived measurement stream is not supported")
         }
         startRecTimer()
     }
@@ -460,6 +492,7 @@ class OnlineRecordingViewModel @Inject constructor(
                 updateStreamingRecordingState(identifier, feature, StreamingFeatureState.STATES.STOPPED, emptyMap())
                 HrDataHolder.clear()
             }
+            PolarBleApi.PolarDeviceDataType.DERIVED_MEASUREMENT -> Log.d(TAG, "Derived measurement stream is not supported")
         }
         finalizeCollector()
     }

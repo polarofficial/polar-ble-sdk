@@ -168,7 +168,7 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
      * The data types available in Polar devices for online streaming or offline recording.
      */
     enum class PolarDeviceDataType {
-        HR, ECG, ACC, PPG, PPI, GYRO, MAGNETOMETER, PRESSURE, LOCATION, TEMPERATURE, SKIN_TEMPERATURE
+        HR, ECG, ACC, PPG, PPI, GYRO, MAGNETOMETER, PRESSURE, LOCATION, TEMPERATURE, SKIN_TEMPERATURE, DERIVED_MEASUREMENT
     }
 
     /**
@@ -257,10 +257,10 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
      * but can be controlled by [.setPolarFilter]. If [.setPolarFilter] is false
      * then searches for any BLE heart rate capable devices.
      *
-     * @param withDeviceNameFilterPrefix - returned devices are filtered on given device name prefix string. Default: "Polar".
+     * @param withRequiredDeviceNamePrefix - returned devices are filtered on given device name prefix string. Default: "Polar".
      * @return Flowable stream of [PolarDeviceInfo]
      */
-    abstract fun searchForDevice(withDeviceNameFilterPrefix: String? = "Polar"): Flow<PolarDeviceInfo>
+    abstract fun searchForDevice(withRequiredDeviceNamePrefix: String? = "Polar"): Flow<PolarDeviceInfo>
 
     /**
      * When enabled the reconnection is attempted if device connection is lost. By default automatic reconnection is enabled.
@@ -433,7 +433,17 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
      * @param identifier Polar device ID or BT address
      * @return Success or error
      */
-    abstract suspend fun setWareHouseSleep(identifier: String)
+    abstract suspend fun setWarehouseSleep(identifier: String)
+
+    /**
+     * Set warehouse sleep setting to a given device.
+     *
+     * @param identifier Polar device ID or BT address
+     * @return Success or error
+     * @deprecated Use [setWarehouseSleep] instead (corrected capitalization).
+     */
+    @Deprecated("Use setWarehouseSleep() instead (corrected capitalization)", ReplaceWith("setWarehouseSleep(identifier)"))
+    open suspend fun setWareHouseSleep(identifier: String) = setWarehouseSleep(identifier)
 
     /**
      * Set hibernate mode on a given device. Requires feature [PolarBleSdkFeature.FEATURE_POLAR_DEVICE_CONTROL]
@@ -533,16 +543,16 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
      * Set the automatic training detection settings on the device. Requires feature [PolarBleSdkFeature.FEATURE_POLAR_DEVICE_CONTROL]
      *
      * @param identifier Polar device ID or BT address.
-     * @param automaticTrainingDetectionMode Whether the automatic training detection should be enabled or disabled.
-     * @param automaticTrainingDetectionSensitivity The sensitivity for automatic training detection.
-     * @param minimumTrainingDurationSeconds The minimum duration in seconds required for automatic training detection.
+     * @param mode Whether the automatic training detection should be enabled or disabled.
+     * @param sensitivity The sensitivity for automatic training detection.
+     * @param minimumDuration The minimum duration in seconds required for automatic training detection.
      * @return Success or error
      */
     abstract suspend fun setAutomaticTrainingDetectionSettings(
         identifier: String,
-        automaticTrainingDetectionMode: Boolean,
-        automaticTrainingDetectionSensitivity: Int,
-        minimumTrainingDurationSeconds: Int
+        mode: Boolean,
+        sensitivity: Int,
+        minimumDuration: Int
     )
 
     /**
@@ -741,3 +751,35 @@ fun PolarBleApi.startListenForPolarHrBroadcasts(deviceIds: Set<String>?): kotlin
 )
 suspend fun PolarBleApi.setTelemetryEnabled(deviceId: String, enabled: Boolean) =
     setTelemetryEnabled(identifier = deviceId, enabled = enabled)
+
+/** @deprecated Parameter `withDeviceNameFilterPrefix` has been renamed to `withRequiredDeviceNamePrefix`. */
+@Deprecated(
+    "Parameter renamed from 'withDeviceNameFilterPrefix' to 'withRequiredDeviceNamePrefix'",
+    ReplaceWith("searchForDevice(withRequiredDeviceNamePrefix = withDeviceNameFilterPrefix)")
+)
+fun PolarBleApi.searchForDevice(withDeviceNameFilterPrefix: String?): kotlinx.coroutines.flow.Flow<PolarDeviceInfo> =
+    searchForDevice(withRequiredDeviceNamePrefix = withDeviceNameFilterPrefix)
+
+/**
+ * @deprecated Parameters have been renamed for API alignment.
+ * Use [setAutomaticTrainingDetectionSettings] with `mode`, `sensitivity`, and `minimumDuration` instead.
+ */
+@Deprecated(
+    "Parameters renamed for iOS/Android API alignment: 'automaticTrainingDetectionMode' → 'mode', " +
+        "'automaticTrainingDetectionSensitivity' → 'sensitivity', 'minimumTrainingDurationSeconds' → 'minimumDuration'",
+    ReplaceWith(
+        "setAutomaticTrainingDetectionSettings(identifier = identifier, mode = automaticTrainingDetectionMode, sensitivity = automaticTrainingDetectionSensitivity, minimumDuration = minimumTrainingDurationSeconds)"
+    )
+)
+suspend fun PolarBleApi.setAutomaticTrainingDetectionSettings(
+    identifier: String,
+    automaticTrainingDetectionMode: Boolean,
+    automaticTrainingDetectionSensitivity: Int,
+    minimumTrainingDurationSeconds: Int
+) = setAutomaticTrainingDetectionSettings(
+    identifier = identifier,
+    mode = automaticTrainingDetectionMode,
+    sensitivity = automaticTrainingDetectionSensitivity,
+    minimumDuration = minimumTrainingDurationSeconds
+)
+

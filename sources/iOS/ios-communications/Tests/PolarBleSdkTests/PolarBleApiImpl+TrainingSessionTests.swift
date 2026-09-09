@@ -225,4 +225,28 @@ final class PolarBleApiImplTrainingSessionTests: XCTestCase {
 
         XCTAssertEqual(mockClient.requestCalls.count, 2)
     }
+
+    // MARK: - stopExercise
+
+    func test_stopExercise_defaultsSave_true() async throws {
+        mockClient.queryReturnValue = .success(Data())
+
+        try await api.stopExercise(identifier: deviceId)
+
+        XCTAssertEqual(mockClient.queryCalls.count, 1)
+        let params = mockClient.queryCalls[0].parameters.map { Data($0) } ?? Data()
+        let payload = try Protocol_PbPFtpStopExerciseParams(serializedBytes: params)
+        XCTAssertTrue(payload.save)
+    }
+
+    func test_stopExercise_savefalse_discardsSession() async throws {
+        mockClient.queryReturnValue = .success(Data())
+
+        try await api.stopExercise(identifier: deviceId, save: false)
+
+        XCTAssertEqual(mockClient.queryCalls.count, 1)
+        let params = mockClient.queryCalls[0].parameters.map { Data($0) } ?? Data()
+        let payload = try Protocol_PbPFtpStopExerciseParams(serializedBytes: params)
+        XCTAssertFalse(payload.save)
+    }
 }

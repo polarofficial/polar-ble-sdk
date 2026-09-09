@@ -135,6 +135,37 @@ final class PolarBleApiImplSleepTests: XCTestCase {
         XCTAssertEqual(readAll(from: mockClient.writeCalls[0].data), Data("{}".utf8))
     }
 
+    func test_getSleepRecordingState_multipleConsumers_firstCancelledSecondSucceeds() async throws {
+        let broadcastingClient = BroadcastingMockBlePsFtpClient(gattServiceTransmitter: MockPolarGattServiceTransmitter())
+        let broadcastingSession = MockBleDeviceSession(mockFtpClient: broadcastingClient)
+        let broadcastingApi = PolarBleApiImplWithMockSession(mockDeviceSession: broadcastingSession)
+
+        // First caller subscribes, then is cancelled before the device answers.
+        let firstTask = Task {
+            _ = try await broadcastingApi.getSleepRecordingState(identifier: deviceId, timeoutMs: 10_000)
+        }
+        try await waitForSubscriberCount(1, on: broadcastingClient)
+        firstTask.cancel()
+        // Wait until cancellation has propagated all the way down and the first caller
+        // unsubscribed from the shared waitNotification() broadcaster.
+        try await waitForSubscriberCount(0, on: broadcastingClient)
+
+        // Second, independent caller starts only after the first one has fully torn down.
+        let secondTask = Task { () -> Bool in
+            try await broadcastingApi.getSleepRecordingState(identifier: deviceId, timeoutMs: 10_000)
+        }
+        try await waitForSubscriberCount(1, on: broadcastingClient)
+
+        // Device pushes the sleep_recording_state event — only the still-active second call
+        // should receive it and resolve successfully.
+        broadcastingClient.pushRestApiEvent(uncompressed: [sleepRecordingEvent(enabled: 1)])
+
+        let state = try await secondTask.value
+        XCTAssertTrue(state)
+
+        _ = try? await firstTask.value
+    }
+
     func test_getSleep_whenFromDateAfterToDate_throwsInvalidArgument() async {
 
         let from = makeUtcDate(year: 2026, month: 7, day: 2)
@@ -156,6 +187,9 @@ final class PolarBleApiImplSleepTests: XCTestCase {
 
     func test_getSleep_singleDay_returnsEmptyWhenNoValidSleepFilesFound() async throws {
         let day = makeUtcDate(year: 2026, month: 7, day: 1)
+        mockClient.requestReturnValue = .failure(
+            BlePsFtpException.responseError(errorCode: Protocol_PbPFtpError.noSuchFileOrDirectory.rawValue)
+        )
 
         let result = try await api.getSleep(identifier: deviceId, fromDate: day, toDate: day)
 
@@ -166,6 +200,9 @@ final class PolarBleApiImplSleepTests: XCTestCase {
     func test_getSleep_multiDay_queriesEachDayAndReturnsEmptyWithoutDecodableData() async throws {
         let from = makeUtcDate(year: 2026, month: 7, day: 1)
         let to = makeUtcDate(year: 2026, month: 7, day: 3)
+        mockClient.requestReturnValue = .failure(
+            BlePsFtpException.responseError(errorCode: Protocol_PbPFtpError.noSuchFileOrDirectory.rawValue)
+        )
 
         let result = try await api.getSleep(identifier: deviceId, fromDate: from, toDate: to)
 
@@ -176,6 +213,9 @@ final class PolarBleApiImplSleepTests: XCTestCase {
     // MARK: - getSleepData (deprecated alias)
     func test_getSleepData_deprecatedAlias_behavesLikeGetSleep() async throws {
         let day = makeUtcDate(year: 2026, month: 7, day: 6)
+        mockClient.requestReturnValue = .failure(
+            BlePsFtpException.responseError(errorCode: Protocol_PbPFtpError.noSuchFileOrDirectory.rawValue)
+        )
 
         let result = try await api.getSleepData(identifier: deviceId, fromDate: day, toDate: day)
 

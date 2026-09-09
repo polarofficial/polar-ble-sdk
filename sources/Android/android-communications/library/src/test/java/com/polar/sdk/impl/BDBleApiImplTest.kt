@@ -155,6 +155,7 @@ class BDBleApiImplTest {
         every { session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) } returns client
         every { client.isServiceDiscovered } returns true
         every { client.getNotificationAtomicInteger(any()) } returns AtomicInteger(0)
+        every { session.markExpectedDeviceCommandDisconnect(any()) } just runs
 
         mockkObject(PolarServiceClientUtils)
         every { PolarServiceClientUtils.sessionPsFtpClientReady(deviceId, any()) } returns session
@@ -350,6 +351,37 @@ class BDBleApiImplTest {
             systemTimeParams.time.hour
         )
         Assert.assertTrue("System time must be marked as trusted", systemTimeParams.trusted)
+    }
+
+    @Test
+    fun `setLocalTime throws when SET_LOCAL_TIME_VALUE query fails`() = runTest {
+        val deviceId = "E123456F"
+        val api = BDBleApiImpl.getInstance(context, setOf(PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_FILE_TRANSFER))
+        val (client, _) = mockPsFtpConnection(deviceId)
+        coEvery { client.query(PftpRequest.PbPFtpQuery.SET_SYSTEM_TIME_VALUE, any()) } returns ByteArrayOutputStream()
+        coEvery { client.query(PftpRequest.PbPFtpQuery.SET_LOCAL_TIME_VALUE, any()) } throws RuntimeException("connection lost")
+        try {
+            Assert.assertThrows(RuntimeException::class.java) {
+                runBlocking { api.setLocalTime(deviceId, LocalDateTime.of(2024, 1, 1, 12, 0, 0)) }
+            }
+        } finally {
+            unmockkObject(PolarServiceClientUtils)
+        }
+    }
+
+    @Test
+    fun `setLocalTime still completes when SET_SYSTEM_TIME_VALUE query fails`() = runTest {
+        val deviceId = "E123456F"
+        val api = BDBleApiImpl.getInstance(context, setOf(PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_FILE_TRANSFER))
+        val (client, _) = mockPsFtpConnection(deviceId)
+        coEvery { client.query(PftpRequest.PbPFtpQuery.SET_SYSTEM_TIME_VALUE, any()) } throws RuntimeException("system time not supported")
+        coEvery { client.query(PftpRequest.PbPFtpQuery.SET_LOCAL_TIME_VALUE, any()) } returns ByteArrayOutputStream()
+        try {
+            // Should not throw — setSystemTime errors are intentionally swallowed
+            api.setLocalTime(deviceId, LocalDateTime.of(2024, 1, 1, 12, 0, 0))
+        } finally {
+            unmockkObject(PolarServiceClientUtils)
+        }
     }
 
     @Test
@@ -549,6 +581,61 @@ class BDBleApiImplTest {
     }
 
     @Test
+    fun `device control commands mark their expected disconnect reason`() = runTest {
+        val deviceId = "E123456F"
+        val api = BDBleApiImpl.getInstance(context, setOf(PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_DEVICE_CONTROL))
+        val (client, session) = mockPsFtpConnection(deviceId)
+        coEvery { client.sendNotification(any(), any()) } just runs
+
+        try {
+            api.doFactoryReset(deviceId, preservePairingInformation = true)
+            api.doFactoryReset(deviceId)
+            api.doRestart(deviceId)
+            api.setWareHouseSleep(deviceId)
+            api.setHibernateMode(deviceId)
+            api.turnDeviceOff(deviceId)
+        } finally {
+            unmockkObject(PolarServiceClientUtils)
+        }
+
+        verify(exactly = 2) {
+            session.markExpectedDeviceCommandDisconnect(BleDeviceSession.DeviceCommand.FACTORY_RESET)
+        }
+        verify(exactly = 1) {
+            session.markExpectedDeviceCommandDisconnect(BleDeviceSession.DeviceCommand.RESTART)
+        }
+        verify(exactly = 1) {
+            session.markExpectedDeviceCommandDisconnect(BleDeviceSession.DeviceCommand.WAREHOUSE_SLEEP)
+        }
+        verify(exactly = 1) {
+            session.markExpectedDeviceCommandDisconnect(BleDeviceSession.DeviceCommand.HIBERNATE)
+        }
+        verify(exactly = 1) {
+            session.markExpectedDeviceCommandDisconnect(BleDeviceSession.DeviceCommand.TURN_OFF)
+        }
+    }
+
+    @Test
+    fun `doRestart swallows BleDisconnected after marking expected disconnect`() = runTest {
+        val deviceId = "E123456F"
+        val api = BDBleApiImpl.getInstance(context, setOf(PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_DEVICE_CONTROL))
+        val (client, session) = mockPsFtpConnection(deviceId)
+        every { session.markExpectedDeviceCommandDisconnect(any()) } just runs
+        coEvery { client.sendNotification(any(), any()) } throws com.polar.androidcommunications.api.ble.exceptions.BleDisconnected()
+
+        try {
+            // Should not throw - the disconnect racing the write's own completion is expected.
+            api.doRestart(deviceId)
+        } finally {
+            unmockkObject(PolarServiceClientUtils)
+        }
+
+        verify(exactly = 1) {
+            session.markExpectedDeviceCommandDisconnect(BleDeviceSession.DeviceCommand.RESTART)
+        }
+    }
+
+    @Test
     fun `updateFirmware emits FwUpdateNotAvailable when zip contains no firmware files`() = runTest {
         // Arrange — zip holds only readme.txt which parseFirmwareZip skips
         val deviceId = "A1B2C3D4"
@@ -635,6 +722,37 @@ class BDBleApiImplTest {
             val results = api.updateFirmware(deviceId, fileUrl).toList()
 
             // Assert — error during write → FwUpdateFailed
+            val failed = results.filterIsInstance<FirmwareUpdateStatus.FwUpdateFailed>()
+            Assert.assertEquals(1, failed.size)
+            Assert.assertTrue(failed[0].details.contains("error", ignoreCase = true))
+        } finally {
+            unmockkObject(PolarServiceClientUtils)
+            resetCapabilityUtilityState()
+        }
+    }
+
+    @Test
+    fun `updateFirmware emits FwUpdateFailed when PREPARE_FIRMWARE_UPDATE query throws`() = runTest {
+        // Arrange
+        val deviceId = "A1B2C3D4"
+        val deviceType = "H10"
+        val api = BDBleApiImpl.getInstance(context, setOf(PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_DEVICE_CONTROL))
+        val (client, _) = mockFirmwareConnection(deviceId, deviceType)
+        initCapabilityForFirmwareTest(deviceType, BlePolarDeviceCapabilitiesUtility.FileSystemType.H10_FILE_SYSTEM, isDeviceSensor = true)
+
+        val firmwareBytes = ByteArray(64) { it.toByte() }
+        val zipBytes = createFirmwareZip("firmware.bin" to firmwareBytes)
+        val tmpFile = File.createTempFile("fw_query_fail_", ".zip").also { it.writeBytes(zipBytes); it.deleteOnExit() }
+        val fileUrl = "file://${tmpFile.absolutePath}"
+
+        coEvery { client.query(PftpRequest.PbPFtpQuery.PREPARE_FIRMWARE_UPDATE_VALUE, any()) } throws RuntimeException("prepare query failed")
+        coEvery { client.sendNotification(any(), any()) } just runs
+
+        try {
+            // Act
+            val results = api.updateFirmware(deviceId, fileUrl).toList()
+
+            // Assert — PREPARE_FIRMWARE_UPDATE query error → FwUpdateFailed
             val failed = results.filterIsInstance<FirmwareUpdateStatus.FwUpdateFailed>()
             Assert.assertEquals(1, failed.size)
             Assert.assertTrue(failed[0].details.contains("error", ignoreCase = true))
@@ -1050,7 +1168,7 @@ class BDBleApiImplTest {
     }
 
     @Test
-    fun `setWareHouseSleep sends RESET notification with sleep=true and doFactoryDefaults=true`() = runTest {
+    fun `setWarehouseSleep sends RESET notification with sleep=true and doFactoryDefaults=true`() = runTest {
         // Arrange
         val deviceId = "E123456F"
         val api = BDBleApiImpl.getInstance(context, setOf(PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_DEVICE_CONTROL))
@@ -1061,7 +1179,7 @@ class BDBleApiImplTest {
 
         try {
             // Act
-            api.setWareHouseSleep(deviceId)
+            api.setWarehouseSleep(deviceId)
         } finally {
             unmockkObject(PolarServiceClientUtils)
         }
@@ -1205,6 +1323,21 @@ class BDBleApiImplTest {
             "Expected SET_LOCAL_TIME_VALUE query",
             capturedIds.contains(PftpRequest.PbPFtpQuery.SET_LOCAL_TIME_VALUE)
         )
+    }
+
+    @Test
+    fun `setDaylightSavingTime throws when SET_LOCAL_TIME_VALUE query fails`() = runTest {
+        val deviceId = "E123456F"
+        val api = BDBleApiImpl.getInstance(context, setOf(PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_DEVICE_TIME_SETUP))
+        val (client, _) = mockPsFtpConnection(deviceId)
+        coEvery { client.query(any(), any()) } throws RuntimeException("query failed")
+        try {
+            Assert.assertThrows(RuntimeException::class.java) {
+                runBlocking { api.setDaylightSavingTime(deviceId) }
+            }
+        } finally {
+            unmockkObject(PolarServiceClientUtils)
+        }
     }
 
     @Test
@@ -1681,6 +1814,26 @@ class BDBleApiImplTest {
         }
     }
 
+    @Suppress("DEPRECATION")
+    @Test
+    fun `setUserDeviceSettings throws when write fails`() = runTest {
+        val deviceId = "E123456F"
+        val deviceType = "ignite3"
+        val api = BDBleApiImpl.getInstance(context, setOf(PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_DEVICE_CONTROL))
+        val (client, session) = mockPsFtpConnection(deviceId)
+        every { session.polarDeviceType } returns deviceType
+        initCapabilityForFirmwareTest(deviceType, BlePolarDeviceCapabilitiesUtility.FileSystemType.POLAR_FILE_SYSTEM_V2, false)
+        every { client.write(any(), any()) } returns flow { throw RuntimeException("write failed") }
+        try {
+            Assert.assertThrows(RuntimeException::class.java) {
+                runBlocking { api.setUserDeviceSettings(deviceId, com.polar.sdk.api.model.PolarUserDeviceSettings()) }
+            }
+        } finally {
+            unmockkObject(PolarServiceClientUtils)
+            resetCapabilityUtilityState()
+        }
+    }
+
     @Test
     fun `setUsbConnectionMode completes without error when enabling USB mode`() = runTest {
         val deviceId = "E123456F"
@@ -1825,6 +1978,21 @@ class BDBleApiImplTest {
     }
 
     @Test
+    fun `setLedConfig throws when write fails`() = runTest {
+        val deviceId = "E123456F"
+        val api = BDBleApiImpl.getInstance(context, setOf(PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_LED_ANIMATION))
+        val (client, _) = mockPsFtpConnection(deviceId)
+        every { client.write(any(), any()) } returns flow { throw RuntimeException("write failed") }
+        try {
+            Assert.assertThrows(RuntimeException::class.java) {
+                runBlocking { api.setLedConfig(deviceId, LedConfig(sdkModeLedEnabled = true, ppiModeLedEnabled = true)) }
+            }
+        } finally {
+            unmockkObject(PolarServiceClientUtils)
+        }
+    }
+
+    @Test
     fun `shutDown does not throw and allows new instance creation`() {
         val api = BDBleApiImpl.getInstance(context, setOf(PolarBleApi.PolarBleSdkFeature.FEATURE_DEVICE_INFO))
         api.shutDown()
@@ -1872,6 +2040,54 @@ class BDBleApiImplTest {
         val callback = mockk<PolarBleApiCallbackProvider>(relaxed = true)
         api.setApiCallback(callback)
         verify(exactly = 1) { callback.blePowerStateChanged(any()) }
+    }
+
+    @Test
+    fun `disconnect mapping preserves terminal pairing recovery actions`() {
+        val api = BDBleApiImpl.getInstance(context, setOf(PolarBleApi.PolarBleSdkFeature.FEATURE_DEVICE_INFO))
+        val session = mockk<BleDeviceSession>()
+        every { session.disconnectStatus } returns 22
+
+        val mapDisconnectInfo = BDBleApiImpl::class.java
+            .getDeclaredMethod("mapDisconnectInfo", BleDeviceSession::class.java)
+            .apply { isAccessible = true }
+
+        every { session.disconnectReason } returns BleDeviceSession.DisconnectReason.PAIRING_INFORMATION_REMOVED
+        val removedPairingInfo = mapDisconnectInfo.invoke(api, session) as com.polar.sdk.api.PolarBleDisconnectInfo
+        Assert.assertEquals(com.polar.sdk.api.PolarBleDisconnectReason.PAIRING_INFORMATION_REMOVED, removedPairingInfo.reason)
+        Assert.assertEquals(com.polar.sdk.api.PolarBleRecoveryAction.REMOVE_PAIRING_AND_PAIR_AGAIN, removedPairingInfo.recoveryAction)
+        Assert.assertEquals(22, removedPairingInfo.gattStatus)
+
+        every { session.disconnectReason } returns BleDeviceSession.DisconnectReason.PAIRING_NEGOTIATION_FAILED
+        val negotiationInfo = mapDisconnectInfo.invoke(api, session) as com.polar.sdk.api.PolarBleDisconnectInfo
+        Assert.assertEquals(com.polar.sdk.api.PolarBleDisconnectReason.PAIRING_NEGOTIATION_FAILED, negotiationInfo.reason)
+        Assert.assertEquals(com.polar.sdk.api.PolarBleRecoveryAction.RETRY_PAIRING, negotiationInfo.recoveryAction)
+        Assert.assertEquals(22, negotiationInfo.gattStatus)
+
+        every { session.disconnectReason } returns BleDeviceSession.DisconnectReason.PEER_TERMINATED
+        val peerTerminatedInfo = mapDisconnectInfo.invoke(api, session) as com.polar.sdk.api.PolarBleDisconnectInfo
+        Assert.assertEquals(com.polar.sdk.api.PolarBleDisconnectReason.PEER_TERMINATED, peerTerminatedInfo.reason)
+        Assert.assertEquals(com.polar.sdk.api.PolarBleRecoveryAction.NONE, peerTerminatedInfo.recoveryAction)
+        Assert.assertEquals(22, peerTerminatedInfo.gattStatus)
+
+        every { session.disconnectReason } returns BleDeviceSession.DisconnectReason.DEVICE_COMMAND
+        val commandMappings = mapOf(
+            BleDeviceSession.DeviceCommand.RESTART to com.polar.sdk.api.PolarBleDeviceCommand.RESTART,
+            BleDeviceSession.DeviceCommand.FACTORY_RESET to com.polar.sdk.api.PolarBleDeviceCommand.FACTORY_RESET,
+            BleDeviceSession.DeviceCommand.WAREHOUSE_SLEEP to com.polar.sdk.api.PolarBleDeviceCommand.WAREHOUSE_SLEEP,
+            BleDeviceSession.DeviceCommand.HIBERNATE to com.polar.sdk.api.PolarBleDeviceCommand.HIBERNATE,
+            BleDeviceSession.DeviceCommand.TURN_OFF to com.polar.sdk.api.PolarBleDeviceCommand.TURN_OFF
+        )
+        commandMappings.forEach { (command, expectedCommand) ->
+            every { session.pendingDeviceCommand } returns command
+
+            val deviceCommandInfo = mapDisconnectInfo.invoke(api, session) as com.polar.sdk.api.PolarBleDisconnectInfo
+
+            Assert.assertEquals(com.polar.sdk.api.PolarBleDisconnectReason.DEVICE_COMMAND, deviceCommandInfo.reason)
+            Assert.assertEquals(com.polar.sdk.api.PolarBleRecoveryAction.NONE, deviceCommandInfo.recoveryAction)
+            Assert.assertEquals(22, deviceCommandInfo.gattStatus)
+            Assert.assertEquals(expectedCommand, deviceCommandInfo.deviceCommand)
+        }
     }
 
     @Test
@@ -2340,7 +2556,7 @@ class BDBleApiImplTest {
         coEvery { client.request(any()) } returns buildValidUserDeviceSettingsBytes()
         every { client.write(any(), any()) } returns flowOf(1L)
         try {
-            api.setAutomaticTrainingDetectionSettings(deviceId, automaticTrainingDetectionMode = true, automaticTrainingDetectionSensitivity = 2, minimumTrainingDurationSeconds = 60)
+            api.setAutomaticTrainingDetectionSettings(deviceId, mode = true, sensitivity = 2, minimumDuration = 60)
         } finally {
             unmockkObject(PolarServiceClientUtils)
             resetCapabilityUtilityState()

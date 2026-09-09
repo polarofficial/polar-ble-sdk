@@ -2,6 +2,7 @@ package com.polar.androidcommunications.api.ble.model.gatt
 
 import com.polar.androidcommunications.api.ble.BleLogger.Companion.d
 import com.polar.androidcommunications.api.ble.BleLogger.Companion.e
+import com.polar.androidcommunications.api.ble.BleLogger.Companion.w
 import com.polar.androidcommunications.api.ble.exceptions.BleAttributeError
 import com.polar.androidcommunications.api.ble.exceptions.BleCharacteristicNotFound
 import com.polar.androidcommunications.api.ble.exceptions.BleDisconnected
@@ -331,32 +332,56 @@ abstract class BleGattBase {
      * @throws BleAttributeError if the notification/indication setup failed
      * @throws BleCharacteristicNotFound if the characteristic is not registered
      */
-    suspend fun waitNotificationEnabled(uuid: UUID, checkConnection: Boolean) = withContext(Dispatchers.IO) {
+    suspend fun waitNotificationEnabled(uuid: UUID, checkConnection: Boolean) =
+        waitNotificationEnabled(uuid, checkConnection, NOTIFICATION_ENABLE_TIMEOUT_MS)
+
+    /**
+     * @param uuid            characteristic UUID to wait for notification/indication setup
+     * @param checkConnection optionally check connection state before waiting
+     * @param timeoutMs       max ms to wait; 0 means wait indefinitely
+     * @throws BleDisconnected if connection is lost or timeout expires
+     * @throws BleAttributeError if the notification/indication setup failed
+     * @throws BleCharacteristicNotFound if the characteristic is not registered
+     */
+    suspend fun waitNotificationEnabled(uuid: UUID, checkConnection: Boolean, timeoutMs: Long) = withContext(Dispatchers.IO) {
         val integer = getNotificationAtomicInteger(uuid)
             ?: throw BleCharacteristicNotFound()
-        if (!checkConnection || txInterface.isConnected()) {
-            when {
-                integer.get() == ATT_SUCCESS -> return@withContext
-                integer.get() != -1 -> throw BleAttributeError(
-                    "Failed to set characteristic notification or indication ", integer.get()
-                )
-                else -> {
-                    synchronized(integer) {
-                        (integer as Object).wait()
-                    }
-                    if (integer.get() != ATT_SUCCESS) {
-                        if (integer.get() != -1) {
-                            throw BleAttributeError(
-                                "Failed to set characteristic notification or indication ", integer.get()
-                            )
+
+        if (checkConnection && !txInterface.isConnected()) {
+            throw BleDisconnected()
+        }
+
+        val initialValue = integer.get()
+        when {
+            initialValue == ATT_SUCCESS -> return@withContext
+            initialValue != -1 -> throw BleAttributeError(
+                "Failed to set characteristic notification or indication ", initialValue
+            )
+            else -> {
+                synchronized(integer) {
+                    if (integer.get() == -1) {
+                        if (timeoutMs > 0) {
+                            (integer as Object).wait(timeoutMs)
                         } else {
-                            throw BleDisconnected()
+                            (integer as Object).wait()
                         }
                     }
                 }
+                val postWaitValue = integer.get()
+                if (postWaitValue != ATT_SUCCESS) {
+                    if (postWaitValue != -1) {
+                        throw BleAttributeError(
+                            "Failed to set characteristic notification or indication ", postWaitValue
+                        )
+                    } else {
+                        if (timeoutMs > 0 && (!checkConnection || txInterface.isConnected())) {
+                            w(TAG, "waitNotificationEnabled: timed out after ${timeoutMs}ms waiting for $uuid")
+                            throw BleDisconnected("Notification enable timed out after ${timeoutMs}ms for $uuid – descriptor write callback never arrived")
+                        }
+                        throw BleDisconnected()
+                    }
+                }
             }
-        } else {
-            throw BleDisconnected()
         }
     }
 
@@ -365,6 +390,9 @@ abstract class BleGattBase {
 
         const val DEFAULT_ATT_MTU_SIZE: Int = 23
         private const val DEFAULT_MTU_SIZE = DEFAULT_ATT_MTU_SIZE - 3
+
+        /** Default timeout for [waitNotificationEnabled] (30 s). */
+        const val NOTIFICATION_ENABLE_TIMEOUT_MS: Long = 30_000L
 
         /**
          * Characteristic properties

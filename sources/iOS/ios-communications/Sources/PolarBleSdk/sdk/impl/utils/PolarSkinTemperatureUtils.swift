@@ -16,16 +16,17 @@ private let TAG = "PolarSkinTemperatureUtils"
 
 internal class PolarSkinTemperatureUtils {
     static func readSkinTemperatureData(client: BlePsFtpClient, date: Date) async -> PolarSkinTemperatureData.PolarSkinTemperatureResult? {
-        BleLogger.trace(TAG, "readSkinTemperatureData: \(date)")
-        let filePath = "\(ARABICA_USER_ROOT_FOLDER)\(dateFormat.string(from: date))/\(SKIN_TEMPERATURE_DIRECTORY)\(SKIN_TEMPERATURE_PROTO)"
+        let dateString = dateFormat.string(from: date).components(separatedBy: "±").first ?? ""
+        BleLogger.trace(TAG, "readSkinTemperatureData: \(dateString)")
+        let filePath = "\(ARABICA_USER_ROOT_FOLDER)\(dateString)/\(SKIN_TEMPERATURE_DIRECTORY)\(SKIN_TEMPERATURE_PROTO)"
         let operation = Protocol_PbPFtpOperation.with { $0.command = .get; $0.path = filePath }
         do {
             let response = try await client.request(try operation.serializedBytes())
             let skinTemp = try Data_TemperatureMeasurementPeriod(serializedBytes: Data(response))
             return PolarSkinTemperatureData.PolarSkinTemperatureResult(
                 date: date,
-                sensorLocation: try PolarSkinTemperatureData.SkinTemperatureSensorLocation.getByValue(value: skinTemp.sensorLocation),
-                measurementType: try PolarSkinTemperatureData.SkinTemperatureMeasurementType.getByValue(value: skinTemp.measurementType),
+                sensorLocation: PolarSkinTemperatureData.SkinTemperatureSensorLocation.getByValue(value: skinTemp.sensorLocation),
+                measurementType: PolarSkinTemperatureData.SkinTemperatureMeasurementType.getByValue(value: skinTemp.measurementType),
                 skinTemperatureList: PolarSkinTemperatureData.fromPbTemperatureMeasurementSamples(pbTemperatureMeasurementData: skinTemp.temperatureMeasurementSamples)
             )
         } catch {

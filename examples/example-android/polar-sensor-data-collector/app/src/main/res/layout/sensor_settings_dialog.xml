@@ -13,14 +13,14 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:text="Sampling rate"
+            android:text="@string/sample_rate"
             android:textStyle="bold" />
 
         <TextView
             android:id="@+id/sampling_rate_no_values"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:text="N/A"
+            android:text="@string/n_a"
             android:textAlignment="center"
             android:visibility="gone" />
 
@@ -34,14 +34,14 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:text="Resolution"
+            android:text="@string/resolution"
             android:textStyle="bold" />
 
         <TextView
             android:id="@+id/resolution_no_values"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:text="N/A"
+            android:text="@string/n_a"
             android:textAlignment="center"
             android:visibility="gone" />
 
@@ -55,7 +55,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:text="Range"
+            android:text="@string/range"
             android:textStyle="bold" />
 
 
@@ -63,7 +63,7 @@
             android:id="@+id/range_no_values"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:text="N/A"
+            android:text="@string/n_a"
             android:textAlignment="center"
             android:visibility="gone" />
 
@@ -77,14 +77,14 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:text="Channels"
+            android:text="@string/channels"
             android:textStyle="bold" />
 
         <TextView
             android:id="@+id/channel_no_values"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:text="N/A"
+            android:text="@string/n_a"
             android:textAlignment="center"
             android:visibility="gone" />
 

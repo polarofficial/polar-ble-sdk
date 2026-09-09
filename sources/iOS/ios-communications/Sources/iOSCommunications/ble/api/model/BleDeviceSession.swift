@@ -1,5 +1,21 @@
 import Foundation
 import CoreBluetooth
+public enum BleDisconnectReason: Equatable {
+    case insufficientEncryption
+    case encryptionTimedOut
+    case pairingInformationRemoved
+    case uuidNotAllowed
+    case unknown
+}
+
+/// Device-control command that a pending expected disconnect is following.
+public enum BleDeviceCommand: Equatable {
+    case restart
+    case factoryReset
+    case warehouseSleep
+    case hibernate
+    case turnOff
+}
 
 @objc open class BleDeviceSession: NSObject {
 
@@ -36,6 +52,50 @@ import CoreBluetooth
     /// by default connect only from adv head
     public var connectionType = ConnectionType.connectFromAdvertisementHead
     var gattClients = [BleGattClientBase]()
+    public private(set) var hasEstablishedConnection = false
+    public private(set) var securityRecoveryAttempts = 0
+    public private(set) var securityRecoveryExhausted = false
+
+    // Device-control command (restart, factory reset, warehouse sleep, hibernate, turn off)
+    // whose success path was already reached; the disconnect that follows is expected.
+    public private(set) var pendingDeviceCommand: BleDeviceCommand? = nil
+    private var deviceCommandDisconnectDeadline: Date? = nil
+
+    /// Call right after a device-control command's success path to mark the disconnect that
+    /// is expected to follow as non-actionable. A still-valid pending mark is kept as-is rather
+    /// than overwritten, since once accepted the device is already on its way out and a second
+    /// command issued moments later is unlikely to be the real cause.
+    public func markExpectedDeviceCommandDisconnect(_ command: BleDeviceCommand, validFor: TimeInterval = 60) {
+        guard expectedDeviceCommandIfStillValid() == nil else { return }
+        pendingDeviceCommand = command
+        deviceCommandDisconnectDeadline = Date().addingTimeInterval(validFor)
+    }
+
+    public func expectedDeviceCommandIfStillValid() -> BleDeviceCommand? {
+        guard let command = pendingDeviceCommand, let deadline = deviceCommandDisconnectDeadline, Date() <= deadline else {
+            return nil
+        }
+        return command
+    }
+
+    public func clearExpectedDeviceCommandDisconnect() {
+        pendingDeviceCommand = nil
+        deviceCommandDisconnectDeadline = nil
+    }
+
+    public func markConnectionEstablished() {
+        hasEstablishedConnection = true
+        securityRecoveryAttempts = 0
+        securityRecoveryExhausted = false
+        clearExpectedDeviceCommandDisconnect()
+    }
+
+    @discardableResult
+    public func recordSecurityRecoveryAttempt(maxAttempts: Int = 3) -> Bool {
+        securityRecoveryAttempts += 1
+        securityRecoveryExhausted = securityRecoveryAttempts >= maxAttempts
+        return securityRecoveryExhausted
+    }
 
     public init(_ addr: UUID, advertisementContent: BleAdvertisementContent? = nil) {
         self.advertisementContent = advertisementContent ?? BleAdvertisementContent()
@@ -51,6 +111,10 @@ import CoreBluetooth
         fatalError("not implemented")
     }
 
+    public func retryServiceDiscovery() {
+        fatalError("not implemented")
+    }
+
     /// Monitor services discovered on the device.
     ///
     /// - Parameter checkConnection: check current connection
@@ -60,6 +124,15 @@ import CoreBluetooth
     }
 
     public var disconnectedDueRemovedPairing: Bool {
-        return self.error?.indicatesBLEPairingProblem ?? false
+        // A forgotten bond can surface either as an explicit peer-removed
+        // error or as an ATT request that can no longer be encrypted.
+        switch self.error?.bleDisconnectReason {
+        case .pairingInformationRemoved:
+            return true
+        case .insufficientEncryption:
+            return hasEstablishedConnection || securityRecoveryExhausted
+        default:
+            return false
+        }
     }
 }

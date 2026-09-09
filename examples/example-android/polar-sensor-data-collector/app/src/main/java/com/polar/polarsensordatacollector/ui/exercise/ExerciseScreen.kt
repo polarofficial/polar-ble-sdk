@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -20,7 +21,7 @@ fun ExerciseScreen(
     onStart: () -> Unit,
     onPause: () -> Unit,
     onResume: () -> Unit,
-    onStop: () -> Unit,
+    onStop: (save: Boolean) -> Unit,
     onStatusToast: (String) -> Unit
 ) {
     val status by vm.status.observeAsState(PolarExerciseSession.ExerciseStatus.NOT_STARTED)
@@ -40,6 +41,10 @@ fun ExerciseScreen(
     var expanded by remember { mutableStateOf(false) }
     var selectedIndex by rememberSaveable {
         mutableStateOf(vm.sportProfiles.indexOf(PolarExerciseSession.SportProfile.RUNNING))
+    }
+    var saveOnStop by rememberSaveable { mutableStateOf(true) }
+    LaunchedEffect(canStop) {
+        if (!canStop) saveOnStop = true
     }
 
     LaunchedEffect(selectedIndex) {
@@ -177,12 +182,31 @@ fun ExerciseScreen(
             ) { Text(stringResource(R.string.btn_resume)) }
 
             Button(
-                onClick = onStop,
+                onClick = { onStop(saveOnStop) },
                 enabled = canStop,
                 modifier = Modifier
                     .weight(1f)
                     .padding(start = 6.dp)
             ) { Text(stringResource(R.string.btn_stop)) }
+        }
+
+        if (canStop) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 4.dp)
+            ) {
+                Checkbox(
+                    checked = saveOnStop,
+                    onCheckedChange = { saveOnStop = it }
+                )
+                Text(
+                    text = stringResource(R.string.exercise_save_on_stop),
+                    style = MaterialTheme.typography.body2,
+                    color = MaterialTheme.colors.onSurface
+                )
+            }
         }
 
         Spacer(Modifier.height(16.dp))

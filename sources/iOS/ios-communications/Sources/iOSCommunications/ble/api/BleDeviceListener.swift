@@ -54,6 +54,11 @@ public protocol BleDeviceListener {
     @discardableResult
     func removeAllSessions() -> Int
 
+    /// Remove the cached session for a device so a future connection can be
+    /// created from a fresh CoreBluetooth discovery.
+    @discardableResult
+    func removeSession(_ identifier: String) -> Bool
+
     /// return all known sessions
     func allSessions() -> [BleDeviceSession]
 

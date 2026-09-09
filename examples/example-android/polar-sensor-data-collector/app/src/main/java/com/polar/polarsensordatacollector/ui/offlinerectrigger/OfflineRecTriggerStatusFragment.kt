@@ -140,7 +140,7 @@ class OfflineRecTriggerStatusFragment : Fragment(R.layout.fragment_offline_trigg
             }
 
             OfflineRecTriggerStatusUiState.FetchingStatus -> {
-                triggerStatusMode.text = "Fetching status"
+                triggerStatusMode.setText(R.string.fetching_status)
                 fetchProgressIndicator.visibility = VISIBLE
                 hideTriggerMode()
                 hideSettings()
@@ -229,6 +229,7 @@ class OfflineRecTriggerStatusFragment : Fragment(R.layout.fragment_offline_trigg
             PolarDeviceDataType.LOCATION -> locTriggerStatus
             PolarDeviceDataType.TEMPERATURE -> temperatureTriggerStatus
             PolarDeviceDataType.HR -> hrTriggerStatus
+            PolarDeviceDataType.DERIVED_MEASUREMENT -> accTriggerStatus
         }
     }
 
@@ -245,6 +246,7 @@ class OfflineRecTriggerStatusFragment : Fragment(R.layout.fragment_offline_trigg
             PolarDeviceDataType.TEMPERATURE -> "TEM"
             PolarDeviceDataType.SKIN_TEMPERATURE -> "SKIN_TEM"
             PolarDeviceDataType.HR -> "HR"
+            PolarDeviceDataType.DERIVED_MEASUREMENT -> "ACC"
         }
     }
 }

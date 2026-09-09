@@ -11,8 +11,8 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.findNavController
@@ -34,7 +34,15 @@ class OfflineRecFragment : Fragment(R.layout.fragment_offline_rec) {
         private const val INTENSITY_SELECTION_DISABLED_ALPHA = 0.4f
     }
 
-    private val offlineViewModel: OfflineRecordingViewModel by viewModels()
+    private val offlineViewModel: OfflineRecordingViewModel by lazy {
+        val deviceId = requireArguments().getString(ONLINE_OFFLINE_KEY_DEVICE_ID)
+            ?: throw Exception("OfflineRecFragment has no deviceId")
+        ViewModelProvider(
+            store = requireParentFragment().viewModelStore,
+            factory = defaultViewModelProviderFactory,
+            defaultCreationExtras = defaultViewModelCreationExtras
+        ).get("OfflineRecordingViewModel_$deviceId", OfflineRecordingViewModel::class.java)
+    }
 
     private lateinit var hrStatusAndSettings: View
     private lateinit var accStatusAndSettings: View
@@ -135,6 +143,8 @@ class OfflineRecFragment : Fragment(R.layout.fragment_offline_rec) {
             availableStreamSettingsUiState.settings.allPossibleSettings == null
         ) return
 
+        offlineViewModel.clearOfflineRecSettingsRequest()
+
         viewLifecycleOwner.lifecycleScope.launch {
             try {
                 val (settings, derivedResult, hadDerivedSection) = showAllSettingsDialog(
@@ -216,7 +226,7 @@ class OfflineRecFragment : Fragment(R.layout.fragment_offline_rec) {
         if (recordingsToStart.isNotEmpty()) {
             offlineViewModel.startOfflineRecording(features = recordingsToStart)
         } else {
-            showToast("None selected")
+            showToast(getString(R.string.none_selected))
         }
     }
 
@@ -242,10 +252,16 @@ class OfflineRecFragment : Fragment(R.layout.fragment_offline_rec) {
                 offlineRecStartSelectedButton.setOnClickListener {
                     startAllSelected()
                 }
-                offlineRecStartSelectedButton.text = "START SELECTED"
+                offlineRecStartSelectedButton.setText(R.string.start_selected)
 
                 for (feature in PolarDeviceDataType.values()) {
-                    if (offlineRecordingUiState.recordingFeatures.contains(feature)) {
+                    if (feature == PolarDeviceDataType.DERIVED_MEASUREMENT) continue
+                    
+                    val isRecording = offlineRecordingUiState.recordingFeatures.contains(feature) ||
+                            (feature == PolarDeviceDataType.ACC &&
+                                    offlineRecordingUiState.recordingFeatures.contains(PolarDeviceDataType.DERIVED_MEASUREMENT))
+
+                    if (isRecording) {
                         offlineRecCheckBox(feature = feature, isRecording = true)
                         offlineRecSettingsButton(feature = feature, isRecording = true)
                         offlineRecStartStopButton(feature = feature, isRecording = true)
@@ -258,7 +274,7 @@ class OfflineRecFragment : Fragment(R.layout.fragment_offline_rec) {
             }
             is OfflineRecordingUiState.FetchingStatus -> {
                 offlineRecStartSelectedButton.isEnabled = false
-                offlineRecStartSelectedButton.text = "WAIT FOR THE STATUS"
+                offlineRecStartSelectedButton.setText(R.string.wait_for_status)
             }
         }
     }
@@ -266,7 +282,7 @@ class OfflineRecFragment : Fragment(R.layout.fragment_offline_rec) {
     private fun getRecStatusAndSettingsView(feature: PolarDeviceDataType): View {
         return when (feature) {
             PolarDeviceDataType.ECG -> ecgStatusAndSettings
-            PolarDeviceDataType.ACC -> accStatusAndSettings
+            PolarDeviceDataType.ACC, PolarDeviceDataType.DERIVED_MEASUREMENT -> accStatusAndSettings
             PolarDeviceDataType.PPG -> ppgStatusAndSettings
             PolarDeviceDataType.PPI -> ppiStatusAndSettings
             PolarDeviceDataType.GYRO -> gyrStatusAndSettings
@@ -301,7 +317,7 @@ class OfflineRecFragment : Fragment(R.layout.fragment_offline_rec) {
     private fun getRecStatusHeaderText(feature: PolarDeviceDataType): String {
         return when (feature) {
             PolarDeviceDataType.ECG -> "ECG"
-            PolarDeviceDataType.ACC -> "ACC"
+            PolarDeviceDataType.ACC, PolarDeviceDataType.DERIVED_MEASUREMENT -> "ACC"
             PolarDeviceDataType.PPG -> "PPG"
             PolarDeviceDataType.PPI -> "PPI"
             PolarDeviceDataType.GYRO -> "GYR"
@@ -327,6 +343,7 @@ class OfflineRecFragment : Fragment(R.layout.fragment_offline_rec) {
 
     private fun offlineRecCheckBox(feature: PolarDeviceDataType, isRecording: Boolean) {
         val cb = getOfflineRecCheckBox(feature)
+        cb.isChecked = isRecording
         cb.isEnabled = !isRecording
     }
 
@@ -345,13 +362,13 @@ class OfflineRecFragment : Fragment(R.layout.fragment_offline_rec) {
     private fun offlineRecStartStopButton(feature: PolarDeviceDataType, isRecording: Boolean) {
         val button = getOfflineRecStartStopButton(feature)
         if (isRecording) {
-            button.text = "STOP"
+            button.setText(R.string.stop_uppercase)
             button.setTextColor(resources.getColor(R.color.colorButtonRecording, null))
             button.setOnClickListener {
                 offlineViewModel.stopOfflineRecording(features = listOf(feature))
             }
         } else {
-            button.text = "START"
+            button.setText(R.string.start_uppercase)
             button.setTextColor(resources.getColor(R.color.secondaryColor, null))
             button.setOnClickListener {
                 offlineViewModel.startOfflineRecording(features = listOf(feature))

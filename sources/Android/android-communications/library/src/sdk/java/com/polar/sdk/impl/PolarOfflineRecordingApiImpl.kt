@@ -131,7 +131,8 @@ internal class PolarOfflineRecordingApiImpl(
             PolarDeviceDataType.TEMPERATURE -> querySettings(identifier, PmdMeasurementType.TEMPERATURE, PmdRecordingType.OFFLINE)
             PolarDeviceDataType.SKIN_TEMPERATURE -> querySettings(identifier, PmdMeasurementType.SKIN_TEMP, PmdRecordingType.OFFLINE)
             PolarDeviceDataType.HR,
-            PolarDeviceDataType.PPI -> throw PolarOperationNotSupported()
+            PolarDeviceDataType.PPI,
+            PolarDeviceDataType.DERIVED_MEASUREMENT -> throw PolarOperationNotSupported()
         }
     }
 
@@ -151,7 +152,8 @@ internal class PolarOfflineRecordingApiImpl(
             PolarDeviceDataType.PRESSURE,
             PolarDeviceDataType.LOCATION,
             PolarDeviceDataType.TEMPERATURE,
-            PolarDeviceDataType.SKIN_TEMPERATURE -> throw PolarOperationNotSupported()
+            PolarDeviceDataType.SKIN_TEMPERATURE,
+            PolarDeviceDataType.DERIVED_MEASUREMENT -> throw PolarOperationNotSupported()
         }
     }
 
@@ -452,8 +454,6 @@ internal class PolarOfflineRecordingApiImpl(
         pmdMeasurementStatus.filter {
             it.value == PmdActiveMeasurement.OFFLINE_MEASUREMENT_ACTIVE ||
                 it.value == PmdActiveMeasurement.ONLINE_AND_OFFLINE_ACTIVE
-        }.filter {
-            it.key != PmdMeasurementType.DERIVED_MEASUREMENT
         }.forEach { offlineRecs.add(mapPmdClientFeatureToPolarFeature(it.key)) }
         return offlineRecs.toList()
     }

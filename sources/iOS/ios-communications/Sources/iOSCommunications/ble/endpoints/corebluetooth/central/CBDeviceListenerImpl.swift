@@ -313,16 +313,20 @@ public class CBDeviceListenerImpl: NSObject, SDKCBCentralManagerDelegate {
     }
 
     fileprivate func handleDisconnected(_ session: CBDeviceSessionImpl, error: Error?) {
-        let canTryReconnect = !(error?.indicatesBLEPairingProblem ?? false)
+        let isInsufficientEncryption = error?.bleDisconnectReason == .insufficientEncryption
+        let recoveryExhausted = isInsufficientEncryption && session.recordSecurityRecoveryAttempt()
+        let pairingProblem = error?.bleDisconnectReason == .pairingInformationRemoved ||
+            (isInsufficientEncryption && (session.hasEstablishedConnection || recoveryExhausted))
+        let canTryReconnect = !pairingProblem
 
         if automaticReconnection && canTryReconnect {
             switch (session.state) {
             case .sessionOpen where session.connectionType == .directConnection && self.blePowered():
-                updateSessionState(session, state: .sessionOpening)
+                updateSessionState(session, state: .sessionOpening, error: error)
                 manager.connect((session).peripheral, options: nil)
             case .sessionOpen: fallthrough
             case .sessionOpening:
-                updateSessionState(session, state: .sessionOpenPark)
+                updateSessionState(session, state: .sessionOpenPark, error: error)
             case .sessionClosing:
                 updateSessionState(session, state: .sessionClosed)
             default:
@@ -499,6 +503,21 @@ extension CBDeviceListenerImpl: BleDeviceListener {
     
     public func removeAllSessions() -> Int{
         return removeAllSessions(Set(arrayLiteral: .sessionClosed,.sessionOpenPark))
+    }
+
+    @discardableResult
+    public func removeSession(_ identifier: String) -> Bool {
+        let found = sessions.list().contains { session in
+            session.advertisementContent.polarDeviceIdUntouched == identifier ||
+                session.address.uuidString == identifier
+        }
+        if found {
+            sessions.remove { session in
+                session.advertisementContent.polarDeviceIdUntouched == identifier ||
+                    session.address.uuidString == identifier
+            }
+        }
+        return found
     }
     
     public func allSessions() -> [BleDeviceSession]{

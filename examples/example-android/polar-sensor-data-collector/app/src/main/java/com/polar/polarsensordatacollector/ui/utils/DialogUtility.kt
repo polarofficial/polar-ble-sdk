@@ -20,7 +20,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.radiobutton.MaterialRadioButton
 import com.polar.polarsensordatacollector.R
 import com.polar.polarsensordatacollector.ui.landing.SensorListAdapter
-import com.polar.polarsensordatacollector.ui.landing.SensorListAdapter.ItemSelected
 import com.polar.sdk.api.model.PolarDerivedMeasurementMethod
 import com.polar.sdk.api.model.PolarDerivedMeasurementSettingsGroup
 import com.polar.sdk.api.model.PolarDeviceInfo
@@ -387,15 +386,15 @@ object DialogUtility {
     }
 
 
-    fun showSensorSelection(activity: Activity, itemSelected: ItemSelected, flowable: Flow<PolarDeviceInfo>) {
+    fun showSensorSelection(activity: Activity, itemSelected: SensorListAdapter.ItemSelected, flowable: Flow<PolarDeviceInfo>, connectedDeviceIds: Set<String> = emptySet()) {
 
         // custom dialog
         val dialog = Dialog(activity)
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
         dialog.setContentView(R.layout.sensor_selection_dialog)
-        val dataItemList: MutableList<PolarDeviceInfo> = ArrayList()
+        val rawDevices: MutableList<PolarDeviceInfo> = ArrayList()
         var scanJob: Job? = null
-        val adapter = SensorListAdapter(dataItemList) { info: PolarDeviceInfo? ->
+        val adapter = SensorListAdapter(connectedDeviceIds) { info: PolarDeviceInfo? ->
             Log.d("", "selected: $info")
             itemSelected.itemSelected(info)
             dialog.dismiss()
@@ -424,10 +423,9 @@ object DialogUtility {
                     Toast.makeText(activity, throwable.message, Toast.LENGTH_SHORT).show()
                 }
                 .collect { polarDeviceInfo ->
-                    if (!dataItemList.any { it.deviceId == polarDeviceInfo.deviceId }) {
-                        dataItemList.add(polarDeviceInfo)
-                        dataItemList.sortWith { t1, t2 -> if (t1.rssi > t2.rssi) -1 else 0 }
-                        adapter.notifyDataSetChanged()
+                    if (!rawDevices.any { it.deviceId == polarDeviceInfo.deviceId }) {
+                        rawDevices.add(polarDeviceInfo)
+                        adapter.updateDevices(rawDevices)
                     }
                 }
         }

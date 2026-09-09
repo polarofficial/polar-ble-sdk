@@ -24,7 +24,7 @@ data class PolarDeviceRestApiServices(val dictionary: Map<String, Any>) {
 }
 
 /**
- *  Describes specific service API per SAGRFC95
+ *  Describes specific service API
  */
 data class PolarDeviceRestApiServiceDescription (
     val dictionary: Map<String, Any>

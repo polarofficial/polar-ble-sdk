@@ -17,12 +17,16 @@ import com.polar.sdk.impl.utils.PolarServiceClientUtils.fetchSession
 import com.polar.sdk.impl.utils.PolarSleepUtils
 import com.polar.sdk.impl.utils.receiveRestApiEvents
 import com.google.gson.Gson
+import kotlin.coroutines.coroutineContext
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.withTimeoutOrNull
 import java.time.LocalDate
 
@@ -43,17 +47,50 @@ internal class PolarSleepApiImpl(
 
 
     override suspend fun getSleepRecordingState(identifier: String, timeoutMs: Long): Boolean {
-        return withTimeoutOrNull(timeoutMs) {
-            observeSleepRecordingState(identifier)
-                .filter { it.isNotEmpty() }
-                .take(1)
-                .map { it.last() }
-                .let { flow ->
-                    var result = false
-                    flow.collect { result = it }
-                    result
+        // Resolve session and client up front so that PolarServiceNotAvailable is thrown
+        // immediately, before any BLE traffic is started.
+        val deviceType = fetchSession(identifier, listener)?.polarDeviceType
+            ?: throw PolarServiceNotAvailable()
+        if (!BlePolarDeviceCapabilitiesUtility.isActivityDataSupported(deviceType)) {
+            throw PolarServiceNotAvailable()
+        }
+        val session = PolarServiceClientUtils.sessionPsFtpClientReady(identifier, listener)
+        val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
+            ?: throw PolarServiceNotAvailable()
+
+        // CompletableDeferred + fire-and-forget cancel: returns as soon as the first event
+        // arrives without blocking on the collector job finishing.
+        // Inherits the caller's dispatcher so virtual-time tests work correctly.
+        val stateDeferred = CompletableDeferred<Boolean>()
+        val collectorJob = CoroutineScope(coroutineContext + SupervisorJob()).launch {
+            client.receiveRestApiEvents(identifier)
+                .collect { events ->
+                    val states = events.mapNotNull { json ->
+                        runCatching {
+                            Gson().fromJson(json, PolarSleepApiServiceEventPayload::class.java)
+                        }.getOrNull()
+                    }.map { it.sleep_recording_state.enabled == 1 }
+                    if (states.isNotEmpty() && stateDeferred.complete(states.last())) {
+                        cancel() // got what we needed — stop collecting
+                    }
                 }
-        } ?: throw PolarTimeoutException("getSleepRecordingState timed out after ${timeoutMs}ms")
+        }
+
+        try {
+            pFtpWriteOperation(
+                identifier = identifier,
+                listener = listener,
+                data = "{}".toByteArray(),
+                path = "/REST/SLEEP.API?cmd=subscribe&event=sleep_recording_state&details=[enabled]",
+                tag = TAG
+            )
+            return withTimeoutOrNull(timeoutMs) { stateDeferred.await() }
+                ?: throw PolarTimeoutException("getSleepRecordingState timed out after ${timeoutMs}ms")
+        } finally {
+            // Cancel without join: we do not wait for the collector to fully unwind so that
+            // getSleepRecordingState always returns promptly regardless of BLE stack state.
+            collectorJob.cancel()
+        }
     }
 
     override fun observeSleepRecordingState(identifier: String): Flow<Array<Boolean>> {

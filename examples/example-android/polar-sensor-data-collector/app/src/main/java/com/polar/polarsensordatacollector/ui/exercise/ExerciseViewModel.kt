@@ -157,7 +157,7 @@ class ExerciseViewModel(
     fun start()  { viewModelScope.launch { try { repo.start(selectedSport) } catch (e: Exception) { Log.e(TAG, "Start failed", e) } } }
     fun pause()  { viewModelScope.launch { try { repo.pause() } catch (e: Exception) { Log.e(TAG, "Pause failed", e) } } }
     fun resume() { viewModelScope.launch { try { repo.resume() } catch (e: Exception) { Log.e(TAG, "Resume failed", e) } } }
-    fun stop()   { viewModelScope.launch { repo.stop() } }
+    fun stop(save: Boolean = true) { viewModelScope.launch { repo.stop(save) } }
 
     override fun onCleared() {
         stopNotificationObservation()
