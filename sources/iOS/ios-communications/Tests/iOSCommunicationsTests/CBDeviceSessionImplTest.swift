@@ -4,7 +4,7 @@ import XCTest
 import CoreBluetooth
 @testable import iOSCommunications
 
-/// Tests for the `Error.indicatesBLEPairingProblem` extension defined in
+/// Tests for the BLE disconnect classification extension defined in
 /// `CBDeviceSessionImpl.swift`.
 final class CBDeviceSessionImplTest: XCTestCase {
 
@@ -12,7 +12,8 @@ final class CBDeviceSessionImplTest: XCTestCase {
 
     func testIndicatesBLEPairingProblem_CBATTError_insufficientEncryption_returnsTrue() {
         let error = makeCBATTError(.insufficientEncryption)
-        XCTAssertTrue(error.indicatesBLEPairingProblem)
+        XCTAssertEqual(error.bleDisconnectReason, .insufficientEncryption)
+        XCTAssertFalse(error.indicatesBLEPairingProblem)
     }
 
     func testIndicatesBLEPairingProblem_CBATTError_insufficientAuthentication_returnsFalse() {
@@ -37,19 +38,22 @@ final class CBDeviceSessionImplTest: XCTestCase {
 
     // MARK: - CBError cases
 
-    func testIndicatesBLEPairingProblem_CBError_encryptionTimedOut_returnsTrue() {
+    func testIndicatesBLEPairingProblem_CBError_encryptionTimedOut_returnsFalse() {
         let error = makeCBError(.encryptionTimedOut)
-        XCTAssertTrue(error.indicatesBLEPairingProblem)
+        XCTAssertEqual(error.bleDisconnectReason, .encryptionTimedOut)
+        XCTAssertFalse(error.indicatesBLEPairingProblem)
     }
 
     func testIndicatesBLEPairingProblem_CBError_peerRemovedPairingInformation_returnsTrue() {
         let error = makeCBError(.peerRemovedPairingInformation)
+        XCTAssertEqual(error.bleDisconnectReason, .pairingInformationRemoved)
         XCTAssertTrue(error.indicatesBLEPairingProblem)
     }
 
-    func testIndicatesBLEPairingProblem_CBError_uuidNotAllowed_returnsTrue() {
+    func testIndicatesBLEPairingProblem_CBError_uuidNotAllowed_returnsFalse() {
         let error = makeCBError(.uuidNotAllowed)
-        XCTAssertTrue(error.indicatesBLEPairingProblem)
+        XCTAssertEqual(error.bleDisconnectReason, .uuidNotAllowed)
+        XCTAssertFalse(error.indicatesBLEPairingProblem)
     }
 
     func testIndicatesBLEPairingProblem_CBError_connectionTimeout_returnsFalse() {

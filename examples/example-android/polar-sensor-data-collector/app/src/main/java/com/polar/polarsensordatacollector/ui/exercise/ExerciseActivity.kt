@@ -70,7 +70,10 @@ class ExerciseActivity : AppCompatActivity() {
                     },
                     onPause = { toast(getString(R.string.toast_pausing)); viewModel.pause() },
                     onResume = { toast(getString(R.string.toast_resuming)); viewModel.resume() },
-                    onStop = { toast(getString(R.string.toast_stopping)); viewModel.stop() },
+                    onStop = { save ->
+                        toast(getString(R.string.toast_stopping))
+                        viewModel.stop(save)
+                    },
                     onStatusToast = { msg -> toast(msg) }
                 )
             }

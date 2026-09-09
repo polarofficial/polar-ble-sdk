@@ -75,13 +75,13 @@ class DataCollector(private val context: Context) {
         }
     }
 
-    internal class FileOperationWrapper(private val context: Context, override val fileName: String, tag: String) : FileOperations {
+    internal class FileOperationWrapper(private val context: Context, override val fileName: String, tag: String, logId: String) : FileOperations {
         private val outputStream: FileOutputStream
         private val file: File
         private var isWriteOngoing = false
 
         init {
-            val directoryName = makeParentDir(tag)
+            val directoryName = makeParentDir(tag, logId)
             file = File(context.getExternalFilesDir(null).toString() + directoryName + fileName)
             file.createNewFile()
             outputStream = FileOutputStream(file)
@@ -91,8 +91,13 @@ class DataCollector(private val context: Context) {
             return isWriteOngoing
         }
 
-        private fun makeParentDir(tag: String): String {
-            val directoryName = "${LOGS_DIRECTORY}$tag/"
+        /** Creates (or clears) the per-device stream directory.
+         *  Directory layout: sensorDataLogs/<streamType>/<sanitizedDeviceId>/
+         *  Using per-device subdirectories prevents one device's new session from deleting
+         *  another device's currently-open log files. */
+        private fun makeParentDir(tag: String, logId: String): String {
+            val sanitizedLogId = logId.replace(Regex("[^A-Za-z0-9_\\-]"), "_")
+            val directoryName = "${LOGS_DIRECTORY}$tag/$sanitizedLogId/"
             val dir = File(context.getExternalFilesDir(null), directoryName)
             if (dir.exists()) {
                 if (dir.isDirectory) {
@@ -142,7 +147,7 @@ class DataCollector(private val context: Context) {
         return if (isBackUpEnabled && backUpUri.isNotEmpty()) {
             DocumentFileOperationWrapper(context, fileName, Uri.parse(backUpUri))
         } else {
-            FileOperationWrapper(context, fileName, tag)
+            FileOperationWrapper(context, fileName, tag, logId)
         }
     }
 

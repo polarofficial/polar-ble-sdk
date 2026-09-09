@@ -9,6 +9,7 @@ import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import com.polar.androidcommunications.api.ble.model.BleDeviceSession.DeviceSessionState
+import com.polar.androidcommunications.api.ble.model.BleDeviceSession
 import com.polar.androidcommunications.api.ble.model.gatt.BleGattBase
 import com.polar.androidcommunications.api.ble.model.gatt.BleGattFactory
 import io.mockk.every
@@ -90,6 +91,83 @@ class BDDeviceSessionImplTest {
 
         // Act & Assert
         assertFalse(sut.isConnected())
+    }
+
+    @Test
+    fun securityRecovery_isExhaustedAfterTwoAttemptsAndResetsOnConnection() {
+        val sut = createSut()
+
+        assertFalse(sut.recordSecurityRecoveryAttempt())
+        assertTrue(sut.recordSecurityRecoveryAttempt())
+        assertTrue(sut.securityRecoveryExhausted)
+
+        sut.markBondedAtConnection(true)
+
+        assertEquals(0, sut.securityRecoveryAttempts)
+        assertFalse(sut.securityRecoveryExhausted)
+    }
+
+    @Test
+    fun intentionalDisconnect_isMarkedAsConnectionLost() {
+        val sut = createSut()
+
+        sut.markIntentionalDisconnect()
+
+        assertTrue(sut.isIntentionalDisconnect)
+        assertEquals(BleDeviceSession.DisconnectReason.CONNECTION_LOST, sut.disconnectReason)
+        assertEquals(null, sut.disconnectStatus)
+    }
+
+    @Test
+    fun expectedDeviceCommandDisconnect_keepsFirstValidCommandAndExpires() {
+        val sut = createSut()
+
+        sut.markExpectedDeviceCommandDisconnect(BleDeviceSession.DeviceCommand.RESTART)
+        sut.markExpectedDeviceCommandDisconnect(BleDeviceSession.DeviceCommand.FACTORY_RESET)
+
+        assertEquals(BleDeviceSession.DeviceCommand.RESTART, sut.pendingDeviceCommand)
+        assertTrue(sut.isExpectedDeviceCommandDisconnectStillValid())
+
+        sut.markExpectedDeviceCommandDisconnect(BleDeviceSession.DeviceCommand.HIBERNATE, validForMs = -1)
+
+        assertEquals(BleDeviceSession.DeviceCommand.RESTART, sut.pendingDeviceCommand)
+    }
+
+    @Test
+    fun expectedDeviceCommandDisconnect_afterDeadlineIsNoLongerValidAndCanBeReplaced() {
+        val sut = createSut()
+
+        sut.markExpectedDeviceCommandDisconnect(BleDeviceSession.DeviceCommand.RESTART, validForMs = -1)
+
+        assertFalse(sut.isExpectedDeviceCommandDisconnectStillValid())
+
+        sut.markExpectedDeviceCommandDisconnect(BleDeviceSession.DeviceCommand.HIBERNATE)
+
+        assertEquals(BleDeviceSession.DeviceCommand.HIBERNATE, sut.pendingDeviceCommand)
+        assertTrue(sut.isExpectedDeviceCommandDisconnectStillValid())
+    }
+
+    @Test
+    fun clearDisconnectReason_clearsExpectedDeviceCommandDisconnect() {
+        val sut = createSut()
+        sut.markExpectedDeviceCommandDisconnect(BleDeviceSession.DeviceCommand.TURN_OFF)
+
+        sut.clearDisconnectReason()
+
+        assertEquals(BleDeviceSession.DisconnectReason.NONE, sut.disconnectReason)
+        assertEquals(0L, sut.deviceCommandDisconnectDeadlineMs)
+        assertEquals(null, sut.pendingDeviceCommand)
+    }
+
+    @Test
+    fun bondRecordedAfterGattConnection_isRememberedForLaterBondRemoval() {
+        val sut = createSut()
+
+        sut.markBondedAtConnection(false)
+        sut.markBondedAtConnection(true)
+
+        assertTrue(sut.wasBondedAtConnection)
+        assertTrue(sut.hasEstablishedBond)
     }
 
     @Test

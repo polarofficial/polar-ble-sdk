@@ -79,6 +79,26 @@ class BDDeviceSessionImpl internal constructor(
     private var scope = CoroutineScope(Dispatchers.IO)
     private var indicatesPairingProblem: Pair<Boolean, Int> = Pair(false, -1)
     private val handler = Handler(context.mainLooper)
+    private val bondStateObserver = object : BDBondingListener.BondStateObserver {
+        override val device: BluetoothDevice
+            get() = bluetoothDevice
+
+        override fun bondStateChanged(state: Int, wasPreviouslyBonded: Boolean, pairingWasAttempted: Boolean) {
+            when (state) {
+                BluetoothDevice.BOND_BONDED -> markBondedAtConnection(true)
+                BluetoothDevice.BOND_NONE -> {
+                    if (hasEstablishedBond || wasPreviouslyBonded) {
+                        hasEstablishedBond = true
+                        markDisconnect(DisconnectReason.PAIRING_INFORMATION_REMOVED)
+                        gatt?.disconnect()
+                    } else if (pairingWasAttempted) {
+                        markDisconnect(DisconnectReason.PAIRING_NEGOTIATION_FAILED)
+                        gatt?.disconnect()
+                    }
+                }
+            }
+        }
+    }
 
     private val brandsNotImplementingAndroid13Api: List<String> =
         mutableListOf("OnePlus", "Oppo", "Realme")
@@ -86,6 +106,7 @@ class BDDeviceSessionImpl internal constructor(
     init {
         indicatesPairingProblem = Pair(false, -1)
         this.clients = factory.getRemoteServices(this)
+        bondingManager.addBondStateObserver(bondStateObserver)
     }
 
     @SuppressLint("MissingPermission")
@@ -147,16 +168,26 @@ class BDDeviceSessionImpl internal constructor(
                             }
                             observer[0] = object : BondingObserver(bluetoothDevice) {
                                 override fun bonding() {}
-                                override fun bonded() { continuation.resume(Unit) }
-                                override fun bondNone() {}
+                                override fun bonded() {
+                                    markBondedAtConnection(true)
+                                    continuation.resume(Unit)
+                                }
+                                override fun bondNone() {
+                                    continuation.resumeWithException(Throwable("Bluetooth bonding failed"))
+                                }
                             }
                             bondingManager.addObserver(observer[0]!!)
                         }
                         BluetoothDevice.BOND_BONDING -> {
                             observer[0] = object : BondingObserver(bluetoothDevice) {
                                 override fun bonding() {}
-                                override fun bonded() { continuation.resume(Unit) }
-                                override fun bondNone() {}
+                                override fun bonded() {
+                                    markBondedAtConnection(true)
+                                    continuation.resume(Unit)
+                                }
+                                override fun bondNone() {
+                                    continuation.resumeWithException(Throwable("Bluetooth bonding failed"))
+                                }
                             }
                             bondingManager.addObserver(observer[0]!!)
                         }
@@ -238,7 +269,16 @@ class BDDeviceSessionImpl internal constructor(
     }
 
     override fun getIndicatesPairingProblem(): Pair<Boolean, Int> {
-        return indicatesPairingProblem
+        return if (disconnectReason == BleDeviceSession.DisconnectReason.PAIRING_INFORMATION_REMOVED) {
+            Pair(true, disconnectStatus ?: -1)
+        } else {
+            Pair(false, -1)
+        }
+    }
+
+    internal fun pairingInformationWasRemoved(): Boolean {
+        return bluetoothDevice.bondState == BluetoothDevice.BOND_NONE &&
+            (hasEstablishedBond || bondingManager.hasPairingBeenRemoved(bluetoothDevice))
     }
 
     @SuppressLint("NewApi", "MissingPermission")
@@ -542,7 +582,23 @@ class BDDeviceSessionImpl internal constructor(
         when (status) {
             BleGattBase.ATT_INSUFFICIENT_AUTHENTICATION, BleGattBase.ATT_INSUFFICIENT_ENCRYPTION -> {
                 e(TAG, "Attribute operation write failed due the reason: $status")
-                startAuthentication { this.handleAuthenticationComplete() }
+                markDisconnect(
+                    if (status == BleGattBase.ATT_INSUFFICIENT_AUTHENTICATION) {
+                        BleDeviceSession.DisconnectReason.INSUFFICIENT_AUTHENTICATION
+                    } else {
+                        BleDeviceSession.DisconnectReason.INSUFFICIENT_ENCRYPTION
+                    },
+                    status
+                )
+                if (pairingInformationWasRemoved()) {
+                    markDisconnect(BleDeviceSession.DisconnectReason.PAIRING_INFORMATION_REMOVED, status)
+                    synchronized(gattMutex) { gatt?.disconnect() }
+                } else if (recordSecurityRecoveryAttempt()) {
+                    markDisconnect(BleDeviceSession.DisconnectReason.PAIRING_NEGOTIATION_FAILED, status)
+                    synchronized(gattMutex) { gatt?.disconnect() }
+                } else {
+                    startAuthentication { this.handleAuthenticationComplete() }
+                }
                 val client = fetchClient(service.uuid)
                 if (client != null && client.containsCharacteristic(characteristic.uuid)) {
                     if (!attOperations.isEmpty() && attOperations.peek()?.isWithResponse == true) {
@@ -571,7 +627,23 @@ class BDDeviceSessionImpl internal constructor(
         when (status) {
             BleGattBase.ATT_INSUFFICIENT_AUTHENTICATION, BleGattBase.ATT_INSUFFICIENT_ENCRYPTION -> {
                 e(TAG, "Attribute operation read failed due the reason: $status")
-                startAuthentication { this.handleAuthenticationComplete() }
+                markDisconnect(
+                    if (status == BleGattBase.ATT_INSUFFICIENT_AUTHENTICATION) {
+                        BleDeviceSession.DisconnectReason.INSUFFICIENT_AUTHENTICATION
+                    } else {
+                        BleDeviceSession.DisconnectReason.INSUFFICIENT_ENCRYPTION
+                    },
+                    status
+                )
+                if (pairingInformationWasRemoved()) {
+                    markDisconnect(BleDeviceSession.DisconnectReason.PAIRING_INFORMATION_REMOVED, status)
+                    synchronized(gattMutex) { gatt?.disconnect() }
+                } else if (recordSecurityRecoveryAttempt()) {
+                    markDisconnect(BleDeviceSession.DisconnectReason.PAIRING_NEGOTIATION_FAILED, status)
+                    synchronized(gattMutex) { gatt?.disconnect() }
+                } else {
+                    startAuthentication { this.handleAuthenticationComplete() }
+                }
                 val client = fetchClient(service.uuid)
                 if (client != null && client.containsCharacteristic(characteristic.uuid)) {
                     client.processServiceData(characteristic.uuid, value, status, false)
@@ -606,7 +678,23 @@ class BDDeviceSessionImpl internal constructor(
         when (status) {
             BleGattBase.ATT_INSUFFICIENT_AUTHENTICATION, BleGattBase.ATT_INSUFFICIENT_ENCRYPTION -> {
                 e(TAG, "Attribute operation descriptor write failed due the reason: $status")
-                startAuthentication { this.handleAuthenticationComplete() }
+                markDisconnect(
+                    if (status == BleGattBase.ATT_INSUFFICIENT_AUTHENTICATION) {
+                        BleDeviceSession.DisconnectReason.INSUFFICIENT_AUTHENTICATION
+                    } else {
+                        BleDeviceSession.DisconnectReason.INSUFFICIENT_ENCRYPTION
+                    },
+                    status
+                )
+                if (pairingInformationWasRemoved()) {
+                    markDisconnect(BleDeviceSession.DisconnectReason.PAIRING_INFORMATION_REMOVED, status)
+                    synchronized(gattMutex) { gatt?.disconnect() }
+                } else if (recordSecurityRecoveryAttempt()) {
+                    markDisconnect(BleDeviceSession.DisconnectReason.PAIRING_NEGOTIATION_FAILED, status)
+                    synchronized(gattMutex) { gatt?.disconnect() }
+                } else {
+                    startAuthentication { this.handleAuthenticationComplete() }
+                }
                 val disable = byteArrayOf(0x00, 0x00)
                 var activated = !disable.contentEquals(value)
                 if (status != BleGattBase.ATT_SUCCESS) activated = false
@@ -645,6 +733,18 @@ class BDDeviceSessionImpl internal constructor(
     }
 
     private fun handleAuthenticationFailed(e: Throwable) {
+        if (disconnectReason != BleDeviceSession.DisconnectReason.PAIRING_INFORMATION_REMOVED &&
+            (disconnectReason == BleDeviceSession.DisconnectReason.INSUFFICIENT_AUTHENTICATION ||
+                disconnectReason == BleDeviceSession.DisconnectReason.INSUFFICIENT_ENCRYPTION)
+        ) {
+            markDisconnect(
+                BleDeviceSession.DisconnectReason.PAIRING_NEGOTIATION_FAILED,
+                disconnectStatus
+            )
+            synchronized(gattMutex) {
+                gatt?.disconnect()
+            }
+        }
         processNextAttributeOperation(false)
         for (gattClient in clients) {
             gattClient.authenticationFailed(e)
@@ -703,6 +803,49 @@ class BDDeviceSessionImpl internal constructor(
             ChannelUtils.postError(rssiObservers, Throwable("RSSI read failed with status $status"))
         }
     }
+
+    /**
+     * When true, this session was opened via [connectToBondedDevice].
+     * The library will retry the connection without waiting for an advertisement.
+     */
+    var directConnect: Boolean = false
+
+    /**
+     * Number of consecutive auto-reconnect attempts made after the session dropped
+     * to SESSION_OPEN_PARK while [directConnect] is true.
+     * Reset to 0 each time [connectToBondedDevice] is called.
+     */
+    var directConnectRetryCount: Int = 0
+
+    fun resetDirectConnect() {
+        directConnect = false
+        directConnectRetryCount = 0
+    }
+
+    fun incrementDirectConnectRetryCount(): Int = ++directConnectRetryCount
+
+    // -------------------------------------------------------------------------
+    // No-callback / GATT-wedge tracking
+    // -------------------------------------------------------------------------
+
+    /**
+     * Number of consecutive connects where the watchdog fired before
+     * onConnectionStateChange arrived (i.e. no OS callback).
+     */
+    var consecutiveNoCallbackConnects: Int = 0
+
+    /**
+     * Earliest System.currentTimeMillis() for the next advertisement-triggered connect.
+     * 0 means no limit.
+     */
+    var nextConnectAllowedTimeMs: Long = 0L
+
+    /**
+     * Set by the watchdog before calling disconnectDevice() so the handler can
+     * count this as a no-callback failure and apply backoff.
+     */
+    @Volatile
+    var pendingWatchdogCancel: Boolean = false
 
     companion object {
         private val DESCRIPTOR_CCC: UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")

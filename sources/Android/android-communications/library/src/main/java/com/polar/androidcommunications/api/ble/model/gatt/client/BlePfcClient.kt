@@ -198,7 +198,6 @@ class BlePfcClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, P
      * @throws Throwable on any error
      */
     suspend fun sendControlPointCommand(command: PfcMessage, params: ByteArray? = null): PfcResponse = withContext(Dispatchers.IO) {
-        if (params == null) return@withContext PfcResponse()
         pfcMutex.withLock {
             if (pfcCpEnabled?.get() == ATT_SUCCESS) {
                 while (pfcCpResponseChannel.tryReceive().isSuccess) { /* drain stale responses */ }
@@ -210,6 +209,7 @@ class BlePfcClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, P
                     PfcMessage.PFC_CONFIGURE_BROADCAST,
                     PfcMessage.PFC_CONFIGURE_5KHZ,
                     PfcMessage.PFC_CONFIGURE_SENSOR_INITIATED_SECURITY_MODE -> {
+                        requireNotNull(params) { "params required for configure command $command" }
                         val bb = ByteBuffer.allocate(1 + params.size)
                         bb.put(command.numVal.toByte())
                         bb.put(params)

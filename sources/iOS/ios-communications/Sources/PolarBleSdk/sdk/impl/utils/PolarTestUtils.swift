@@ -7,8 +7,9 @@ private let SPO2_TEST_DIRECTORY = "SPO2TEST/"
 private let SPO2_TEST_PROTO = "SPO2TRES.BPB"
 private let dateFormat: DateFormatter = {
     let formatter = DateFormatter()
-    formatter.dateFormat = "yyyyMMdd"
+    formatter.dateFormat = "yyyyMMdd±hh:mm"
     formatter.locale = Locale(identifier: "en_US_POSIX")
+    formatter.timeZone = TimeZone.current
     return formatter
 }()
 private let TAG = "PolarTestUtils"
@@ -18,8 +19,9 @@ internal class PolarTestUtils {
     static func readSpo2TestFromDayDirectory(client: BlePsFtpClient, date: Date) -> AsyncThrowingStream<PolarSpo2TestData, Error> {
         return AsyncThrowingStream { continuation in
             Task {
-                BleLogger.trace(TAG, "readSpo2TestFromDayDirectory: \(date)")
-                let spo2TestDirPath = "\(ARABICA_USER_ROOT_FOLDER)\(dateFormat.string(from: date))/\(SPO2_TEST_DIRECTORY)"
+                let dateString = dateFormat.string(from: date).components(separatedBy: "±").first ?? ""
+                BleLogger.trace(TAG, "readSpo2TestFromDayDirectory: \(dateString)")
+                let spo2TestDirPath = "\(ARABICA_USER_ROOT_FOLDER)\(dateString)/\(SPO2_TEST_DIRECTORY)"
                 let listOperation = Protocol_PbPFtpOperation.with { $0.command = .get; $0.path = spo2TestDirPath }
                 do {
                     let response = try await client.request(try listOperation.serializedBytes())

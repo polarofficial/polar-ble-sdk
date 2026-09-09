@@ -328,14 +328,34 @@ internal class PolarTrainingSessionApiImplTest {
     fun `stopExercise sends stop query with save flag`() = runTest {
         val (client, listener) = mockBleConnection(deviceId)
         val api = PolarTrainingSessionApiImpl(listener)
+        val capturedParams = mutableListOf<ByteArray?>()
         coEvery {
             client.query(
                 PftpRequest.PbPFtpQuery.STOP_EXERCISE_VALUE,
-                any()
+                captureNullable(capturedParams)
             )
         } returns ByteArrayOutputStream()
         api.stopExercise(deviceId)
         coVerify { client.query(PftpRequest.PbPFtpQuery.STOP_EXERCISE_VALUE, any()) }
+        val params = PftpRequest.PbPFtpStopExerciseParams.parseFrom(capturedParams[0])
+        Assert.assertTrue("save should default to true", params.save)
+    }
+
+    @Test
+    fun `stopExercise with save=false sends save=false in params`() = runTest {
+        val (client, listener) = mockBleConnection(deviceId)
+        val api = PolarTrainingSessionApiImpl(listener)
+        val capturedParams = mutableListOf<ByteArray?>()
+        coEvery {
+            client.query(
+                PftpRequest.PbPFtpQuery.STOP_EXERCISE_VALUE,
+                captureNullable(capturedParams)
+            )
+        } returns ByteArrayOutputStream()
+        api.stopExercise(deviceId, save = false)
+        coVerify { client.query(PftpRequest.PbPFtpQuery.STOP_EXERCISE_VALUE, any()) }
+        val params = PftpRequest.PbPFtpStopExerciseParams.parseFrom(capturedParams[0])
+        Assert.assertFalse("save should be false when explicitly passed as false", params.save)
     }
 
 
@@ -817,6 +837,37 @@ internal class PolarTrainingSessionApiImplTest {
         Assert.assertTrue(capturedIds.contains(PftpRequest.PbPFtpQuery.STOP_EXERCISE_VALUE))
         val params = PftpRequest.PbPFtpStopExerciseParams.parseFrom(capturedParams[0])
         Assert.assertTrue("save should be true", params.save)
+    }
+
+    @Test
+    fun `stopExercise with save=false sends STOP_EXERCISE_VALUE query with save=false`() = runTest {
+        // Arrange
+        val deviceId = "E123456F"
+        val api = BDBleApiImpl.getInstance(
+            context,
+            setOf(PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_H10_EXERCISE_RECORDING)
+        )
+        val (client, _) = mockPsFtpConnection(deviceId)
+        val capturedIds = mutableListOf<Int>()
+        val capturedParams = mutableListOf<ByteArray?>()
+        coEvery {
+            client.query(
+                capture(capturedIds),
+                captureNullable(capturedParams)
+            )
+        } returns ByteArrayOutputStream()
+
+        try {
+            // Act
+            api.stopExercise(deviceId, save = false)
+        } finally {
+            io.mockk.unmockkObject(PolarServiceClientUtils)
+        }
+
+        // Assert
+        Assert.assertTrue(capturedIds.contains(PftpRequest.PbPFtpQuery.STOP_EXERCISE_VALUE))
+        val params = PftpRequest.PbPFtpStopExerciseParams.parseFrom(capturedParams[0])
+        Assert.assertFalse("save should be false when discarding", params.save)
     }
 
     // ── getExerciseStatus ─────────────────────────────────────────────────────

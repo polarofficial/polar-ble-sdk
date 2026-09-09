@@ -6,5 +6,5 @@ use_frameworks!
 pod 'Zip', '~> 2.1.2'
 
 target 'PSDC' do
-    pod 'PolarBleSdk', '8.2.0'
+    pod 'PolarBleSdk', '8.3.0'
 end

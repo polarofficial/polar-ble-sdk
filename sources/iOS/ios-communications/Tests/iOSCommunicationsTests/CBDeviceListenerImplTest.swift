@@ -47,6 +47,20 @@ final class CBDeviceListenerImplTest: XCTestCase {
         XCTAssertTrue(sut.allSessions().isEmpty)
     }
 
+    // MARK: - removeSession
+
+    func testRemoveSessionReturnsFalseWhenIdentifierIsUnknown() {
+        XCTAssertFalse(sut.removeSession("0014FFFF"))
+        XCTAssertTrue(sut.allSessions().isEmpty)
+    }
+
+    func testRemoveSessionReturnsFalseWhenNoSessionsExistForBluetoothAddress() {
+        let identifier = UUID().uuidString
+
+        XCTAssertFalse(sut.removeSession(identifier))
+        XCTAssertTrue(sut.allSessions().isEmpty)
+    }
+
     // MARK: - removeAllSessions
 
     func testRemoveAllSessionsReturnsZeroWhenNoSessionsExist() {

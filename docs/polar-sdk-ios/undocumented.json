@@ -169,6 +169,69 @@
       "warning": "undocumented"
     },
     {
+      "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/api/PolarBleApiObservers.swift",
+      "line": 81,
+      "symbol": "PolarBleDisconnectReason",
+      "symbol_kind": "source.lang.swift.decl.enum",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/api/PolarBleApiObservers.swift",
+      "line": 116,
+      "symbol": "PolarBleDeviceCommand.restart",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/api/PolarBleApiObservers.swift",
+      "line": 117,
+      "symbol": "PolarBleDeviceCommand.factoryReset",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/api/PolarBleApiObservers.swift",
+      "line": 118,
+      "symbol": "PolarBleDeviceCommand.warehouseSleep",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/api/PolarBleApiObservers.swift",
+      "line": 119,
+      "symbol": "PolarBleDeviceCommand.hibernate",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/api/PolarBleApiObservers.swift",
+      "line": 120,
+      "symbol": "PolarBleDeviceCommand.turnOff",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/api/PolarBleApiObservers.swift",
+      "line": 123,
+      "symbol": "PolarBleRecoveryAction",
+      "symbol_kind": "source.lang.swift.decl.enum",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/api/PolarBleApiObservers.swift",
+      "line": 144,
+      "symbol": "PolarBleDisconnectInfo",
+      "symbol_kind": "source.lang.swift.decl.struct",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/api/PolarBleApiObservers.swift",
+      "line": 152,
+      "symbol": "PolarBleDisconnectInfo.init(reason:recoveryAction:deviceCommand:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
       "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/api/PolarBleLowLevelApi.swift",
       "line": 5,
       "symbol": "PolarBleLowLevelApi",

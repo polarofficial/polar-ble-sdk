@@ -128,7 +128,7 @@ class PmdSetting {
             }
 
             // DERIVED_MEASUREMENT_METHOD: value is a bitmask (bit N = method N selected).
-            // Expand to individual 1-byte method IDs per SAGRFC 85.15.
+            // Expand to individual 1-byte method IDs
             // e.g. bitmask=1 (bit 0) → DOWNSAMPLE id=0 → [type=7][count=1][0x00]
             //      bitmask=3 (bits 0+1) → DOWNSAMPLE+MIN  → [type=7][count=2][0x00][0x01]
             if (key == PmdSettingType.DERIVED_MEASUREMENT_METHOD) {

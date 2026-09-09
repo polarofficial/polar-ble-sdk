@@ -8,9 +8,9 @@ private let DAILY_SUMMARY_DIRECTORY = "DSUM/"
 private let DAILY_SUMMARY_PROTO = "DSUM.BPB"
 private let dateFormat: DateFormatter = {
     let formatter = DateFormatter()
-    formatter.dateFormat = "yyyyMMdd"
+    formatter.dateFormat = "yyyyMMdd±hh:mm"
     formatter.locale = Locale(identifier: "en_US_POSIX")
-    formatter.timeZone = TimeZone(abbreviation: "UTC")
+    formatter.timeZone = TimeZone.current
     return formatter
 }()
 private let TAG = "PolarActivityUtils"
@@ -19,8 +19,9 @@ internal class PolarActivityUtils {
 
     /// Read step count for given date.
     static func readStepsFromDayDirectory(client: BlePsFtpClient, date: Date) async throws -> Int {
-        BleLogger.trace(TAG, "readStepsFromDayDirectory: \(date)")
-        let activityFileDir = "\(ARABICA_USER_ROOT_FOLDER)\(dateFormat.string(from: date))/\(ACTIVITY_DIRECTORY)"
+        let dateString = dateFormat.string(from: date).components(separatedBy: "±").first ?? ""
+        BleLogger.trace(TAG, "readStepsFromDayDirectory: \(dateString)")
+        let activityFileDir = "\(ARABICA_USER_ROOT_FOLDER)\(dateString)/\(ACTIVITY_DIRECTORY)"
         let filePaths: [String]
         do {
             filePaths = try await listFiles(client: client, folderPath: activityFileDir) { entry in
@@ -48,8 +49,9 @@ internal class PolarActivityUtils {
 
     /// Read distance in meters for given date.
     static func readDistanceFromDayDirectory(client: BlePsFtpClient, date: Date) async throws -> Float {
-        BleLogger.trace(TAG, "readDistanceFromDayDirectory: \(date)")
-        let dailySummaryFilePath = "\(ARABICA_USER_ROOT_FOLDER)\(dateFormat.string(from: date))/\(DAILY_SUMMARY_DIRECTORY)\(DAILY_SUMMARY_PROTO)"
+        let dateString = dateFormat.string(from: date).components(separatedBy: "±").first ?? ""
+        BleLogger.trace(TAG, "readDistanceFromDayDirectory: \(dateString)")
+        let dailySummaryFilePath = "\(ARABICA_USER_ROOT_FOLDER)\(dateString)/\(DAILY_SUMMARY_DIRECTORY)\(DAILY_SUMMARY_PROTO)"
         let operation = Protocol_PbPFtpOperation.with { $0.command = .get; $0.path = dailySummaryFilePath }
         do {
             let response = try await client.request(try operation.serializedBytes())
@@ -63,8 +65,9 @@ internal class PolarActivityUtils {
 
     /// Read active time for given date.
     static func readActiveTimeFromDayDirectory(client: BlePsFtpClient, date: Date) async throws -> PolarActiveTimeData {
-        BleLogger.trace(TAG, "readActiveTimeFromDayDirectory: \(date)")
-        let dailySummaryFilePath = "\(ARABICA_USER_ROOT_FOLDER)\(dateFormat.string(from: date))/\(DAILY_SUMMARY_DIRECTORY)\(DAILY_SUMMARY_PROTO)"
+        let dateString = dateFormat.string(from: date).components(separatedBy: "±").first ?? ""
+        BleLogger.trace(TAG, "readActiveTimeFromDayDirectory: \(dateString)")
+        let dailySummaryFilePath = "\(ARABICA_USER_ROOT_FOLDER)\(dateString)/\(DAILY_SUMMARY_DIRECTORY)\(DAILY_SUMMARY_PROTO)"
         let operation = Protocol_PbPFtpOperation.with { $0.command = .get; $0.path = dailySummaryFilePath }
         do {
             let response = try await client.request(try operation.serializedBytes())
@@ -88,8 +91,9 @@ internal class PolarActivityUtils {
 
     /// Read calories for given date.
     static func readCaloriesFromDayDirectory(client: BlePsFtpClient, date: Date, caloriesType: CaloriesType) async throws -> Int {
-        BleLogger.trace(TAG, "readCaloriesFromDayDirectory: \(date), type: \(caloriesType)")
-        let dailySummaryFilePath = "\(ARABICA_USER_ROOT_FOLDER)\(dateFormat.string(from: date))/\(DAILY_SUMMARY_DIRECTORY)\(DAILY_SUMMARY_PROTO)"
+        let dateString = dateFormat.string(from: date).components(separatedBy: "±").first ?? ""
+        BleLogger.trace(TAG, "readCaloriesFromDayDirectory: \(dateString), type: \(caloriesType)")
+        let dailySummaryFilePath = "\(ARABICA_USER_ROOT_FOLDER)\(dateString)/\(DAILY_SUMMARY_DIRECTORY)\(DAILY_SUMMARY_PROTO)"
         let operation = Protocol_PbPFtpOperation.with { $0.command = .get; $0.path = dailySummaryFilePath }
         do {
             let response = try await client.request(try operation.serializedBytes())
@@ -107,8 +111,9 @@ internal class PolarActivityUtils {
 
     /// Read and return activity samples data for a given date.
     static func readActivitySamplesDataFromDayDirectory(client: BlePsFtpClient, date: Date) async throws -> PolarActivityDayData {
-        BleLogger.trace(TAG, "readActivitySamplesDataFromDayDirectory: \(date)")
-        let activityFileDir = "\(ARABICA_USER_ROOT_FOLDER)\(dateFormat.string(from: date))/\(ACTIVITY_DIRECTORY)"
+        let dateString = dateFormat.string(from: date).components(separatedBy: "±").first ?? ""
+        BleLogger.trace(TAG, "readActivitySamplesDataFromDayDirectory: \(dateString)")
+        let activityFileDir = "\(ARABICA_USER_ROOT_FOLDER)\(dateString)/\(ACTIVITY_DIRECTORY)"
         let filePaths: [String]
         do {
             filePaths = try await listFiles(client: client, folderPath: activityFileDir) { entry in
@@ -116,7 +121,7 @@ internal class PolarActivityUtils {
             }
         } catch {
             if error.localizedDescription.contains("103") {
-                BleLogger.error("No activity files found for date: \(dateFormat.string(from: date))")
+                BleLogger.error("No activity files found for date: \(dateString)")
                 return PolarActivityDayData(polarActivityDataList: [])
             }
             BleLogger.error("Failed to list activity sample files.")
@@ -147,8 +152,9 @@ internal class PolarActivityUtils {
 
     /// Read daily summary data for given date. Returns nil if not found (error 103).
     static func readDailySummaryDataFromDayDirectory(client: BlePsFtpClient, date: Date) async throws -> PolarDailySummary? {
-        BleLogger.trace(TAG, "readDailySummaryDataFromDayDirectory: \(date)")
-        let dailySummaryFilePath = "\(ARABICA_USER_ROOT_FOLDER)\(dateFormat.string(from: date))/\(DAILY_SUMMARY_DIRECTORY)\(DAILY_SUMMARY_PROTO)"
+        let dateString = dateFormat.string(from: date).components(separatedBy: "±").first ?? ""
+        BleLogger.trace(TAG, "readDailySummaryDataFromDayDirectory: \(dateString)")
+        let dailySummaryFilePath = "\(ARABICA_USER_ROOT_FOLDER)\(dateString)/\(DAILY_SUMMARY_DIRECTORY)\(DAILY_SUMMARY_PROTO)"
         let operation = Protocol_PbPFtpOperation.with { $0.command = .get; $0.path = dailySummaryFilePath }
         do {
             let response = try await client.request(try operation.serializedBytes())
@@ -156,7 +162,7 @@ internal class PolarActivityUtils {
             return try PolarDailySummary.fromProto(proto: proto)
         } catch {
             if error.localizedDescription.contains("103") {
-                BleLogger.error("No activity files found for date: \(dateFormat.string(from: date))")
+                BleLogger.error("No activity files found for date: \(dateString)")
                 return nil
             }
             BleLogger.error("Read daily summary failed for date: \(date), error: \(error)")

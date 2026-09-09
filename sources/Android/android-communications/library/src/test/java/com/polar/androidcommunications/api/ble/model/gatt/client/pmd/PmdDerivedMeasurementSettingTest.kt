@@ -4,15 +4,12 @@ import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdSetting.
 import org.junit.Assert
 import org.junit.Test
 
-/**
- * Tests for Derived Measurement settings parsing and serialization (SAGRFC 85.15).
- */
 class PmdDerivedMeasurementSettingTest {
 
     /**
      * Verifies that a Get Derived Measurement Settings Group response payload is parsed correctly.
      *
-     * Byte sequence mirrors the spec (SAGRFC 85.15):
+     * Byte sequence:
      *  0C 01 00          – GROUP_ID (12), count 1, value 0
      *  0B 01 E8 03 00 00 – TIME_WINDOW (11), count 1, value 1000 ms
      *  07 03 00 01 02    – METHOD (7), count 3, modes 0 (BASIC), 1 (MINIMAL_STATS), 2 (DETAILED_STATS)

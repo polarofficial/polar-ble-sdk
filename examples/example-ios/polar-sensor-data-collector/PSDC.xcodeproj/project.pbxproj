@@ -47,6 +47,7 @@
 		AA65F27E2FC42F89008C09FA /* FeatureSupported.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA65F27D2FC42F89008C09FA /* FeatureSupported.swift */; };
 		AA74C2212BDA377D005E0908 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA74C2202BDA377D005E0908 /* ContentView.swift */; };
 		AA74C2232BDA39D6005E0908 /* PolarBleSdkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA74C2222BDA39D6005E0908 /* PolarBleSdkManager.swift */; };
+		AB0000000000000000000001 /* AppLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB0000000000000000000002 /* AppLogger.swift */; };
 		AA74C2262BDA3A49005E0908 /* DeviceConnectionState.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA74C2252BDA3A49005E0908 /* DeviceConnectionState.swift */; };
 		AA74C2282BDA3B67005E0908 /* DeviceSearch.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA74C2272BDA3B67005E0908 /* DeviceSearch.swift */; };
 		AA74C22A2BDA3B99005E0908 /* Messages.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA74C2292BDA3B99005E0908 /* Messages.swift */; };
@@ -155,6 +156,7 @@
 		AA65F27D2FC42F89008C09FA /* FeatureSupported.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureSupported.swift; sourceTree = "<group>"; };
 		AA74C2202BDA377D005E0908 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		AA74C2222BDA39D6005E0908 /* PolarBleSdkManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarBleSdkManager.swift; sourceTree = "<group>"; };
+		AB0000000000000000000002 /* AppLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLogger.swift; sourceTree = "<group>"; };
 		AA74C2252BDA3A49005E0908 /* DeviceConnectionState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceConnectionState.swift; sourceTree = "<group>"; };
 		AA74C2272BDA3B67005E0908 /* DeviceSearch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceSearch.swift; sourceTree = "<group>"; };
 		AA74C2292BDA3B99005E0908 /* Messages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Messages.swift; sourceTree = "<group>"; };
@@ -238,6 +240,7 @@
 			isa = PBXGroup;
 			children = (
 				AA74C2222BDA39D6005E0908 /* PolarBleSdkManager.swift */,
+				AB0000000000000000000002 /* AppLogger.swift */,
 				9537D58A2CFF06D900B6A1E6 /* PolarBleDeviceManager.swift */,
 				AA74C25D2BDA3F77005E0908 /* PSDCApp.swift */,
 				AA74C2442BDA3D6D005E0908 /* Views */,
@@ -671,6 +674,7 @@
 				AA74C24C2BDA3DE6005E0908 /* DevicesettingsView.swift in Sources */,
 				AA74C2432BDA3D45005E0908 /* ButtonStyle.swift in Sources */,
 				AA74C2232BDA39D6005E0908 /* PolarBleSdkManager.swift in Sources */,
+				AB0000000000000000000001 /* AppLogger.swift in Sources */,
 				AAA0FE092BEA3B42005368A7 /* PpiRecordingFeature.swift in Sources */,
 				84F749052C6355C400038A4B /* ActivityRecordingData.swift in Sources */,
 				84954BAD2E9E65C5000A5C0A /* DataLoadProgressView.swift in Sources */,

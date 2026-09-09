@@ -117,7 +117,12 @@ var pathtoroot = "../../../../../../../../../";
 public final class <span class="typeNameLabel"><a href=BlePsFtpClient.html>BlePsFtpClient</a></span>
 extends <a href=../../BleGattBase.html>BleGattBase</a>
                     </pre>
-                    <div class="block"><p>Polar simple file transfer client declaration.</p></div>
+                    <div class="block"><p>Polar simple file transfer client declaration.</p><p>Operations (<a href=BlePsFtpClient.html#request(kotlin.ByteArray,com.polar.androidcommunications.api.ble.model.gatt.client.psftp.BlePsFtpClient.ProgressCallback)>request</a>, <a href=BlePsFtpClient.html#query(java.lang.Integer,kotlin.ByteArray)>query</a>, <a href=BlePsFtpClient.html#write(kotlin.ByteArray,java.io.ByteArrayInputStream)>write</a>, <a href=BlePsFtpClient.html#sendNotification(java.lang.Integer,kotlin.ByteArray)>sendNotification</a>) can suspend for up to 90 seconds while waiting for BLE packets from the device. Without an early-exit path, a BLE disconnection would leave those coroutines blocked on the internal channels — holding operationMutex and preventing any subsequent operation from starting.</p><p>To solve this, every operation participates in a two-sided race via Kotlin's select:</p><pre><code>withTimeoutOrNull(timeoutMillis) {
+    select {
+        channel.onReceive { ... }           // normal path: BLE packet arrives
+        disconnectSignal.onAwait { ... }    // fast path: disconnect fires
+    }
+}</code></pre><p><code>disconnectSignal</code> is a snapshot of disconnectDeferred taken at the start of each operation, <i>before</i> the mutex is acquired. When <a href=BlePsFtpClient.html#reset()>reset</a> is called on disconnection:</p><ul><li><p>disconnectDeferred is replaced with a fresh <code>CompletableDeferred</code> for the next connection.</p></li><li><p>The <i>old</i> deferred is completed exceptionally with <a href=../../../../exceptions/BleDisconnected.html>BleDisconnected</a>.</p></li></ul><p>Any coroutine suspended in <code>onAwait</code> on the old deferred is immediately unblocked: because the deferred completed <i>exceptionally</i>, <code>onAwait</code> re-throws <a href=../../../../exceptions/BleDisconnected.html>BleDisconnected</a> rather than executing its lambda. That exception propagates through <code>withTimeoutOrNull</code> (which only catches <code>TimeoutCancellationException</code>), out of the suspend helper, and up to <code>operationMutex.withLock</code>, whose <code>finally</code> block releases the lock — freeing the next waiting operation immediately.</p><p>Capture-before-lock ordering prevents a race: even if <a href=BlePsFtpClient.html#reset()>reset</a> runs between the snapshot (<code>val disconnectSignal = disconnectDeferred</code>) and the first suspension point, the old deferred is already completed exceptionally, so <code>onAwait</code> throws the moment the <code>select</code> starts.</p></div>
 
                     <dl>
 
@@ -405,7 +410,7 @@ extends <a href=../../BleGattBase.html>BleGattBase</a>
                                         <tr id="i15" class="rowColor">
                                             <td class="colFirst"><code>final <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
                                             </td>
-                                            <th class="colSecond" scope="row"><code><a href=BlePsFtpClient.html#suspendReadResponse(java.io.ByteArrayOutputStream,java.lang.Long)>suspendReadResponse</a>(<a href=https://developer.android.com/reference/kotlin/java/io/ByteArrayOutputStream.html>ByteArrayOutputStream</a> outputStream, <a href=https://developer.android.com/reference/kotlin/java/lang/Long.html>Long</a> timeoutMillis) </code>
+                                            <th class="colSecond" scope="row"><code><a href=BlePsFtpClient.html#suspendReadResponse(java.io.ByteArrayOutputStream,java.lang.Long,kotlinx.coroutines.CompletableDeferred)>suspendReadResponse</a>(<a href=https://developer.android.com/reference/kotlin/java/io/ByteArrayOutputStream.html>ByteArrayOutputStream</a> outputStream, <a href=https://developer.android.com/reference/kotlin/java/lang/Long.html>Long</a> timeoutMillis, CompletableDeferred&lt;<a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a>&gt; disconnectSignal) </code>
                                             </th>
                                             <td class="colLast"></td>
                                         </tr>
@@ -419,7 +424,7 @@ extends <a href=../../BleGattBase.html>BleGattBase</a>
                                             <!--   -->
                                         </a>
                                             <h3>Methods inherited from class&nbsp;com.polar.androidcommunications.api.ble.model.gatt.BleGattBase</h3>
-                                            <code>addCharacteristicNotification, authenticationCompleted, authenticationFailed, containsCharacteristic, containsCharacteristicRead, containsNotifyCharacteristic, descriptorWritten, getAvailableCharacteristics, getNotificationAtomicInteger, isAutomatic, isAutomaticRead, isEncryptionRequired, isServiceDiscovered, processCharacteristicDiscovered, removeCharacteristicNotification, serviceBelongsToClient, setMtuSize, setServiceDiscovered, waitNotificationEnabled, waitServiceDiscovered</code></li>
+                                            <code>addCharacteristicNotification, authenticationCompleted, authenticationFailed, containsCharacteristic, containsCharacteristicRead, containsNotifyCharacteristic, descriptorWritten, getAvailableCharacteristics, getNotificationAtomicInteger, isAutomatic, isAutomaticRead, isEncryptionRequired, isServiceDiscovered, processCharacteristicDiscovered, removeCharacteristicNotification, serviceBelongsToClient, setMtuSize, setServiceDiscovered, waitNotificationEnabled, waitNotificationEnabled, waitServiceDiscovered</code></li>
                                  
                                     <li class="blockList"><a id="methods.inherited.from.class.java.lang.Object">
                                         <!--   -->
@@ -904,7 +909,7 @@ extends <a href=../../BleGattBase.html>BleGattBase</a>
                                     </li>
                                 </ul>
                                 
-                                <a id="suspendReadResponse(java.io.ByteArrayOutputStream,java.lang.Long)">
+                                <a id="suspendReadResponse(java.io.ByteArrayOutputStream,java.lang.Long,kotlinx.coroutines.CompletableDeferred)">
                                     <!--   -->
                                 </a>
                                 <ul class=
@@ -912,7 +917,7 @@ extends <a href=../../BleGattBase.html>BleGattBase</a>
                                           >
                                     <li class="blockList">
                                         <h4>suspendReadResponse</h4>
-                                        <pre class="methodSignature"> final <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a> <a href=BlePsFtpClient.html#suspendReadResponse(java.io.ByteArrayOutputStream,java.lang.Long)>suspendReadResponse</a>(<a href=https://developer.android.com/reference/kotlin/java/io/ByteArrayOutputStream.html>ByteArrayOutputStream</a> outputStream, <a href=https://developer.android.com/reference/kotlin/java/lang/Long.html>Long</a> timeoutMillis)</pre>
+                                        <pre class="methodSignature"> final <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a> <a href=BlePsFtpClient.html#suspendReadResponse(java.io.ByteArrayOutputStream,java.lang.Long,kotlinx.coroutines.CompletableDeferred)>suspendReadResponse</a>(<a href=https://developer.android.com/reference/kotlin/java/io/ByteArrayOutputStream.html>ByteArrayOutputStream</a> outputStream, <a href=https://developer.android.com/reference/kotlin/java/lang/Long.html>Long</a> timeoutMillis, CompletableDeferred&lt;<a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a>&gt; disconnectSignal)</pre>
                                         <div class="block"></div>
 
                                         <dl>

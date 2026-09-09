@@ -35,11 +35,51 @@ interface PolarBleApiCallbackProvider {
     fun deviceConnecting(polarDeviceInfo: PolarDeviceInfo)
 
     /**
-     * Device is now disconnected
+     * Device is now disconnected. Prefer the overload that receives
+     * [PolarBleDisconnectInfo] for recovery-specific handling.
      *
      * @param polarDeviceInfo Polar device information
      */
+    @Deprecated("Use deviceDisconnected(polarDeviceInfo, info) for typed disconnect diagnostics")
     fun deviceDisconnected(polarDeviceInfo: PolarDeviceInfo)
+
+    /**
+     * Device is disconnected with a reason and recovery recommendation.
+     *
+     * For [PolarBleRecoveryAction.RETRY_OPERATION], wait for the next
+     * [deviceConnected] callback before retrying the failed idempotent SDK
+     * operation. The SDK does not replay arbitrary application operations;
+     * do not blindly repeat a non-idempotent write.
+     *
+     * For [PolarBleRecoveryAction.RETRY_CONNECTION], keep the device nearby and
+     * powered on while the SDK reconnects and rebuilds the GATT session. Retry
+     * the interrupted operation only after [deviceConnected]. A timeout alone
+     * does not prove that pairing information was removed.
+     *
+     * For [PolarBleRecoveryAction.REMOVE_PAIRING_AND_PAIR_AGAIN], stop automatic
+     * retries, remove/forget the pairing in Android Bluetooth settings and from
+     * the device when required, put the device into pairing mode, and connect
+     * again.
+    *
+    * For [PolarBleRecoveryAction.RETRY_PAIRING], Android started or retried
+    * security negotiation but the peripheral did not complete it. Put the
+    * device into its explicit pairing mode, keep it disconnected from other
+    * phones, and connect again. This does not prove that an existing Android
+    * bond was removed.
+     *
+     * For [PolarBleRecoveryAction.NONE], use normal disconnected-device handling.
+    * An explicit [PolarBleApi.disconnectFromDevice] call is intentional and is
+    * reported with [PolarBleDisconnectReason.CONNECTION_LOST] and
+    * [PolarBleRecoveryAction.NONE]; applications should not present pairing
+    * recovery instructions for that case.
+     *
+     * @param polarDeviceInfo Polar device information
+     * @param info typed disconnect reason and recovery recommendation
+     */
+    fun deviceDisconnected(
+        polarDeviceInfo: PolarDeviceInfo,
+        info: PolarBleDisconnectInfo
+    ) {}
 
     /**
      * The feature is available in this device and it is ready. Called only for the features which are specified in [PolarBleApi] construction.

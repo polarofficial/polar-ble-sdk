@@ -33,11 +33,17 @@ abstract class PolarBleApiCallback : PolarBleApiCallbackProvider {
     override fun deviceConnecting(polarDeviceInfo: PolarDeviceInfo) {}
 
     /**
-     * Device is now disconnected
+     * Device is now disconnected.
      *
      * @param polarDeviceInfo Polar device information
      */
+    @Deprecated("Use deviceDisconnected(polarDeviceInfo, info) for typed disconnect diagnostics")
     override fun deviceDisconnected(polarDeviceInfo: PolarDeviceInfo) {}
+
+    override fun deviceDisconnected(
+        polarDeviceInfo: PolarDeviceInfo,
+        info: PolarBleDisconnectInfo
+    ) {}
 
     /**
      * Called when the feature in connected device is available and it is ready. Called only for the features which are specified by [PolarBleApi] instantiation.

@@ -9,6 +9,16 @@ import CoreBluetooth
 /// Unit tests for `PolarBleApiImpl`.
 final class PolarBleApiImplTests: XCTestCase {
 
+    private final class DisconnectObserver: PolarBleApiObserver {
+        var disconnectInfo: PolarBleDisconnectInfo?
+
+        func deviceConnecting(_ identifier: PolarDeviceInfo) {}
+        func deviceConnected(_ identifier: PolarDeviceInfo) {}
+        func deviceDisconnected(_ identifier: PolarDeviceInfo, info: PolarBleDisconnectInfo) {
+            disconnectInfo = info
+        }
+    }
+
     // MARK: - Properties
 
     private let deviceId = "ABCDEF01"
@@ -211,6 +221,99 @@ final class PolarBleApiImplTests: XCTestCase {
         comps.second = 0
         comps.timeZone = TimeZone(secondsFromGMT: 0)
         return Calendar(identifier: .gregorian).date(from: comps)!
+    }
+
+    private func disconnectInfo(for session: BleDeviceSession) -> PolarBleDisconnectInfo? {
+        let observer = DisconnectObserver()
+        v2Api.observer = observer
+        session.previousState = .sessionOpen
+        session.state = .sessionOpenPark
+        v2Api.stateChanged(session)
+        return observer.disconnectInfo
+    }
+
+    // MARK: - Device command disconnect classification
+
+    func test_deviceCommandDisconnect_withValidPendingCommand_reportsDeviceCommand() {
+        v2MockSession.markExpectedDeviceCommandDisconnect(.restart)
+
+        let info = disconnectInfo(for: v2MockSession)
+
+        XCTAssertEqual(info?.reason, .deviceCommand)
+        XCTAssertEqual(info?.recoveryAction, PolarBleRecoveryAction.none)
+        XCTAssertEqual(info?.deviceCommand, .restart)
+    }
+
+    func test_deviceCommandDisconnect_withValidPendingCommandAndUnknownError_reportsDeviceCommand() {
+        v2MockSession.error = BleGattException.gattDisconnected
+        v2MockSession.markExpectedDeviceCommandDisconnect(.factoryReset)
+
+        let info = disconnectInfo(for: v2MockSession)
+
+        XCTAssertEqual(info?.reason, .deviceCommand)
+        XCTAssertEqual(info?.deviceCommand, .factoryReset)
+    }
+
+    func test_deviceCommandDisconnect_withExpiredPendingCommand_fallsThroughToConnectionLost() {
+        v2MockSession.markExpectedDeviceCommandDisconnect(.restart, validFor: -1)
+
+        let info = disconnectInfo(for: v2MockSession)
+
+        XCTAssertEqual(info?.reason, .connectionLost)
+        XCTAssertNil(info?.deviceCommand)
+    }
+
+    func test_deviceCommandDisconnect_pendingCommandDoesNotOverrideClassifiedPairingError() {
+        v2MockSession.error = NSError(domain: CBError.errorDomain, code: CBError.Code.peerRemovedPairingInformation.rawValue)
+        v2MockSession.markExpectedDeviceCommandDisconnect(.restart)
+
+        let info = disconnectInfo(for: v2MockSession)
+
+        XCTAssertEqual(info?.reason, .pairingInformationRemoved)
+        XCTAssertEqual(info?.recoveryAction, .removePairingAndPairAgain)
+        XCTAssertNil(info?.deviceCommand)
+    }
+
+    func test_deviceCommandDisconnect_mapsEveryPendingCommand() {
+        let commandMappings: [(BleDeviceCommand, PolarBleDeviceCommand)] = [
+            (.restart, .restart),
+            (.factoryReset, .factoryReset),
+            (.warehouseSleep, .warehouseSleep),
+            (.hibernate, .hibernate),
+            (.turnOff, .turnOff),
+        ]
+
+        for (command, expectedCommand) in commandMappings {
+            v2MockSession.markExpectedDeviceCommandDisconnect(command)
+
+            let info = disconnectInfo(for: v2MockSession)
+
+            XCTAssertEqual(info?.reason, .deviceCommand)
+            XCTAssertEqual(info?.recoveryAction, PolarBleRecoveryAction.none)
+            XCTAssertEqual(info?.deviceCommand, expectedCommand)
+            v2MockSession.clearExpectedDeviceCommandDisconnect()
+        }
+    }
+
+    // MARK: - encryptionTimedOut disconnect classification
+
+    func test_encryptionTimedOutDisconnect_afterEstablishedConnection_reportsNoActionNeeded() {
+        v2MockSession.markConnectionEstablished()
+        v2MockSession.error = NSError(domain: CBError.errorDomain, code: CBError.Code.encryptionTimedOut.rawValue)
+
+        let info = disconnectInfo(for: v2MockSession)
+
+        XCTAssertEqual(info?.reason, .encryptionTimedOut)
+        XCTAssertEqual(info?.recoveryAction, PolarBleRecoveryAction.none)
+    }
+
+    func test_encryptionTimedOutDisconnect_beforeEstablishedConnection_reportsRetryConnection() {
+        v2MockSession.error = NSError(domain: CBError.errorDomain, code: CBError.Code.encryptionTimedOut.rawValue)
+
+        let info = disconnectInfo(for: v2MockSession)
+
+        XCTAssertEqual(info?.reason, .encryptionTimedOut)
+        XCTAssertEqual(info?.recoveryAction, .retryConnection)
     }
 
     // MARK: - getLocalTime
@@ -1314,6 +1417,77 @@ final class PolarBleApiImplTests: XCTestCase {
         XCTAssertNotNil(error)
     }
 
+    func test_deviceControlCommands_markExpectedDisconnectForEachCommand() throws {
+        func assertCommand(
+            _ expectedCommand: BleDeviceCommand,
+            operation: @escaping () async throws -> Void
+        ) throws {
+            try awaitVoidAsync(operation)
+            XCTAssertEqual(v2MockSession.expectedDeviceCommandIfStillValid(), expectedCommand)
+            v2MockSession.clearExpectedDeviceCommandDisconnect()
+        }
+
+        try assertCommand(.factoryReset) { [self] in
+            try await v2Api.doFactoryReset(deviceId, preservePairingInformation: true)
+        }
+        try assertCommand(.factoryReset) { [self] in
+            try await v2Api.doFactoryReset(deviceId)
+        }
+        try assertCommand(.restart) { [self] in
+            try await v2Api.doRestart(deviceId, preservePairingInformation: true)
+        }
+        try assertCommand(.restart) { [self] in
+            try await v2Api.doRestart(deviceId)
+        }
+        try assertCommand(.warehouseSleep) { [self] in
+            try await v2Api.setWarehouseSleep(deviceId, enableWarehouseSleep: false)
+        }
+        try assertCommand(.warehouseSleep) { [self] in
+            try await v2Api.setWarehouseSleep(deviceId)
+        }
+        try assertCommand(.hibernate) { [self] in
+            try await v2Api.setHibernateMode(deviceId)
+        }
+        try assertCommand(.turnOff) { [self] in
+            try await v2Api.turnDeviceOff(deviceId)
+        }
+    }
+
+    // Note: BleGattException.swift is compiled directly into both the PolarBleSdk
+    // framework target and this PolarBleSdkTests target, so the unqualified name here
+    // would resolve to a different nominal type than the one PolarBleApiImpl's `catch
+    // ... as BleGattException` expects. Qualify with the PolarBleSdk module explicitly
+    // so the thrown value matches.
+    func test_doRestart_gattTransportNotAvailable_isTreatedAsExpectedDisconnect() throws {
+        v2MockClient.sendNotificationError = PolarBleSdk.BleGattException.gattTransportNotAvailable
+
+        try awaitVoidAsync { [self] in try await v2Api.doRestart(deviceId) }
+
+        XCTAssertEqual(v2MockSession.expectedDeviceCommandIfStillValid(), .restart)
+    }
+
+    func test_doRestartWithPreservePairing_gattTransportNotAvailable_isTreatedAsExpectedDisconnect() throws {
+        v2MockClient.sendNotificationError = PolarBleSdk.BleGattException.gattTransportNotAvailable
+
+        try awaitVoidAsync { [self] in try await v2Api.doRestart(deviceId, preservePairingInformation: true) }
+
+        XCTAssertEqual(v2MockSession.expectedDeviceCommandIfStillValid(), .restart)
+    }
+
+    func test_doRestart_unrelatedGattException_isRethrownNotSwallowed() {
+        v2MockClient.sendNotificationError = PolarBleSdk.BleGattException.gattCharacteristicNotFound
+
+        let error = awaitErrorAsync { [self] in try await v2Api.doRestart(deviceId) }
+        if case PolarBleSdk.BleGattException.gattCharacteristicNotFound = error! { } else {
+            XCTFail("Expected gattCharacteristicNotFound to propagate, got \(String(describing: error))")
+        }
+
+        let error2 = awaitErrorAsync { [self] in try await v2Api.doRestart(deviceId, preservePairingInformation: true) }
+        if case PolarBleSdk.BleGattException.gattCharacteristicNotFound = error2! { } else {
+            XCTFail("Expected gattCharacteristicNotFound to propagate, got \(String(describing: error2))")
+        }
+    }
+
     // MARK: - Low-level API (PolarBleLowLevelApi)
 
     // MARK: readFile
@@ -1437,6 +1611,13 @@ final class PolarBleApiImplTests: XCTestCase {
             }
             throw NSError(domain: "test.unrouted", code: 0, userInfo: [NSLocalizedDescriptionKey: "Unrouted: \(key)"])
         }
+    }
+
+    private func setUserDeviceSettingsReadResponse(_ settingsData: Data) {
+        v2MockClient.requestReturnValueClosure = makeRequestClosure([
+            "/U/0/S/": { try self.makeDirectoryProtoData(entries: [("UDEVSET.BPB", UInt64(settingsData.count))]) },
+            DEVICE_SETTINGS_FILE_PATH: { settingsData }
+        ])
     }
 
     // MARK: getFileList
@@ -2280,7 +2461,7 @@ final class PolarBleApiImplTests: XCTestCase {
 
        func test_userSettingsReadAndWriteApis_useExpectedPathsAndValues() throws {
            let getProtoData = try makeUserDeviceSettingsProto(deviceLocation: .deviceLocationWristRight, usbMode: .on, telemetryEnabled: true, autosEnabled: true, atdState: .on, atdSensitivity: 44, minimumDuration: 600)
-           v2MockClient.requestReturnValue = .success(getProtoData)
+           setUserDeviceSettingsReadResponse(getProtoData)
 
            let result = try awaitSingleAsync { [self] in
                try await v2Api.getPolarUserDeviceSettings(identifier: deviceId)
@@ -2310,7 +2491,7 @@ final class PolarBleApiImplTests: XCTestCase {
        }
 
        func test_settingsMutationApis_updateExpectedFields() throws {
-           v2MockClient.requestReturnValue = .success(try makeUserDeviceSettingsProto())
+           setUserDeviceSettingsReadResponse(try makeUserDeviceSettingsProto())
            try awaitSingleAsync { [self] in
                try await v2Api.setUsbConnectionMode(deviceId, enabled: true)
                return ()
@@ -2319,7 +2500,7 @@ final class PolarBleApiImplTests: XCTestCase {
            XCTAssertEqual(written.usbConnectionSettings.mode, .on)
 
            v2MockClient.writeCalls.removeAll()
-           v2MockClient.requestReturnValue = .success(try makeUserDeviceSettingsProto())
+           setUserDeviceSettingsReadResponse(try makeUserDeviceSettingsProto())
            try awaitSingleAsync { [self] in
                try await v2Api.setAutomaticTrainingDetectionSettings(deviceId, mode: true, sensitivity: 77, minimumDuration: 900)
                return ()
@@ -2330,7 +2511,7 @@ final class PolarBleApiImplTests: XCTestCase {
            XCTAssertEqual(written.automaticMeasurementSettings.automaticTrainingDetectionSettings.minimumTrainingDurationSeconds, 900)
 
            v2MockClient.writeCalls.removeAll()
-           v2MockClient.requestReturnValue = .success(try makeUserDeviceSettingsProto())
+           setUserDeviceSettingsReadResponse(try makeUserDeviceSettingsProto())
            try awaitSingleAsync { [self] in
                try await v2Api.setTelemetryEnabled(deviceId, enabled: true)
                return ()
@@ -2339,7 +2520,7 @@ final class PolarBleApiImplTests: XCTestCase {
            XCTAssertTrue(written.telemetrySettings.telemetryEnabled)
 
            v2MockClient.writeCalls.removeAll()
-           v2MockClient.requestReturnValue = .success(try makeUserDeviceSettingsProto(autosEnabled: true))
+           setUserDeviceSettingsReadResponse(try makeUserDeviceSettingsProto(autosEnabled: true))
            try awaitSingleAsync { [self] in
                try await v2Api.setAutomaticOHRMeasurementEnabled(deviceId, enabled: false)
                return ()

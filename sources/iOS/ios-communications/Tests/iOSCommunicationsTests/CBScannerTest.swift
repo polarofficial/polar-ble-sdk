@@ -20,6 +20,7 @@ final class CBScannerTest: XCTestCase {
     var sessions: AtomicList<CBDeviceSessionImpl>!
     var sut: CBScanner!
     var cancellables = Set<AnyCancellable>()
+    // Use `sut` in all tests; keep a single scanner instance under test.
 
     override func setUpWithError() throws {
         queue = DispatchQueue(label: "com.polar.test.scanner")
@@ -131,12 +132,15 @@ final class CBScannerTest: XCTestCase {
     }
 
     func testStopScanThenStartScanLeavesStateIdle() {
-        // Call stopScan twice — due to the adminStops counter behaviour
-        // (adminStops = +1 in stopped state always resets to 1) a single
-        // startScan() is sufficient to return to idle.
+        // With nested admin stops, one start only decrements the counter and
+        // scanner must remain stopped until all admin stops are released.
         sut.stopScan()
         drainQueue()
         sut.stopScan()
+        drainQueue()
+        XCTAssertEqual(.stopped, sut.state)
+
+        sut.startScan()
         drainQueue()
         XCTAssertEqual(.stopped, sut.state)
 
@@ -288,11 +292,87 @@ final class CBScannerTest: XCTestCase {
 
         XCTAssertFalse(sut.isScanning)
     }
+    
+    func testNestedAdminStopsAreCounted() {
+           sut.stopScan()
+             drainQueue()
+           XCTAssertEqual(sut.state.description(), "STOPPED")
+           XCTAssertEqual(sut.adminStops, 1)
+
+           sut.stopScan()
+             drainQueue()
+           XCTAssertEqual(sut.adminStops, 2, "a nested admin stop must increment the counter, not overwrite it")
+       }
+
+       func testFirstOfTwoAdminStartsDoesNotResumeScanning() {
+           sut.stopScan()
+           sut.stopScan()
+            drainQueue()
+
+           sut.startScan()
+            drainQueue()
+
+           XCTAssertEqual(sut.state.description(), "STOPPED",
+                          "one outstanding admin stop remains, so the radio must stay paused")
+           XCTAssertEqual(sut.adminStops, 1)
+       }
+
+       // MARK: - Balance is preserved
+
+       func testMatchedAdminStopsAndStartsRelease() {
+           sut.stopScan()
+           sut.stopScan()
+            drainQueue()
+
+           sut.startScan()
+           sut.startScan()
+            drainQueue()
+
+           XCTAssertEqual(sut.state.description(), "IDLE",
+                          "once every admin stop is released the scanner must leave the stopped state")
+           XCTAssertEqual(sut.adminStops, 0)
+       }
+
+       func testSingleStopStartRoundTripStillReleases() {
+           sut.stopScan()
+            drainQueue()
+           XCTAssertEqual(sut.state.description(), "STOPPED")
+
+           sut.startScan()
+            drainQueue()
+           XCTAssertEqual(sut.state.description(), "IDLE")
+       }
+
+       /// An unmatched admin start must not push the counter negative, otherwise a
+       /// later legitimate stop would need extra starts to release it.
+       func testSurplusAdminStartDoesNotDriveCounterNegative() {
+           sut.stopScan()
+            drainQueue()
+
+           sut.startScan()
+           sut.startScan()
+           sut.startScan()
+            drainQueue()
+
+           XCTAssertEqual(sut.state.description(), "IDLE")
+           XCTAssertEqual(sut.adminStops, 0)
+
+           sut.stopScan()
+            drainQueue()
+           XCTAssertEqual(sut.state.description(), "STOPPED",
+                           "a fresh admin stop must still pause the radio")
+           XCTAssertEqual(sut.adminStops, 1)
+       }
 
     // MARK: - Helpers
 
+    /// The scanner schedules every command onto its own serial scheduler, which
+    /// targets `queue`. Draining `queue` a few times lets those land.
     private func drainQueue() {
-        queue.sync { }
+        for _ in 0 ..< 4 {
+            queue.sync { }
+            usleep(20_000)
+        }
     }
 }
 

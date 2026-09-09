@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -32,6 +33,10 @@ import android.content.Intent
 import com.polar.polarsensordatacollector.R
 import com.polar.sdk.api.PolarBleApi
 import com.polar.sdk.api.PolarDeviceTelemetryType
+import com.polar.sdk.api.errors.PolarBleSdkInternalException
+import com.polar.sdk.api.errors.PolarDeviceNotConnected
+import com.polar.sdk.api.errors.PolarDeviceNotFound
+import com.polar.sdk.api.errors.PolarServiceNotAvailable
 import com.polar.sdk.api.model.PolarDiskSpaceData
 import com.polar.sdk.api.model.PolarPhysicalConfiguration
 import java.time.LocalDate
@@ -61,7 +66,8 @@ data class SecurityUiState(
 )
 
 data class BleMultiConnectionUiState(
-    val isEnabled: Boolean = false
+    val isEnabled: Boolean = false,
+    val isSwitchEnabled: Boolean = true
 )
 
 data class SleepRecordingState(
@@ -77,7 +83,8 @@ data class DeviceToHostNotificationsUiState(
 )
 
 data class SensorInitiatedSecurityModeUiState(
-    val isEnabled: Boolean = false
+    val isEnabled: Boolean = false,
+    val isSwitchEnabled: Boolean = true
 )
 
 data class TelemetryUiState(
@@ -168,6 +175,7 @@ internal class DeviceSettingsViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             polarDeviceStreamingRepository.sdkModeState
+                .filter { it.identifier == identifier }
                 .collect { sdkMode ->
                     updateSdkModeUiState(
                         isAvailable = sdkMode.isAvailable,
@@ -180,6 +188,7 @@ internal class DeviceSettingsViewModel @Inject constructor(
 
         viewModelScope.launch {
             polarDeviceStreamingRepository.availableFeatures
+                .filter { it.identifier == identifier }
                 .collect { deviceStreamsAvailable ->
                     if (deviceStreamsAvailable.availableOfflineFeatures.any { it.value == true }) {
                         updateUiOfflineRecordingSettings(offlineRecordingEnabled = true)
@@ -197,28 +206,8 @@ internal class DeviceSettingsViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            polarDeviceStreamingRepository.isMultiBleModeEnabled
-                .collect { isEnabled ->
-                    _uiMultiBleModeState.update { BleMultiConnectionUiState(isEnabled) }
-                }
-        }
-
-        viewModelScope.launch {
-            polarDeviceStreamingRepository.isSensorInitiatedSecurityModeEnabled
-                .collect { isEnabled ->
-                    _uiSensorInitiatedSecurityModeState.update { SensorInitiatedSecurityModeUiState(isEnabled) }
-                }
-        }
-
-        viewModelScope.launch {
-            polarDeviceStreamingRepository.deviceSupportsSettings
-                .collect { support ->
-                    _uiSettingsSupportUiState.update { support }
-                }
-        }
-
-        viewModelScope.launch {
             polarDeviceStreamingRepository.sdkFeaturesReady
+                .filter { it.identifier == identifier }
                 .collect { event ->
                     _watchFaceConfigAvailable.update {
                         event.readyFeatures.contains(PolarBleApi.PolarBleSdkFeature.FEATURE_WATCH_FACES_CONFIGURATION)
@@ -228,6 +217,7 @@ internal class DeviceSettingsViewModel @Inject constructor(
 
         viewModelScope.launch {
             polarDeviceStreamingRepository.sdkFeaturesReady
+                .filter { it.identifier == identifier }
                 .collect { event -> _telemetryAvailable.update {
                         event.readyFeatures.contains(PolarBleApi.PolarBleSdkFeature.FEATURE_TELEMETRY)
                     }
@@ -487,9 +477,29 @@ internal class DeviceSettingsViewModel @Inject constructor(
     }
 
     fun openUserDeviceSettingsActivity(context: Context) {
-        val intent = Intent(context, UserDeviceSettingsActivity::class.java)
-        intent.putExtra("IDENTIFIER", identifier)
-        context.startActivity(intent)
+        viewModelScope.launch {
+            when (val result = polarDeviceStreamingRepository.getDeviceUserSettings(identifier)) {
+                is ResultOfRequest.Success -> {
+                    if (result.value != null) {
+                        val intent = Intent(context, UserDeviceSettingsActivity::class.java)
+                        intent.putExtra("IDENTIFIER", identifier)
+                        context.startActivity(intent)
+                    } else {
+                        showError(
+                            application.getString(R.string.cannot_open_user_device_settings),
+                            application.getString(R.string.user_device_settings_file_not_readable)
+                        )
+                    }
+                }
+
+                is ResultOfRequest.Failure -> {
+                    showError(
+                        application.getString(R.string.cannot_open_user_device_settings),
+                        describeUserDeviceSettingsError(result.throwable, result.message)
+                    )
+                }
+            }
+        }
     }
 
     private fun setDeviceUserLocationDefault() = viewModelScope.launch {
@@ -684,6 +694,8 @@ internal class DeviceSettingsViewModel @Inject constructor(
                 Log.d(TAG, "Set BLE dual connection mode to $enabled on device $identifier.")
             } catch (error: Exception) {
                 Log.e(TAG, "Setting BLE dual connection mode to $enabled failed: $error")
+                _uiMultiBleModeState.update { it.copy(isSwitchEnabled = false) }
+                showError("Failed to set BLE multi connection mode to $enabled.", error.toString())
             }
         }
     }
@@ -695,6 +707,8 @@ internal class DeviceSettingsViewModel @Inject constructor(
                 Log.d(TAG, "Set sensor initiated security mode to $enabled on device $identifier.")
             } catch (error: Exception) {
                 Log.e(TAG, "Set sensor initiated security mode to $enabled failed: $error")
+                _uiSensorInitiatedSecurityModeState.update { it.copy(isSwitchEnabled = false) }
+                showError("Failed to set sensor initiated security mode to  $enabled.", error.toString())
             }
         }
     }
@@ -843,22 +857,23 @@ internal class DeviceSettingsViewModel @Inject constructor(
     private fun getBleMultiConnectionModeStatus() {
         Log.d(TAG, "getBleMultiConnectionMode()")
         viewModelScope.launch(Dispatchers.IO) {
-            polarDeviceStreamingRepository.getMultiBleModeEnabled(identifier)
+            val isEnabled = polarDeviceStreamingRepository.getMultiBleModeEnabled(identifier)
+            _uiMultiBleModeState.update { BleMultiConnectionUiState(isEnabled) }
         }
     }
 
     private fun getSensorInitiatedSecurityModeEnabledStatus() {
         Log.d(TAG, "getSensorInitiatedSecurityMode()")
         viewModelScope.launch(Dispatchers.IO) {
-            polarDeviceStreamingRepository.getSensorInitiatedSecurityModeEnabled(identifier)
+            val isEnabled = polarDeviceStreamingRepository.getSensorInitiatedSecurityModeEnabled(identifier)
+            _uiSensorInitiatedSecurityModeState.update { SensorInitiatedSecurityModeUiState(isEnabled) }
         }
     }
 
     private fun getDeviceSettingsSupportUiState() {
         Log.d(TAG, "getDeviceSettingsSupportUiState()")
-        viewModelScope.launch(Dispatchers.IO) {
-            polarDeviceStreamingRepository.deviceSupportsSettings
-        }
+        val supports = polarDeviceStreamingRepository.getDeviceSupportsSettings(identifier)
+        _uiSettingsSupportUiState.update { supports }
     }
 
     private fun updateSdkModeUiState(isAvailable: Boolean = false, isEnabled: SdkMode.STATE, sdkModeLedState: SdkMode.STATE, ppiModeLedState: SdkMode.STATE) {
@@ -883,6 +898,18 @@ internal class DeviceSettingsViewModel @Inject constructor(
     private fun showError(errorHeader: String, errorDescription: String = "") {
         Log.e(TAG, " Error: $errorHeader ${if (errorDescription.isNotEmpty()) "Description: $errorDescription" else ""}")
         _uiShowError.tryEmit(MessageUiState(errorHeader, errorDescription))
+    }
+
+    private fun describeUserDeviceSettingsError(throwable: Throwable?, fallbackMessage: String): String {
+        return when (throwable) {
+            is PolarDeviceNotFound -> application.getString(R.string.user_device_settings_device_session_not_found)
+            is PolarDeviceNotConnected -> application.getString(R.string.user_device_settings_device_not_connected)
+            is PolarServiceNotAvailable -> application.getString(R.string.user_device_settings_service_not_found)
+            is PolarBleSdkInternalException -> throwable.message
+                ?: application.getString(R.string.user_device_settings_file_not_readable)
+            null -> fallbackMessage
+            else -> throwable.message ?: fallbackMessage
+        }
     }
 
     private fun showInfo(header: String, description: String = "", timeout: Long? = null) {

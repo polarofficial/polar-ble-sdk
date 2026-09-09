@@ -347,15 +347,15 @@ public final class <span class="typeNameLabel"><a href=ConnectionHandler.html>Co
                                         <tr id="i7" class="rowColor">
                                             <td class="colFirst"><code>final <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
                                             </td>
-                                            <th class="colSecond" scope="row"><code><a href=ConnectionHandler.html#disconnectDevice(com.polar.androidcommunications.enpoints.ble.bluedroid.host.BDDeviceSessionImpl)>disconnectDevice</a>(<a href=../BDDeviceSessionImpl.html>BDDeviceSessionImpl</a> bleDeviceSession) </code>
+                                            <th class="colSecond" scope="row"><code><a href=ConnectionHandler.html#connectDeviceDirect(com.polar.androidcommunications.enpoints.ble.bluedroid.host.BDDeviceSessionImpl,java.lang.Boolean)>connectDeviceDirect</a>(<a href=../BDDeviceSessionImpl.html>BDDeviceSessionImpl</a> bleDeviceSession, <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> bluetoothEnabled) </code>
                                             </th>
-                                            <td class="colLast"></td>
+                                            <td class="colLast">Initiate a GATT connection directly by MAC address, bypassing the advertisement-connectable guard.</td>
                                         </tr>
                                         
                                         <tr id="i8" class="altColor">
                                             <td class="colFirst"><code>final <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
                                             </td>
-                                            <th class="colSecond" scope="row"><code><a href=ConnectionHandler.html#connectionInitialized(com.polar.androidcommunications.enpoints.ble.bluedroid.host.BDDeviceSessionImpl)>connectionInitialized</a>(<a href=../BDDeviceSessionImpl.html>BDDeviceSessionImpl</a> bleDeviceSession) </code>
+                                            <th class="colSecond" scope="row"><code><a href=ConnectionHandler.html#disconnectDevice(com.polar.androidcommunications.enpoints.ble.bluedroid.host.BDDeviceSessionImpl)>disconnectDevice</a>(<a href=../BDDeviceSessionImpl.html>BDDeviceSessionImpl</a> bleDeviceSession) </code>
                                             </th>
                                             <td class="colLast"></td>
                                         </tr>
@@ -363,7 +363,7 @@ public final class <span class="typeNameLabel"><a href=ConnectionHandler.html>Co
                                         <tr id="i9" class="rowColor">
                                             <td class="colFirst"><code>final <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
                                             </td>
-                                            <th class="colSecond" scope="row"><code><a href=ConnectionHandler.html#phyUpdated(com.polar.androidcommunications.enpoints.ble.bluedroid.host.BDDeviceSessionImpl)>phyUpdated</a>(<a href=../BDDeviceSessionImpl.html>BDDeviceSessionImpl</a> bleDeviceSession) </code>
+                                            <th class="colSecond" scope="row"><code><a href=ConnectionHandler.html#connectionInitialized(com.polar.androidcommunications.enpoints.ble.bluedroid.host.BDDeviceSessionImpl)>connectionInitialized</a>(<a href=../BDDeviceSessionImpl.html>BDDeviceSessionImpl</a> bleDeviceSession) </code>
                                             </th>
                                             <td class="colLast"></td>
                                         </tr>
@@ -371,7 +371,7 @@ public final class <span class="typeNameLabel"><a href=ConnectionHandler.html>Co
                                         <tr id="i10" class="altColor">
                                             <td class="colFirst"><code>final <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
                                             </td>
-                                            <th class="colSecond" scope="row"><code><a href=ConnectionHandler.html#servicesDiscovered(com.polar.androidcommunications.enpoints.ble.bluedroid.host.BDDeviceSessionImpl)>servicesDiscovered</a>(<a href=../BDDeviceSessionImpl.html>BDDeviceSessionImpl</a> bleDeviceSession) </code>
+                                            <th class="colSecond" scope="row"><code><a href=ConnectionHandler.html#phyUpdated(com.polar.androidcommunications.enpoints.ble.bluedroid.host.BDDeviceSessionImpl)>phyUpdated</a>(<a href=../BDDeviceSessionImpl.html>BDDeviceSessionImpl</a> bleDeviceSession) </code>
                                             </th>
                                             <td class="colLast"></td>
                                         </tr>
@@ -379,12 +379,20 @@ public final class <span class="typeNameLabel"><a href=ConnectionHandler.html>Co
                                         <tr id="i11" class="rowColor">
                                             <td class="colFirst"><code>final <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
                                             </td>
-                                            <th class="colSecond" scope="row"><code><a href=ConnectionHandler.html#mtuUpdated(com.polar.androidcommunications.enpoints.ble.bluedroid.host.BDDeviceSessionImpl)>mtuUpdated</a>(<a href=../BDDeviceSessionImpl.html>BDDeviceSessionImpl</a> bleDeviceSession) </code>
+                                            <th class="colSecond" scope="row"><code><a href=ConnectionHandler.html#servicesDiscovered(com.polar.androidcommunications.enpoints.ble.bluedroid.host.BDDeviceSessionImpl)>servicesDiscovered</a>(<a href=../BDDeviceSessionImpl.html>BDDeviceSessionImpl</a> bleDeviceSession) </code>
                                             </th>
                                             <td class="colLast"></td>
                                         </tr>
                                         
                                         <tr id="i12" class="altColor">
+                                            <td class="colFirst"><code>final <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=ConnectionHandler.html#mtuUpdated(com.polar.androidcommunications.enpoints.ble.bluedroid.host.BDDeviceSessionImpl)>mtuUpdated</a>(<a href=../BDDeviceSessionImpl.html>BDDeviceSessionImpl</a> bleDeviceSession) </code>
+                                            </th>
+                                            <td class="colLast"></td>
+                                        </tr>
+                                        
+                                        <tr id="i13" class="rowColor">
                                             <td class="colFirst"><code>final <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=ConnectionHandler.html#deviceDisconnected(com.polar.androidcommunications.enpoints.ble.bluedroid.host.BDDeviceSessionImpl)>deviceDisconnected</a>(<a href=../BDDeviceSessionImpl.html>BDDeviceSessionImpl</a> bleDeviceSession) </code>
@@ -594,6 +602,29 @@ public final class <span class="typeNameLabel"><a href=ConnectionHandler.html>Co
                                         <h4>connectDevice</h4>
                                         <pre class="methodSignature"> final <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a> <a href=ConnectionHandler.html#connectDevice(com.polar.androidcommunications.enpoints.ble.bluedroid.host.BDDeviceSessionImpl,java.lang.Boolean)>connectDevice</a>(<a href=../BDDeviceSessionImpl.html>BDDeviceSessionImpl</a> bleDeviceSession, <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> bluetoothEnabled)</pre>
                                         <div class="block"></div>
+
+                                        <dl>
+
+                                        
+
+                                        
+
+                                        
+
+                                        </dl>
+                                    </li>
+                                </ul>
+                                
+                                <a id="connectDeviceDirect(com.polar.androidcommunications.enpoints.ble.bluedroid.host.BDDeviceSessionImpl,java.lang.Boolean)">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockList"
+                                          >
+                                    <li class="blockList">
+                                        <h4>connectDeviceDirect</h4>
+                                        <pre class="methodSignature"> final <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a> <a href=ConnectionHandler.html#connectDeviceDirect(com.polar.androidcommunications.enpoints.ble.bluedroid.host.BDDeviceSessionImpl,java.lang.Boolean)>connectDeviceDirect</a>(<a href=../BDDeviceSessionImpl.html>BDDeviceSessionImpl</a> bleDeviceSession, <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> bluetoothEnabled)</pre>
+                                        <div class="block"><p>Initiate a GATT connection directly by MAC address, bypassing the advertisement-connectable guard. Call this when the peripheral is known to be reachable (e.g. via CompanionDeviceManager) but has stopped advertising.</p></div>
 
                                         <dl>
 

@@ -175,13 +175,25 @@ class CBScanner {
                 BleLogger.trace("Scanner waiting last admin to call start scan admins count: \(adminStops)")
             }
         case .adminStopScan:
-            adminStops = +1
+            // Admin stops nest. A PS-FTP operation raises its stop when its block starts
+            // executing but only releases it when its Rx subscription is disposed, so the
+            // pauses overlap: across sessions, and between consecutive operations on one
+            // session. Counting them keeps the radio paused until the last outstanding stop
+            // is released, instead of letting the first release resume mid-operation.
+            adminStops += 1
+            if adminStops > 1 {
+                // Only the nesting case is interesting; a plain stop is per-operation noise.
+                BleLogger.trace("Scanner nested admin stop, admins count: \(adminStops)")
+            }
         case .blePowerOff:
             changeState(.idle)
         case .clientStartScan: fallthrough
         case .clientRemoved: fallthrough
         case .blePowerOn:
-            // do nothing
+            // Scanning stays paused until the outstanding admin stops are released.
+            if scanningNeeded() {
+                BleLogger.trace("Scanner ignoring " + action.description() + " while admin stopped, admins count: \(adminStops)")
+            }
             break
         }
     }

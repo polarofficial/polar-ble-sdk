@@ -22,6 +22,49 @@ public protocol PolarBleApiObserver: AnyObject {
     ///
     func deviceConnected(_ identifier: PolarDeviceInfo)
     
+    /// Connection lost to device with a typed diagnostic and recovery recommendation.
+    ///
+    /// - Requires SDK feature(s): None (core API callback).
+    /// - Parameter identifier: Polar device info
+    /// - Parameter info: Disconnect reason and recommended recovery action. The
+    ///   action describes the next recovery category; it does not guarantee that
+    ///   recovery will succeed.
+    ///
+    /// For `.retryOperation`, the application should not immediately replay an
+    /// operation against the old connection. The SDK attempts to restore the BLE
+    /// session and its normal connection setup. The application may retry its
+    /// failed SDK request only after `deviceConnected` is received again. The SDK
+    /// does not retain and replay arbitrary application operations for the app.
+    /// Reads, streaming setup, and notification subscriptions can normally be
+    /// requested again. Applications must not blindly repeat a non-idempotent
+    /// write unless they know that the device did not apply it before the
+    /// disconnect.
+    ///
+    /// For `.retryConnection`, the SDK attempts to retry the connection and
+    /// security establishment. The application should keep the device nearby and
+    /// powered on, and wait for `deviceConnected` before retrying its operation.
+    /// If the SDK cannot restore the session, the application should present a
+    /// connection/security failure and may offer another manual connection
+    /// attempt. A timeout alone is not proof that the pairing record was removed.
+    ///
+    /// For `.removePairingAndPairAgain`, the pairing information is no longer
+    /// usable. The application should stop retrying, instruct the user to remove
+    /// or forget the device in iOS Bluetooth settings, remove the corresponding
+    /// pairing from the sensor/watch when the device requires it, put the device
+    /// into pairing mode, and connect again. The application should not repeatedly
+    /// reconnect until this action has been completed.
+    ///
+    /// For `.none`, no pairing-specific recovery is indicated. The application
+    /// should use its normal disconnected-device handling and may try a new
+    /// connection when appropriate.
+    ///
+    /// The SDK may emit this callback before automatic recovery is complete.
+    /// Applications should use `deviceConnected` as the signal that a new
+    /// connection is ready; they should not assume that this callback alone means
+    /// an operation can be retried immediately.
+    ///
+    func deviceDisconnected(_ identifier: PolarDeviceInfo, info: PolarBleDisconnectInfo)
+
     /// Connection lost to device.
     /// If PolarBleApi#disconnectFromPolarDevice is not called, a new connection attempt is dispatched automatically.
     ///
@@ -31,7 +74,91 @@ public protocol PolarBleApiObserver: AnyObject {
     /// -  Parameter pairingError: If true, it indicates that the disconnection was caused by a pairing error.
     /// In this case, try removing the pairing from the system settings.
     ///
+    @available(*, deprecated, message: "Use deviceDisconnected(_:info:) to receive the specific disconnect reason and recovery action.")
     func deviceDisconnected(_ identifier: PolarDeviceInfo, pairingError: Bool)
+}
+
+public enum PolarBleDisconnectReason: Equatable {
+    /// The connection was lost without a classified pairing/security condition.
+    case connectionLost
+    /// A protected ATT operation lacked link encryption. During an initial
+    /// connection attempt, the SDK keeps this condition retryable so pairing or
+    /// security negotiation can complete. After a session that had previously
+    /// connected successfully, the same condition is treated as a stale or
+    /// unusable pairing: automatic reconnection stops and the application should
+    /// remove the pairing from iOS and the device when required, pair again, and
+    /// reconnect before retrying the operation.
+    case insufficientEncryption
+    /// The BLE encryption handshake timed out. Reconnect/security establishment
+    /// should be retried before asking the user to re-pair.
+    case encryptionTimedOut
+    /// CoreBluetooth reported that the peer pairing information was removed or
+    /// can no longer be used. User-driven pairing recovery is required.
+    case pairingInformationRemoved
+    /// iOS started pairing after an encrypted ATT failure, but the peripheral
+    /// rejected the pairing negotiation. This does not prove that pairing
+    /// information was removed.
+    case pairingNegotiationFailed
+    /// CoreBluetooth rejected a UUID during service/security handling. Service
+    /// discovery or the affected operation should be retried; this is not proof
+    /// that pairing must be removed.
+    case uuidNotAllowed
+    /// An error did not match a known SDK classification.
+    case unknown
+    /// Disconnect is the expected outcome of a device-control command (restart, factory reset,
+    /// warehouse sleep, hibernate, turn off) that already reached its success path.
+    case deviceCommand
+}
+
+/// The specific device-control command a `.deviceCommand` disconnect followed. Only set when
+/// `PolarBleDisconnectInfo.reason` is `.deviceCommand`.
+public enum PolarBleDeviceCommand: Equatable {
+    case restart
+    case factoryReset
+    case warehouseSleep
+    case hibernate
+    case turnOff
+}
+
+public enum PolarBleRecoveryAction: Equatable {
+    /// No pairing-specific action is required. Use normal disconnect handling.
+    case none
+    /// Restore the BLE session first. After `deviceConnected`, retry the failed
+    /// idempotent SDK operation or setup. Do not blindly replay non-idempotent
+    /// writes because the device may have applied them before disconnecting.
+    case retryOperation
+    /// Retry connection and security establishment first. After `deviceConnected`,
+    /// rediscovery and SDK initialization are complete, retry the interrupted
+    /// operation. Escalate only after the SDK retry policy is exhausted.
+    case retryConnection
+    /// Do not continue automatic retries. Remove/forget the pairing from the
+    /// phone and, where required, from the device, pair again, and reconnect.
+    case removePairingAndPairAgain
+    /// Stop the current attempt, put the peripheral into its explicit pairing
+    /// mode, and start a new connection attempt. Do not tell the user that an
+    /// existing phone pairing is invalid unless the SDK reports
+    /// `pairingInformationRemoved`.
+    case retryPairing
+}
+
+public struct PolarBleDisconnectInfo: Equatable {
+    /// The SDK-defined condition that caused or best explains the disconnect.
+    public let reason: PolarBleDisconnectReason
+    /// The next recovery category expected from the application or SDK.
+    public let recoveryAction: PolarBleRecoveryAction
+    /// The command that caused the disconnect, set only when `reason` is `.deviceCommand`.
+    public let deviceCommand: PolarBleDeviceCommand?
+
+    public init(reason: PolarBleDisconnectReason, recoveryAction: PolarBleRecoveryAction, deviceCommand: PolarBleDeviceCommand? = nil) {
+        self.reason = reason
+        self.recoveryAction = recoveryAction
+        self.deviceCommand = deviceCommand
+    }
+}
+
+public extension PolarBleApiObserver {
+    func deviceDisconnected(_ identifier: PolarDeviceInfo, info: PolarBleDisconnectInfo) {}
+    func deviceDisconnected(_ identifier: PolarDeviceInfo, pairingError: Bool) {}
 }
 
 /// Bluetooth state observer.

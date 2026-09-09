@@ -197,7 +197,9 @@ import UIKit
             telemetryAvailabilityLock.withLock {
                 telemetryAvailabilityMap.removeValue(forKey: info.deviceId)
             }
-            self.observer?.deviceDisconnected(info, pairingError: session.error?.indicatesBLEPairingProblem ?? false)
+            let disconnectInfo = PolarBleApiImpl.disconnectInfo(for: session)
+            self.observer?.deviceDisconnected(info, info: disconnectInfo)
+            self.observer?.deviceDisconnected(info, pairingError: disconnectInfo.recoveryAction == .removePairingAndPairAgain)
         case .sessionOpenPark where session.previousState == .sessionOpening:
             let dis2 = readyFeaturesLock.withLock {
                 readyFeaturesMap.removeValue(forKey: info.deviceId)
@@ -209,7 +211,9 @@ import UIKit
             telemetryAvailabilityLock.withLock {
                 telemetryAvailabilityMap.removeValue(forKey: info.deviceId)
             }
-            self.observer?.deviceDisconnected(info, pairingError: false)
+            let disconnectInfo = PolarBleApiImpl.disconnectInfo(for: session)
+            self.observer?.deviceDisconnected(info, info: disconnectInfo)
+            self.observer?.deviceDisconnected(info, pairingError: disconnectInfo.recoveryAction == .removePairingAndPairAgain)
         case .sessionClosed where session.disconnectedDueRemovedPairing:
             let dis3 = readyFeaturesLock.withLock {
                 readyFeaturesMap.removeValue(forKey: info.deviceId)
@@ -221,7 +225,9 @@ import UIKit
             telemetryAvailabilityLock.withLock {
                 telemetryAvailabilityMap.removeValue(forKey: info.deviceId)
             }
-            self.observer?.deviceDisconnected(info, pairingError: session.error?.indicatesBLEPairingProblem ?? false)
+            let disconnectInfo = PolarBleApiImpl.disconnectInfo(for: session)
+            self.observer?.deviceDisconnected(info, info: disconnectInfo)
+            self.observer?.deviceDisconnected(info, pairingError: disconnectInfo.recoveryAction == .removePairingAndPairAgain)
         case .sessionOpening:
             self.observer?.deviceConnecting(info)
         case .sessionClosed: fallthrough
@@ -739,17 +745,27 @@ import UIKit
         // Collect all discovered services, then kick off feature readiness checking
         Task { [weak self] in
             guard let self = self else { return }
-            var discoveredServices: [CBUUID] = []
-            do {
-                for try await uuid in session.monitorServicesDiscovered(true) {
-                    discoveredServices.append(uuid)
+            for attempt in 0..<3 {
+                var discoveredServices: [CBUUID] = []
+                do {
+                    for try await uuid in session.monitorServicesDiscovered(true) {
+                        discoveredServices.append(uuid)
+                    }
+                    let requestedFeatures = self.features.isEmpty ? PolarBleSdkFeature.allCases : Array(self.features)
+                    self.makeFeaturesReadyCallbackWhenReady(session: session, discoveredServices: discoveredServices, requestedFeatures: requestedFeatures)
+                    return
+                } catch {
+                    self.logMessage("Error collecting services (attempt \(attempt + 1)/3): \(error)")
+                    guard !session.hasEstablishedConnection, attempt < 2 else {
+                        let requestedFeatures = self.features.isEmpty ? PolarBleSdkFeature.allCases : Array(self.features)
+                        let deviceId = session.advertisementContent.polarDeviceIdUntouched.isEmpty ? session.address.uuidString : session.advertisementContent.polarDeviceIdUntouched
+                        self.deviceFeaturesObserver?.bleSdkFeaturesReadiness(deviceId, ready: [], unavailable: requestedFeatures)
+                        return
+                    }
+                    session.retryServiceDiscovery()
+                    try? await Task.sleep(nanoseconds: 500_000_000)
                 }
-            } catch {
-                self.logMessage("Error collecting services: \(error)")
-                return
             }
-            let requestedFeatures = self.features.isEmpty ? PolarBleSdkFeature.allCases : Array(self.features)
-            self.makeFeaturesReadyCallbackWhenReady(session: session, discoveredServices: discoveredServices, requestedFeatures: requestedFeatures)
         }
 
         // Setup individual service clients as they are discovered
@@ -886,6 +902,7 @@ import UIKit
 
                 if !allReadyCallbackSent && featuresToCheck.isEmpty {
                     BleLogger.trace("All features ready, calling bleSdkFeaturesReadiness")
+                    session.markConnectionEstablished()
                     let orderedReadyFeatures = requestedFeatures.filter { availableFeaturesSet.contains($0) && !polledUnavailableFeatures.contains($0) }
                     let orderedUnavailableFeatures = requestedFeatures.filter { !availableFeaturesSet.contains($0) || polledUnavailableFeatures.contains($0) }
                     self.deviceFeaturesObserver?.bleSdkFeaturesReadiness(deviceId, ready: orderedReadyFeatures, unavailable: orderedUnavailableFeatures)
@@ -1149,6 +1166,10 @@ extension PolarBleApiImpl: PolarBleApi  {
     func connectToDevice(_ identifier: String) throws {
         logApiCall("connectToDevice", ("identifier", identifier))
         var session = try serviceClientUtils.fetchSession(identifier)
+        if session?.disconnectedDueRemovedPairing == true {
+            listener.removeSession(identifier)
+            session = nil
+        }
         if session == nil ||
             session?.state == BleDeviceSession.DeviceSessionState.sessionClosed ||
             session?.state == BleDeviceSession.DeviceSessionState.sessionClosing {
@@ -1649,6 +1670,7 @@ extension PolarBleApiImpl: PolarBleApi  {
         builder.sleep = false
         builder.otaFwupdate = preservePairingInformation
         BleLogger.trace("Send factory reset notification to device \(identifier)")
+        session.markExpectedDeviceCommandDisconnect(.factoryReset)
         try await client.sendNotification(Protocol_PbPFtpHostToDevNotification.reset.rawValue, parameters: try builder.serializedData() as NSData)
     }
 
@@ -1660,6 +1682,7 @@ extension PolarBleApiImpl: PolarBleApi  {
         var builder = Protocol_PbPFtpFactoryResetParams()
         builder.sleep = false
         BleLogger.trace("Send factory reset notification to device \(identifier)")
+        session.markExpectedDeviceCommandDisconnect(.factoryReset)
         try await client.sendNotification(Protocol_PbPFtpHostToDevNotification.reset.rawValue, parameters: try builder.serializedData() as NSData)
     }
 
@@ -1673,10 +1696,16 @@ extension PolarBleApiImpl: PolarBleApi  {
         builder.doFactoryDefaults = false
         builder.otaFwupdate = preservePairingInformation
         BleLogger.trace("Send restart notification to device \(identifier)")
+        session.markExpectedDeviceCommandDisconnect(.restart)
         do {
             try await client.sendNotification(Protocol_PbPFtpHostToDevNotification.reset.rawValue, parameters: try builder.serializedData() as NSData)
         } catch let err as BleGattException {
-            if case .gattDisconnected = err { BleLogger.trace("doRestart() gattDisconnected") } else { throw err }
+            switch err {
+            case .gattDisconnected, .gattTransportNotAvailable:
+                BleLogger.trace("doRestart() gattDisconnected")
+            default:
+                throw err
+            }
         }
     }
 
@@ -1689,10 +1718,16 @@ extension PolarBleApiImpl: PolarBleApi  {
         builder.sleep = false
         builder.doFactoryDefaults = false
         BleLogger.trace("send restart notification to device \(identifier)")
+        session.markExpectedDeviceCommandDisconnect(.restart)
         do {
             try await client.sendNotification(Protocol_PbPFtpHostToDevNotification.reset.rawValue, parameters: try builder.serializedData() as NSData)
         } catch let err as BleGattException {
-            if case .gattDisconnected = err { BleLogger.trace("doRestart() gattDisconnected") } else { throw err }
+            switch err {
+            case .gattDisconnected, .gattTransportNotAvailable:
+                BleLogger.trace("doRestart() gattDisconnected")
+            default:
+                throw err
+            }
         }
     }
 
@@ -2085,12 +2120,12 @@ extension PolarBleApiImpl: PolarBleApi  {
     }
 
 
-    public func stopExercise(identifier: String) async throws {
-        logApiCall("stopExercise", ("identifier", identifier))
+    public func stopExercise(identifier: String, save: Bool = true) async throws {
+        logApiCall("stopExercise", ("identifier", identifier), ("save", save))
         let session = try serviceClientUtils.sessionFtpClientReady(identifier)
         guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else { throw PolarErrors.serviceNotFound }
         var params = Protocol_PbPFtpStopExerciseParams()
-        params.save = true
+        params.save = save
         let payloadData = try params.serializedData()
         do {
             _ = try await client.query(Protocol_PbPFtpQuery.stopExercise.rawValue, parameters: payloadData as NSData)
@@ -2158,6 +2193,7 @@ extension PolarBleApiImpl: PolarBleApi  {
         builder.sleep = enableWarehouseSleep ?? false
         builder.otaFwupdate = true
         BleLogger.trace("Setting warehouse sleep, device: \(identifier).")
+        session.markExpectedDeviceCommandDisconnect(.warehouseSleep)
         try await client.sendNotification(Protocol_PbPFtpHostToDevNotification.reset.rawValue, parameters: try builder.serializedData() as NSData)
     }
 
@@ -2170,6 +2206,7 @@ extension PolarBleApiImpl: PolarBleApi  {
         builder.sleep = true
         builder.doFactoryDefaults = true
         BleLogger.trace("Setting warehouse sleep to true, device: \(identifier).")
+        session.markExpectedDeviceCommandDisconnect(.warehouseSleep)
         try await client.sendNotification(Protocol_PbPFtpHostToDevNotification.reset.rawValue, parameters: try builder.serializedData() as NSData)
     }
 
@@ -2183,6 +2220,7 @@ extension PolarBleApiImpl: PolarBleApi  {
         builder.doFactoryDefaults = false
         builder.hibernate = true
         BleLogger.trace("Send hibernate notification to device \(identifier).")
+        session.markExpectedDeviceCommandDisconnect(.hibernate)
         try await client.sendNotification(Protocol_PbPFtpHostToDevNotification.reset.rawValue, parameters: try builder.serializedData() as NSData)
     }
 
@@ -2194,6 +2232,7 @@ extension PolarBleApiImpl: PolarBleApi  {
         builder.sleep = true
         builder.doFactoryDefaults = false
         BleLogger.trace("Turn off device \(identifier).")
+        session.markExpectedDeviceCommandDisconnect(.turnOff)
         try await client.sendNotification(Protocol_PbPFtpHostToDevNotification.reset.rawValue, parameters: try builder.serializedData() as NSData)
     }
 
@@ -2202,15 +2241,8 @@ extension PolarBleApiImpl: PolarBleApi  {
         logApiCall("setPolarUserDeviceSettings", ("identifier", identifier))
         let session = try serviceClientUtils.sessionFtpClientReady(identifier)
         guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else { throw PolarErrors.serviceNotFound }
-        let settingsPath = BlePolarDeviceCapabilitiesUtility.fileSystemType(session.advertisementContent.polarDeviceType) == .polarFileSystemV2 ? DEVICE_SETTINGS_FILE_PATH : SENSOR_SETTINGS_FILE_PATH
-        let userDeviceSettingsData = try PolarUserDeviceSettings.toProto(userDeviceSettings: polarUserDeviceSettings).serializedData()
-        var operation = Protocol_PbPFtpOperation()
-        operation.command = .put
-        operation.path = settingsPath
-        let proto = try operation.serializedData()
-        BleLogger.trace("Polar user device settings set. Device: \(identifier) Path: \(sanitizePathForLog(settingsPath))")
-        let inputStream = InputStream(data: userDeviceSettingsData)
-        for try await _ in client.write(proto as NSData, data: inputStream) {}
+        let proto = PolarUserDeviceSettings.toProto(userDeviceSettings: polarUserDeviceSettings)
+        _ = try await writeUserDeviceSettings(client: client, session: session, polarUserDeviceSettings: proto)
     }
 
 
@@ -2218,8 +2250,8 @@ extension PolarBleApiImpl: PolarBleApi  {
         logApiCall("getPolarUserDeviceSettings", ("identifier", identifier))
         let session = try serviceClientUtils.sessionFtpClientReady(identifier)
         guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else { throw PolarErrors.serviceNotFound }
-        let settingsPath = BlePolarDeviceCapabilitiesUtility.fileSystemType(session.advertisementContent.polarDeviceType) == .polarFileSystemV2 ? DEVICE_SETTINGS_FILE_PATH : SENSOR_SETTINGS_FILE_PATH
-        return try await PolarUserDeviceSettingsUtils.getUserDeviceSettings(client: client, deviceSettingsPath: settingsPath)
+        let (_, settings) = try await readUserDeviceSettings(client: client, session: session)
+        return PolarUserDeviceSettings.fromProto(pbUserDeviceSettings: settings)
     }
 
 
@@ -2353,10 +2385,11 @@ extension PolarBleApiImpl: PolarBleApi  {
         logApiCall("setUserDeviceLocation", ("identifier", identifier), ("location", location))
         let session = try serviceClientUtils.sessionFtpClientReady(identifier)
         guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else { throw PolarErrors.serviceNotFound }
-        var currentSettings = try await getUserDeviceSettingsProto(client: client)
+        let (settingsPath, currentProto) = try await readUserDeviceSettings(client: client, session: session)
+        var currentSettings = currentProto
         guard let deviceLocation = PbDeviceLocation(rawValue: location) else { throw PolarErrors.invalidArgument(description: "Invalid device location: \(location)") }
         currentSettings.generalSettings.deviceLocation = deviceLocation
-        try await setUserDeviceSettingsProto(client: client, polarUserDeviceSettings: currentSettings)
+        _ = try await writeUserDeviceSettings(client: client, session: session, polarUserDeviceSettings: currentSettings, preferredPath: settingsPath)
     }
 
 
@@ -2364,12 +2397,12 @@ extension PolarBleApiImpl: PolarBleApi  {
         logApiCall("setUsbConnectionMode", ("identifier", identifier), ("enabled", enabled))
         let session = try serviceClientUtils.sessionFtpClientReady(identifier)
         guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else { throw PolarErrors.serviceNotFound }
-        let settingsPath = BlePolarDeviceCapabilitiesUtility.fileSystemType(session.advertisementContent.polarDeviceType) == .polarFileSystemV2 ? DEVICE_SETTINGS_FILE_PATH : SENSOR_SETTINGS_FILE_PATH
-        var currentSettings = try await getUserDeviceSettingsProto(client: client, settingsPath: settingsPath)
+        let (settingsPath, currentProto) = try await readUserDeviceSettings(client: client, session: session)
+        var currentSettings = currentProto
         var usbSettings = Data_PbUsbConnectionSettings()
         usbSettings.mode = enabled ? .on : .off
         currentSettings.usbConnectionSettings = usbSettings
-        try await setUserDeviceSettingsProto(client: client, polarUserDeviceSettings: currentSettings, settingsPath: settingsPath)
+        _ = try await writeUserDeviceSettings(client: client, session: session, polarUserDeviceSettings: currentSettings, preferredPath: settingsPath)
     }
 
 
@@ -2377,13 +2410,14 @@ extension PolarBleApiImpl: PolarBleApi  {
         logApiCall("setAutomaticTrainingDetectionSettings", ("identifier", identifier), ("mode", mode), ("sensitivity", sensitivity), ("minimumDuration", minimumDuration))
         let session = try serviceClientUtils.sessionFtpClientReady(identifier)
         guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else { throw PolarErrors.serviceNotFound }
-        var currentSettings = try await getUserDeviceSettingsProto(client: client)
+        let (settingsPath, currentProto) = try await readUserDeviceSettings(client: client, session: session)
+        var currentSettings = currentProto
         var atdSettings = Data_PbAutomaticTrainingDetectionSettings()
         atdSettings.state = mode ? .on : .off
         atdSettings.sensitivity = UInt32(sensitivity)
         atdSettings.minimumTrainingDurationSeconds = UInt32(minimumDuration)
         currentSettings.automaticMeasurementSettings.automaticTrainingDetectionSettings = atdSettings
-        try await setUserDeviceSettingsProto(client: client, polarUserDeviceSettings: currentSettings)
+        _ = try await writeUserDeviceSettings(client: client, session: session, polarUserDeviceSettings: currentSettings, preferredPath: settingsPath)
     }
 
     
@@ -2391,12 +2425,13 @@ extension PolarBleApiImpl: PolarBleApi  {
         logApiCall("setDaylightSavingTime", ("identifier", identifier))
         let session = try serviceClientUtils.sessionFtpClientReady(identifier)
         guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else { throw PolarErrors.serviceNotFound }
-        var currentSettings = try await getUserDeviceSettingsProto(client: client)
+        let (settingsPath, currentProto) = try await readUserDeviceSettings(client: client, session: session)
+        var currentSettings = currentProto
         guard let nextDSTTransition = TimeZone.current.nextDaylightSavingTimeTransition(after: Date()) else { throw PolarErrors.polarBleSdkInternalException(description: "Could not get next daylight saving time transition for time zone \(TimeZone.current).") }
         let nextDSTOffset = TimeZone.current.daylightSavingTimeOffset(for: nextDSTTransition.addingTimeInterval(24*60*60)) - TimeZone.current.daylightSavingTimeOffset(for: nextDSTTransition.addingTimeInterval(-(24*60*60)))
         currentSettings.daylightSaving.nextDaylightSavingTime = PolarTimeUtils.dateToPbSystemDateTime(date: nextDSTTransition)
         currentSettings.daylightSaving.offset = Int32(nextDSTOffset)
-        try await setUserDeviceSettingsProto(client: client, polarUserDeviceSettings: currentSettings)
+        _ = try await writeUserDeviceSettings(client: client, session: session, polarUserDeviceSettings: currentSettings, preferredPath: settingsPath)
     }
 
 
@@ -2404,9 +2439,10 @@ extension PolarBleApiImpl: PolarBleApi  {
         logApiCall("setTelemetryEnabled", ("identifier", identifier), ("enabled", enabled))
         let session = try serviceClientUtils.sessionFtpClientReady(identifier)
         let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as! BlePsFtpClient
-        var currentProto = try await getUserDeviceSettingsProto(client: client)
+        let (settingsPath, currentSettings) = try await readUserDeviceSettings(client: client, session: session)
+        var currentProto = currentSettings
         currentProto.telemetrySettings.telemetryEnabled = enabled
-        try await setUserDeviceSettingsProto(client: client, polarUserDeviceSettings: currentProto)
+        _ = try await writeUserDeviceSettings(client: client, session: session, polarUserDeviceSettings: currentProto, preferredPath: settingsPath)
         BleLogger.trace("Telemetry enabled=\(enabled) written for \(identifier)")
     }
 
@@ -2513,13 +2549,89 @@ extension PolarBleApiImpl: PolarBleApi  {
         }
     }
 
+    private func readUserDeviceSettings(
+        client: BlePsFtpClient,
+        session: BleDeviceSession
+    ) async throws -> (String, Data_PbUserDeviceSettings) {
+        let settingsPath = getDeviceSettingsPath(session)
+        BleLogger.trace("User settings read path for device type \(session.advertisementContent.polarDeviceType): \(sanitizePathForLog(settingsPath))")
+        if !(try await userSettingsFileExists(client: client, settingsPath: settingsPath)) {
+            BleLogger.error("User settings file does not exist at \(sanitizePathForLog(settingsPath)).")
+            throw PolarErrors.deviceError(description: "User device settings file is missing on device")
+        }
+        BleLogger.trace("Reading user settings from path \(sanitizePathForLog(settingsPath))")
+        let settings = try await getUserDeviceSettingsProto(client: client, settingsPath: settingsPath)
+        BleLogger.trace("User settings read succeeded from path \(sanitizePathForLog(settingsPath))")
+        return (settingsPath, settings)
+    }
+
+    private func userSettingsFileExists(client: BlePsFtpClient, settingsPath: String) async throws -> Bool {
+        let normalizedPath = settingsPath.hasPrefix("/") ? settingsPath : "/\(settingsPath)"
+        let nsPath = normalizedPath as NSString
+        let directoryPath = nsPath.deletingLastPathComponent.isEmpty ? "/" : nsPath.deletingLastPathComponent
+        let fileName = nsPath.lastPathComponent
+
+        var operation = Protocol_PbPFtpOperation()
+        operation.command = .get
+        operation.path = directoryPath.hasSuffix("/") ? directoryPath : "\(directoryPath)/"
+        let request = try operation.serializedData()
+
+        do {
+            let directoryPathForLog = sanitizePathForLog(operation.path)
+            BleLogger.trace("Listing directory for user settings check: \(directoryPathForLog) (target file: \(fileName))")
+            let data = try await client.request(request)
+            let directory = try Protocol_PbPFtpDirectory(serializedBytes: data as Data)
+            let fileFound = directory.entries.contains { entry in
+                let entryName = entry.name.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+                return entryName == fileName
+            }
+            if !fileFound {
+                BleLogger.trace("User settings file \(sanitizePathForLog(settingsPath)) not present in directory listing \(directoryPathForLog)")
+            }
+            return fileFound
+        } catch let error as BlePsFtpException {
+            if case let BlePsFtpException.responseError(code) = error,
+               code == Protocol_PbPFtpError.noSuchFileOrDirectory.rawValue {
+                BleLogger.trace("Directory not found while checking user settings file \(sanitizePathForLog(settingsPath)): \(sanitizePathForLog(operation.path))")
+                return false
+            }
+            throw error
+        }
+    }
+
     private func getUserDeviceSettingsProto(client: BlePsFtpClient, settingsPath: String = DEVICE_SETTINGS_FILE_PATH) async throws -> Data_PbUserDeviceSettings {
         var operation = Protocol_PbPFtpOperation()
         operation.command = .get
         operation.path = settingsPath
         let request = try operation.serializedData()
         let responseData = try await client.request(request)
-        return try Data_PbUserDeviceSettings(serializedBytes: Data(responseData))
+        let data = Data(responseData)
+        do {
+            return try Data_PbUserDeviceSettings(serializedBytes: data)
+        } catch {
+            let preview = data.prefix(32).map { String(format: "%02X", $0) }.joined(separator: " ")
+            let directoryHint: String
+            if let directory = try? Protocol_PbPFtpDirectory(serializedBytes: data) {
+                directoryHint = "looksLikeDirectoryProto(entries=\(directory.entries.count))"
+            } else {
+                directoryHint = "notDirectoryProto"
+            }
+            BleLogger.error("User settings decode failed path=\(sanitizePathForLog(settingsPath)) bytes=\(data.count) preview=\(preview) \(directoryHint) error=\(error)")
+            throw PolarErrors.deviceError(description: "User device settings file is unreadable or undecodable")
+        }
+    }
+
+    private func writeUserDeviceSettings(
+        client: BlePsFtpClient,
+        session: BleDeviceSession,
+        polarUserDeviceSettings: Data_PbUserDeviceSettings,
+        preferredPath: String? = nil
+    ) async throws -> String {
+        let settingsPath = preferredPath ?? getDeviceSettingsPath(session)
+        BleLogger.trace("Writing user settings using model-selected path: \(sanitizePathForLog(settingsPath))")
+        try await setUserDeviceSettingsProto(client: client, polarUserDeviceSettings: polarUserDeviceSettings, settingsPath: settingsPath)
+        BleLogger.trace("User settings write succeeded at \(sanitizePathForLog(settingsPath))")
+        return settingsPath
     }
 
 
@@ -2538,7 +2650,8 @@ extension PolarBleApiImpl: PolarBleApi  {
         logApiCall("setAutomaticOHRMeasurementEnabled", ("identifier", identifier))
         let session = try serviceClientUtils.sessionFtpClientReady(identifier)
         let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as! BlePsFtpClient
-        var updated = try await getUserDeviceSettingsProto(client: client)
+        let (settingsPath, currentSettings) = try await readUserDeviceSettings(client: client, session: session)
+        var updated = currentSettings
         var autosSettings = Data_PbAutomaticMeasurementSettings()
         autosSettings.state = enabled ? .alwaysOn : .off
         if !enabled {
@@ -2546,7 +2659,7 @@ extension PolarBleApiImpl: PolarBleApi  {
             autosSettings.clearIntelligentTimedSettings()
         }
         updated.automaticMeasurementSettings.automaticOhrMeasurement = autosSettings
-        try await setUserDeviceSettingsProto(client: client, polarUserDeviceSettings: updated)
+        _ = try await writeUserDeviceSettings(client: client, session: session, polarUserDeviceSettings: updated, preferredPath: settingsPath)
         BleLogger.trace("AUTOS files enabled=\(enabled) written for \(identifier)")
     }
 
@@ -2808,6 +2921,70 @@ extension PolarBleApiImpl: PolarBleApi  {
         return error
     }
 
+}
+
+private extension PolarBleApiImpl {
+    static func mapDeviceCommand(_ command: BleDeviceCommand) -> PolarBleDeviceCommand {
+        switch command {
+        case .restart: return .restart
+        case .factoryReset: return .factoryReset
+        case .warehouseSleep: return .warehouseSleep
+        case .hibernate: return .hibernate
+        case .turnOff: return .turnOff
+        }
+    }
+
+    // CoreBluetooth exposes far less than Android's raw HCI/GATT status — just an optional
+    // Error. This formats whatever is available (domain + code) for disconnect log lines.
+    static func describeDisconnectError(_ error: Error?) -> String {
+        guard let error else { return "nil" }
+        let nsError = error as NSError
+        return "\(nsError.domain)#\(nsError.code)"
+    }
+
+    static func disconnectInfo(for session: BleDeviceSession) -> PolarBleDisconnectInfo {
+        let pendingCommand = session.expectedDeviceCommandIfStillValid()
+        let result: PolarBleDisconnectInfo
+        switch session.error?.bleDisconnectReason {
+        case .insufficientEncryption:
+            result = PolarBleDisconnectInfo(
+                reason: session.securityRecoveryExhausted ? .pairingNegotiationFailed : .insufficientEncryption,
+                recoveryAction: session.securityRecoveryExhausted
+                    ? .retryPairing
+                    : (session.hasEstablishedConnection ? .removePairingAndPairAgain : .retryOperation)
+            )
+        case .encryptionTimedOut:
+            // A timeout re-encrypting an already-bonded session (routine reconnect) is almost
+            // always plain range/RF interference and self-heals; only flag it when the timeout
+            // happens during initial pairing, where it may indicate a real negotiation problem.
+            result = PolarBleDisconnectInfo(
+                reason: .encryptionTimedOut,
+                recoveryAction: session.hasEstablishedConnection ? .none : .retryConnection
+            )
+        case .pairingInformationRemoved:
+            result = PolarBleDisconnectInfo(reason: .pairingInformationRemoved, recoveryAction: .removePairingAndPairAgain)
+        case .uuidNotAllowed:
+            result = PolarBleDisconnectInfo(reason: .uuidNotAllowed, recoveryAction: .retryOperation)
+        case .unknown:
+            if let pendingCommand {
+                result = PolarBleDisconnectInfo(reason: .deviceCommand, recoveryAction: .none, deviceCommand: mapDeviceCommand(pendingCommand))
+            } else {
+                result = PolarBleDisconnectInfo(reason: .unknown, recoveryAction: .none)
+            }
+        case nil:
+            if let pendingCommand {
+                result = PolarBleDisconnectInfo(reason: .deviceCommand, recoveryAction: .none, deviceCommand: mapDeviceCommand(pendingCommand))
+            } else {
+                result = PolarBleDisconnectInfo(reason: .connectionLost, recoveryAction: .none)
+            }
+        }
+
+        BleLogger.trace("Disconnect classified addr=\(session.address) error=\(describeDisconnectError(session.error)) reason=\(result.reason) pendingDeviceCommand=\(String(describing: pendingCommand))")
+        if pendingCommand != nil && result.reason != .deviceCommand {
+            BleLogger.error("Disconnect for pending device command \(String(describing: pendingCommand)) on \(session.address) arrived with unexpected classification \(result.reason) (error=\(describeDisconnectError(session.error)))")
+        }
+        return result
+    }
 }
 
 extension String {

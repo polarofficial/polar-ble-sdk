@@ -87,6 +87,8 @@ class MainViewModel @Inject constructor(
     val uiSdkFeaturesReadyState: StateFlow<SdkFeaturesReadyEvent> =
         polarDeviceStreamingRepository.sdkFeaturesReady
 
+    val disconnectGuidance: SharedFlow<String> = polarDeviceStreamingRepository.disconnectGuidance
+
     private val _hrData = MutableStateFlow<PolarHrBroadcastData?>(null)
     val hrData: StateFlow<PolarHrBroadcastData?> = _hrData.asStateFlow()
 
@@ -160,11 +162,26 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    fun disconnectAllDevices(devices: List<Device>) = viewModelScope.launch {
+        withContext(Dispatchers.IO) {
+            devices.forEach { polarDeviceStreamingRepository.disconnectFromDevice(it.deviceId) }
+        }
+    }
+
     fun disconnectFromDevice(device: Device) = viewModelScope.launch {
         withContext(Dispatchers.IO) {
             polarDeviceStreamingRepository.disconnectFromDevice(device.deviceId)
         }
     }
+
+    /** Re-emits this device's stored feature data to shared StateFlows before a device switch. */
+    fun selectDevice(identifier: String) {
+        polarDeviceStreamingRepository.selectDevice(identifier)
+    }
+
+    /** Returns the cached display name for [identifier], or null if not yet known. */
+    fun getDeviceName(identifier: String): String? =
+        polarDeviceStreamingRepository.getDeviceName(identifier)
 
     fun searchForDevice(withPrefix: String?): Flow<PolarDeviceInfo> {
         return polarDeviceStreamingRepository.searchForDevice(withPrefix)

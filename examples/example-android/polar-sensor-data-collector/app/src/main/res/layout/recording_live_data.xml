@@ -37,7 +37,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:maxLines="1"
-                android:text="SampleRate"
+                android:text="@string/sample_rate"
                 android:textColor="@android:color/white" />
 
             <TextView
@@ -60,7 +60,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:maxLines="1"
-                android:text="Resolution"
+                android:text="@string/resolution"
                 android:textColor="@android:color/white" />
 
             <TextView
@@ -83,7 +83,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:maxLines="1"
-                android:text="Range"
+                android:text="@string/range"
                 android:textColor="@android:color/white" />
 
             <TextView
@@ -106,7 +106,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:maxLines="1"
-                android:text="Channels"
+                android:text="@string/channels"
                 android:textColor="@android:color/white" />
 
             <TextView
@@ -131,7 +131,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:maxLines="1"
-            android:text="Measured sampleRate (Hz): "
+            android:text="@string/measured_sample_rate"
             android:textColor="@android:color/white"
             android:visibility="gone"
             tools:visibility="visible" />
@@ -169,7 +169,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:maxLines="1"
-            android:text="range"
+            android:text="@string/range"
             android:textColor="@android:color/white"
             android:visibility="gone"
             tools:visibility="visible" />

@@ -14,6 +14,7 @@ import androidx.core.util.Pair
 import com.polar.androidcommunications.api.ble.BleDeviceListener
 import com.polar.androidcommunications.api.ble.BleLogger.Companion.d
 import com.polar.androidcommunications.api.ble.BleLogger.Companion.e
+import com.polar.androidcommunications.api.ble.BleLogger.Companion.w
 import com.polar.androidcommunications.api.ble.exceptions.BleInvalidMtu
 import com.polar.androidcommunications.api.ble.exceptions.BleNotAvailableInDevice
 import com.polar.androidcommunications.api.ble.exceptions.BleStartScanError
@@ -53,6 +54,22 @@ class BDDeviceListenerImpl(
     private val context: Context,
     clients: MutableSet<Class<out BleGattBase>>
 ) : BleDeviceListener(clients.toSet()) {
+
+    companion object {
+        private val TAG = BDDeviceListenerImpl::class.java.simpleName
+
+        /**
+         * Delay before retrying a direct (advertisement-free) connection after a disconnect.
+         */
+        private const val DIRECT_RECONNECT_DELAY_MS = 5_000L
+
+        /**
+         * Maximum number of consecutive automatic retry attempts after a direct-connect
+         * session drops to SESSION_OPEN_PARK. After this many failures the library clears
+         * the directConnect flag and reverts to normal scan-based reconnect.
+         */
+        private const val MAX_DIRECT_CONNECT_RETRIES = 3
+    }
 
     var advertisingDeviceNamePrefix: String = "Polar"
     private lateinit var bluetoothAdapter: BluetoothAdapter
@@ -102,10 +119,17 @@ class BDDeviceListenerImpl(
                 return pairingProblem
             }
         }
-        if (gattCallback.getIndicatesPairingProblem().first) {
-            return gattCallback.getIndicatesPairingProblem()
+        val gattPairingProblem = gattCallback.getIndicatesPairingProblem()
+        if (gattPairingProblem.first) {
+            return gattPairingProblem
         }
-        return indicatesPairingProblem
+        return if (indicatesPairingProblem.first &&
+            indicatesPairingProblem.second == BleGattBase.ATT_INSUFFICIENT_AUTHENTICATION
+        ) {
+            indicatesPairingProblem
+        } else {
+            kotlin.Pair(false, -1)
+        }
     }
 
     @SuppressLint("MissingPermission")
@@ -202,6 +226,15 @@ class BDDeviceListenerImpl(
             sessions.addSession(session)
         }
         return session
+    }
+
+    override fun connectToBondedDevice(address: String) {
+        val session = sessionByAddress(address) as BDDeviceSessionImpl
+        // Reset the retry counter so the caller always gets a full retry budget,
+        // then clear any stale UUIDs so service discovery runs fresh.
+        session.resetDirectConnect()
+        session.connectionUuids = ArrayList()
+        connectionHandler.connectDeviceDirect(session, bleActive())
     }
 
     override fun removeSession(deviceSession: BleDeviceSession): Boolean {
@@ -307,9 +340,12 @@ class BDDeviceListenerImpl(
 
         @SuppressLint("MissingPermission")
         override fun cancelDeviceConnection(session: BDDeviceSessionImpl?) {
+            // Disconnect then close immediately to free the GATT client_if slot without
+            // waiting for STATE_DISCONNECTED, which may never arrive in the no-callback scenario.
             synchronized(session!!.gattMutex) {
                 if (session.gatt != null) session.gatt!!.disconnect()
             }
+            session.resetGatt()
         }
 
         @SuppressLint("MissingPermission")
@@ -346,7 +382,11 @@ class BDDeviceListenerImpl(
                 delay(10_000L)
                 e(TAG, "service discovery timed out")
                 if (session.gatt != null) {
-                    indicatesPairingProblem = kotlin.Pair(true, BluetoothGatt.GATT_FAILURE)
+                    session.markDisconnect(
+                        BleDeviceSession.DisconnectReason.SERVICE_DISCOVERY_FAILED,
+                        BluetoothGatt.GATT_FAILURE
+                    )
+                    indicatesPairingProblem = kotlin.Pair(false, -1)
                     gattCallback.onServicesDiscovered(session.gatt!!, BluetoothGatt.GATT_FAILURE)
                 }
             }
@@ -443,6 +483,27 @@ class BDDeviceListenerImpl(
             } else {
                 scanCallback.clientRemoved()
             }
+
+            // When a direct-connect session drops to SESSION_OPEN_PARK, schedule a re-connection
+            // attempt without waiting for an advertisement. After MAX_DIRECT_CONNECT_RETRIES
+            // consecutive failures we stop retrying and revert to scan-based reconnect.
+            if (session.sessionState == DeviceSessionState.SESSION_OPEN_PARK && session.directConnect) {
+                val attempt = session.incrementDirectConnectRetryCount()
+                if (attempt > MAX_DIRECT_CONNECT_RETRIES) {
+                    w(TAG, "Direct-connect retry budget exhausted for ${session.address} — reverting to scan-based reconnect")
+                    session.resetDirectConnect()
+                } else {
+                    d(TAG, "Direct-connect session parked, scheduling retry $attempt/$MAX_DIRECT_CONNECT_RETRIES for ${session.address}")
+                    scope.launch {
+                        delay(DIRECT_RECONNECT_DELAY_MS)
+                        if (session.sessionState == DeviceSessionState.SESSION_OPEN_PARK && session.directConnect) {
+                            d(TAG, "Direct-connect retry $attempt firing for ${session.address}")
+                            connectionHandler.connectDeviceDirect(session, bleActive())
+                        }
+                    }
+                }
+            }
+
             if (session.sessionState == DeviceSessionState.SESSION_OPEN_PARK &&
                 session.previousState == DeviceSessionState.SESSION_OPEN
             ) {
@@ -521,7 +582,9 @@ class BDDeviceListenerImpl(
     }
 
     override fun closeSessionDirect(session: BleDeviceSession) {
-        connectionHandler.disconnectDevice(session as BDDeviceSessionImpl)
+        // Stop any pending direct-reconnect loop before disconnecting.
+        (session as BDDeviceSessionImpl).resetDirectConnect()
+        connectionHandler.disconnectDevice(session)
     }
 
     override fun setAutomaticReconnection(automaticReconnection: Boolean) {
@@ -539,10 +602,5 @@ class BDDeviceListenerImpl(
      */
     override fun monitorDeviceSessionState(): Flow<Pair<BleDeviceSession, DeviceSessionState>> {
         return _deviceSessionStateFlow.asSharedFlow()
-    }
-
-    companion object {
-        private val TAG: String = BDDeviceListenerImpl::class.java.simpleName
-
     }
 }

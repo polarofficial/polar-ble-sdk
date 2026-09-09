@@ -414,6 +414,14 @@ public abstract class <span class="typeNameLabel"><a href=BleDeviceListener.html
                                         </tr>
                                         
                                         <tr id="i16" class="altColor">
+                                            <td class="colFirst"><code>abstract <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=BleDeviceListener.html#connectToBondedDevice(java.lang.String)>connectToBondedDevice</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> address) </code>
+                                            </th>
+                                            <td class="colLast">Open a GATT session to a bonded device by MAC address, without waiting for a BLE advertisement.</td>
+                                        </tr>
+                                        
+                                        <tr id="i17" class="rowColor">
                                             <td class="colFirst"><code>abstract <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a></code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=BleDeviceListener.html#removeSession(com.polar.androidcommunications.api.ble.model.BleDeviceSession)>removeSession</a>(<a href=model/BleDeviceSession.html>BleDeviceSession</a> deviceSession) </code>
@@ -421,7 +429,7 @@ public abstract class <span class="typeNameLabel"><a href=BleDeviceListener.html
                                             <td class="colLast">Client app/lib can request to remove device from the list,</td>
                                         </tr>
                                         
-                                        <tr id="i17" class="rowColor">
+                                        <tr id="i18" class="altColor">
                                             <td class="colFirst"><code>abstract <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a></code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=BleDeviceListener.html#removeAllSessions()>removeAllSessions</a>() </code>
@@ -429,7 +437,7 @@ public abstract class <span class="typeNameLabel"><a href=BleDeviceListener.html
                                             <td class="colLast"></td>
                                         </tr>
                                         
-                                        <tr id="i18" class="altColor">
+                                        <tr id="i19" class="rowColor">
                                             <td class="colFirst"><code>abstract <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a></code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=BleDeviceListener.html#removeAllSessions(java.util.Set)>removeAllSessions</a>(<a href=https://developer.android.com/reference/kotlin/java/util/Set.html>Set</a>&lt;<a href=model/BleDeviceSession.DeviceSessionState.html>BleDeviceSession.DeviceSessionState</a>&gt; inStates) </code>
@@ -437,7 +445,7 @@ public abstract class <span class="typeNameLabel"><a href=BleDeviceListener.html
                                             <td class="colLast"></td>
                                         </tr>
                                         
-                                        <tr id="i19" class="rowColor">
+                                        <tr id="i20" class="altColor">
                                             <td class="colFirst"><code>abstract <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=BleDeviceListener.html#setAutomaticReconnection(java.lang.Boolean)>setAutomaticReconnection</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> automaticReconnection) </code>
@@ -445,7 +453,7 @@ public abstract class <span class="typeNameLabel"><a href=BleDeviceListener.html
                                             <td class="colLast">enable or disable automatic reconnection, by default true.</td>
                                         </tr>
                                         
-                                        <tr id="i20" class="altColor">
+                                        <tr id="i21" class="rowColor">
                                             <td class="colFirst"><code>abstract <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a></code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=BleDeviceListener.html#getAutomaticReconnection()>getAutomaticReconnection</a>() </code>
@@ -453,7 +461,7 @@ public abstract class <span class="typeNameLabel"><a href=BleDeviceListener.html
                                             <td class="colLast"></td>
                                         </tr>
                                         
-                                        <tr id="i21" class="rowColor">
+                                        <tr id="i22" class="altColor">
                                             <td class="colFirst"><code>abstract <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=BleDeviceListener.html#setPowerMode(java.lang.Integer)>setPowerMode</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> mode) </code>
@@ -461,7 +469,7 @@ public abstract class <span class="typeNameLabel"><a href=BleDeviceListener.html
                                             <td class="colLast"></td>
                                         </tr>
                                         
-                                        <tr id="i22" class="altColor">
+                                        <tr id="i23" class="rowColor">
                                             <td class="colFirst"><code>abstract <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-pair/index.html>Pair</a>&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a>, <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a>&gt;</code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=BleDeviceListener.html#getIndicatesPairingProblem(java.lang.String)>getIndicatesPairingProblem</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
@@ -962,6 +970,36 @@ public abstract class <span class="typeNameLabel"><a href=BleDeviceListener.html
                                         
                                             <dt><span class="returnLabel">Returns:</span></dt>
                                             <dd><p>BleDeviceSession</p></dd>
+                                        
+
+                                        
+
+                                        </dl>
+                                    </li>
+                                </ul>
+                                
+                                <a id="connectToBondedDevice(java.lang.String)">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockList"
+                                          >
+                                    <li class="blockList">
+                                        <h4>connectToBondedDevice</h4>
+                                        <pre class="methodSignature"> abstract <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a> <a href=BleDeviceListener.html#connectToBondedDevice(java.lang.String)>connectToBondedDevice</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> address)</pre>
+                                        <div class="block"><p>Open a GATT session to a bonded device by MAC address, without waiting for a BLE advertisement.</p><p>Call this when the OS reports the peripheral as present (e.g. via CompanionDeviceManager) but the device has stopped advertising — a scenario seen on devices where the watch stays OS-level connected yet never re-advertises after a mid-session disconnect.</p><p>The session transitions exactly like the advertisement-triggered path: SESSION_CLOSED → SESSION_OPENING → SESSION_OPEN.</p><p>If the initial GATT connect attempt fails, the library automatically retries up to MAX_DIRECT_CONNECT_RETRIES times with a fixed backoff before giving up. After exhausting retries the session reverts to normal SESSION_OPEN_PARK state.</p></div>
+
+                                        <dl>
+
+                                        
+                                            <dt><span class="paramLabel">Parameters:</span></dt>
+                                            
+                                            
+                                            <dd><code>address</code> - BT MAC address in the format 00:11:22:33:44:55</dd>
+                                            
+                                            
+                                        
+
                                         
 
                                         

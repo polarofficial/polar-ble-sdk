@@ -63,6 +63,10 @@ internal class ConnectionHandlerTest {
         every { mockDeviceSession.isConnectableAdvertisement } returns true
         every { mockDeviceSession.connectionUuids } returns ArrayList()
         every { mockDeviceSession.address } returns "AA:BB:CC:DD:EE:FF"
+        every { mockDeviceSession.consecutiveNoCallbackConnects } returns 0
+        every { mockDeviceSession.nextConnectAllowedTimeMs } returns 0L
+        every { mockDeviceSession.pendingWatchdogCancel } returns false
+        every { mockDeviceSession.disconnectReason } returns BleDeviceSession.DisconnectReason.NONE
     }
 
     @After
@@ -157,6 +161,7 @@ internal class ConnectionHandlerTest {
         }
         every { mockDeviceSession.isConnectableAdvertisement } returns true
         every { mockDeviceSession.connectionUuids } returns ArrayList()
+        every { mockDeviceSession.disconnectReason } returns BleDeviceSession.DisconnectReason.NONE
 
         //Act
         connectionHandler.connectDevice(mockDeviceSession, true)
@@ -172,10 +177,26 @@ internal class ConnectionHandlerTest {
     }
 
     @Test
+    fun `removed pairing from open session does not enter reconnect park`() {
+        val capturedSessionStates = mutableListOf<BleDeviceSession.DeviceSessionState>()
+        every { mockDeviceSession.setSessionStates(capture(capturedSessionStates)) } just runs
+        every { mockDeviceSession.sessionState } answers {
+            capturedSessionStates.lastOrNull() ?: BleDeviceSession.DeviceSessionState.SESSION_CLOSED
+        }
+        every { mockDeviceSession.disconnectReason } returns BleDeviceSession.DisconnectReason.PAIRING_INFORMATION_REMOVED
+
+        connectionHandler.connectDevice(mockDeviceSession, true)
+        connectionHandler.deviceDisconnected(mockDeviceSession)
+
+        assertEquals(BleDeviceSession.DeviceSessionState.SESSION_CLOSED, capturedSessionStates.last())
+        assertEquals(ConnectionHandler.ConnectionHandlerState.FREE, connectionHandler.state)
+    }
+
+    @Test
     fun `two parallel connections`() {
         //Arrange
-        val mockDeviceSession1 = mockk<BDDeviceSessionImpl>()
-        val mockDeviceSession2 = mockk<BDDeviceSessionImpl>()
+        val mockDeviceSession1 = mockk<BDDeviceSessionImpl>(relaxUnitFun = true)
+        val mockDeviceSession2 = mockk<BDDeviceSessionImpl>(relaxUnitFun = true)
 
         val capturedSessionStates1 = mutableListOf<BleDeviceSession.DeviceSessionState>()
         every { mockDeviceSession1.setSessionStates(capture(capturedSessionStates1)) } just runs
@@ -185,6 +206,9 @@ internal class ConnectionHandlerTest {
         every { mockDeviceSession1.isConnectableAdvertisement } returns true
         every { mockDeviceSession1.connectionUuids } returns ArrayList()
         every { mockDeviceSession1.address } returns "AA:BB:CC:DD:EE:01"
+        every { mockDeviceSession1.consecutiveNoCallbackConnects } returns 0
+        every { mockDeviceSession1.nextConnectAllowedTimeMs } returns 0L
+        every { mockDeviceSession1.pendingWatchdogCancel } returns false
 
         val capturedSessionStates2 = mutableListOf<BleDeviceSession.DeviceSessionState>()
         every { mockDeviceSession2.setSessionStates(capture(capturedSessionStates2)) } just runs
@@ -194,6 +218,9 @@ internal class ConnectionHandlerTest {
         every { mockDeviceSession2.isConnectableAdvertisement } returns true
         every { mockDeviceSession2.connectionUuids } returns ArrayList()
         every { mockDeviceSession2.address } returns "AA:BB:CC:DD:EE:02"
+        every { mockDeviceSession2.consecutiveNoCallbackConnects } returns 0
+        every { mockDeviceSession2.nextConnectAllowedTimeMs } returns 0L
+        every { mockDeviceSession2.pendingWatchdogCancel } returns false
 
         val sessionInit = slot<BDDeviceSessionImpl>()
         every { mockConnectionInterface.connectDevice(capture(sessionInit)) } answers {
@@ -240,6 +267,68 @@ internal class ConnectionHandlerTest {
         assertEquals(BleDeviceSession.DeviceSessionState.SESSION_CLOSED, capturedSessionStates1[3])
         assertEquals(BleDeviceSession.DeviceSessionState.SESSION_CLOSING, capturedSessionStates2[2])
         assertEquals(BleDeviceSession.DeviceSessionState.SESSION_CLOSED, capturedSessionStates2[3])
+        assertEquals(ConnectionHandler.ConnectionHandlerState.FREE, connectionHandler.state)
+    }
+
+    @Test
+    fun `connectDeviceDirect - opens session bypassing advertisement gate`() {
+        // Arrange: device has no connectable advertisement (isConnectableAdvertisement = false)
+        every { mockDeviceSession.isConnectableAdvertisement } returns false
+        val capturedSessionStates = mutableListOf<BleDeviceSession.DeviceSessionState>()
+        every { mockDeviceSession.setSessionStates(capture(capturedSessionStates)) } just runs
+        every { mockDeviceSession.sessionState } answers {
+            if (capturedSessionStates.isEmpty()) BleDeviceSession.DeviceSessionState.SESSION_CLOSED else capturedSessionStates.last()
+        }
+
+        // Act - connectDevice would park; connectDeviceDirect must not
+        connectionHandler.connectDeviceDirect(mockDeviceSession, true)
+
+        // Assert: full open sequence without parking
+        verify(exactly = 1) { mockScannerInterface.connectionHandlerRequestStopScanning() }
+        verify(exactly = 1) { mockScannerInterface.connectionHandlerResumeScanning() }
+        assertEquals(BleDeviceSession.DeviceSessionState.SESSION_OPENING, capturedSessionStates[0])
+        assertEquals(BleDeviceSession.DeviceSessionState.SESSION_OPEN, capturedSessionStates[1])
+        assertEquals(ConnectionHandler.ConnectionHandlerState.FREE, connectionHandler.state)
+    }
+
+    @Test
+    fun `connectDeviceDirect - parks session when BLE is off`() {
+        // Arrange
+        every { mockDeviceSession.isConnectableAdvertisement } returns false
+        val capturedSessionStates = mutableListOf<BleDeviceSession.DeviceSessionState>()
+        every { mockDeviceSession.setSessionStates(capture(capturedSessionStates)) } just runs
+        every { mockDeviceSession.sessionState } returns BleDeviceSession.DeviceSessionState.SESSION_CLOSED
+
+        // Act - BLE disabled
+        connectionHandler.connectDeviceDirect(mockDeviceSession, false)
+
+        // Assert: session waits in OPEN_PARK for BLE power-on
+        assertEquals(BleDeviceSession.DeviceSessionState.SESSION_OPEN_PARK, capturedSessionStates[0])
+        assertEquals(ConnectionHandler.ConnectionHandlerState.FREE, connectionHandler.state)
+    }
+
+    @Test
+    fun `connectDeviceDirect - reconnects after disconnect without advertisement`() {
+        // Arrange
+        every { mockDeviceSession.isConnectableAdvertisement } returns false
+        val capturedSessionStates = mutableListOf<BleDeviceSession.DeviceSessionState>()
+        every { mockDeviceSession.setSessionStates(capture(capturedSessionStates)) } just runs
+        every { mockDeviceSession.sessionState } answers {
+            if (capturedSessionStates.isEmpty()) BleDeviceSession.DeviceSessionState.SESSION_CLOSED else capturedSessionStates.last()
+        }
+
+        // Act: direct connect → remote disconnect → caller retries via connectDeviceDirect
+        connectionHandler.connectDeviceDirect(mockDeviceSession, true)
+        connectionHandler.deviceDisconnected(mockDeviceSession)
+        // Session is now SESSION_OPEN_PARK; BDDeviceListenerImpl auto-retries — simulate that here
+        connectionHandler.connectDeviceDirect(mockDeviceSession, true)
+
+        // Assert: two full OPENING→OPEN cycles separated by OPEN_PARK
+        assertEquals(BleDeviceSession.DeviceSessionState.SESSION_OPENING, capturedSessionStates[0])
+        assertEquals(BleDeviceSession.DeviceSessionState.SESSION_OPEN, capturedSessionStates[1])
+        assertEquals(BleDeviceSession.DeviceSessionState.SESSION_OPEN_PARK, capturedSessionStates[2])
+        assertEquals(BleDeviceSession.DeviceSessionState.SESSION_OPENING, capturedSessionStates[3])
+        assertEquals(BleDeviceSession.DeviceSessionState.SESSION_OPEN, capturedSessionStates[4])
         assertEquals(ConnectionHandler.ConnectionHandlerState.FREE, connectionHandler.state)
     }
 }

@@ -272,7 +272,7 @@ public interface <span class="typeNameLabel"><a href=PolarBleLowLevelApi.html>Po
                                         <tr id="i3" class="rowColor">
                                             <td class="colFirst"><code>abstract <a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a>&gt;</code>
                                             </td>
-                                            <th class="colSecond" scope="row"><code><a href=PolarBleLowLevelApi.html#getFileList(java.lang.String,java.lang.String,java.lang.Boolean)>getFileList</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> filePath, <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> recurseDeep) </code>
+                                            <th class="colSecond" scope="row"><code><a href=PolarBleLowLevelApi.html#getFileList(java.lang.String,java.lang.String,java.lang.Boolean)>getFileList</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> directoryPath, <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> recurseDeep) </code>
                                             </th>
                                             <td class="colLast">List all files in the given path</td>
                                         </tr>
@@ -452,7 +452,7 @@ public interface <span class="typeNameLabel"><a href=PolarBleLowLevelApi.html>Po
                                           >
                                     <li class="blockList">
                                         <h4>getFileList</h4>
-                                        <pre class="methodSignature"> abstract <a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a>&gt; <a href=PolarBleLowLevelApi.html#getFileList(java.lang.String,java.lang.String,java.lang.Boolean)>getFileList</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> filePath, <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> recurseDeep)</pre>
+                                        <pre class="methodSignature"> abstract <a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a>&gt; <a href=PolarBleLowLevelApi.html#getFileList(java.lang.String,java.lang.String,java.lang.Boolean)>getFileList</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> directoryPath, <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> recurseDeep)</pre>
                                         <div class="block"><p>List all files in the given path</p></div>
 
                                         <dl>
@@ -464,6 +464,8 @@ public interface <span class="typeNameLabel"><a href=PolarBleLowLevelApi.html>Po
                                             <dd><code>identifier</code> - Polar device ID or BT address</dd>
                                             
                                             
+                                            
+                                            <dd><code>directoryPath</code> - Path to the desired directory in a Polar device from which to list all files.</dd>
                                             
                                             
                                             

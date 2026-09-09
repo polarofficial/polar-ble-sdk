@@ -145,26 +145,29 @@ class ExerciseRepository(
         }
     }
 
-    suspend fun stop() {
-        api.stopExercise(identifier)
+    suspend fun stop(save: Boolean = true) {
+        api.stopExercise(identifier, save)
         _state.value = PolarExerciseSession.ExerciseInfo(
-            status = PolarExerciseSession.ExerciseStatus.SYNC_REQUIRED,
+            status = if (save) PolarExerciseSession.ExerciseStatus.SYNC_REQUIRED
+                     else PolarExerciseSession.ExerciseStatus.NOT_STARTED,
             sportProfile = lastKnownSport
         )
-        try {
-            bleApi.sendInitializationAndStartSyncNotifications(identifier)
-        } catch (e: Exception) {
-            Log.w(TAG, "startSync failed: ${e.message}")
-        }
-        try {
-            waitUntilLikelySynced(timeoutMs = 90_000L, pollMs = 2_000L)
-        } catch (e: Exception) {
-            Log.w(TAG, "waitUntilLikelySynced timed out or failed: ${e.message}")
-        }
-        try {
-            bleApi.sendTerminateAndStopSyncNotifications(identifier)
-        } catch (e: Exception) {
-            Log.w(TAG, "stopSync failed: ${e.message}")
+        if (save) {
+            try {
+                bleApi.sendInitializationAndStartSyncNotifications(identifier)
+            } catch (e: Exception) {
+                Log.w(TAG, "startSync failed: ${e.message}")
+            }
+            try {
+                waitUntilLikelySynced(timeoutMs = 90_000L, pollMs = 2_000L)
+            } catch (e: Exception) {
+                Log.w(TAG, "waitUntilLikelySynced timed out or failed: ${e.message}")
+            }
+            try {
+                bleApi.sendTerminateAndStopSyncNotifications(identifier)
+            } catch (e: Exception) {
+                Log.w(TAG, "stopSync failed: ${e.message}")
+            }
         }
         refresh()
     }

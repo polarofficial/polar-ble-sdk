@@ -276,7 +276,7 @@ struct OnlineStreamingButton: View {
     }
     
     private func streamButtonToggle(_ feature:PolarDeviceDataType) {
-        NSLog("Stream toggle for feature \(feature)")
+        AppLogger.log("Stream toggle for feature \(feature)")
         if(bleSdkManager.isStreamOn(feature: feature)) {
             bleSdkManager.onlineStreamStop(feature: feature)
         } else {

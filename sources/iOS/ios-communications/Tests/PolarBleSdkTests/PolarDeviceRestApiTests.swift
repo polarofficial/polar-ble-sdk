@@ -308,4 +308,92 @@ class PolarDeviceRestApiServiceTests: XCTestCase {
         XCTAssertFalse(result.isEmpty)
         XCTAssertEqual(result, notificationParameters)
     }
+
+    // GIVEN receiveRestApiEventData is backed by an infinite waitNotification stream
+    // WHEN the consumer breaks out after the first batch
+    // THEN the inner Task is cancelled and waitNotification()'s onTermination fires
+    func testReceiveRestApiEventDataCancelsInnerTaskWhenConsumerBreaks() async throws {
+
+        class InfiniteWaitNotificationMock: MockBlePsFtpClient {
+            var innerTaskCancelledExpectation: XCTestExpectation!
+            var singleEventData: Data = Data()
+
+            override func waitNotification() -> AsyncThrowingStream<PsFtpNotification, Error> {
+                let data = singleEventData
+                let exp = innerTaskCancelledExpectation!
+                return AsyncThrowingStream { continuation in
+                    // Yield exactly one notification so the consumer receives a value …
+                    let notification = PsFtpNotification()
+                    notification.id = Int32(Protocol_PbPFtpDevToHostNotification.restApiEvent.rawValue)
+                    var event = Protocol_PbPftpDHRestApiEvent()
+                    event.uncompressed = true
+                    event.event = [data]
+                    notification.parameters = NSMutableData(data: (try? event.serializedData()) ?? Data())
+                    continuation.yield(notification)
+                    // … then block forever (never call finish) — simulates a real BLE device stream.
+                    // onTermination fires only when the for-await consumer exits, i.e. the inner Task is cancelled.
+                    continuation.onTermination = { _ in exp.fulfill() }
+                }
+            }
+        }
+
+        let json = #"{"key":"value"}"#.data(using: .utf8)!
+        let client = InfiniteWaitNotificationMock(gattServiceTransmitter: MockPolarGattServiceTransmitter())
+        let innerTaskCancelled = XCTestExpectation(
+            description: "waitNotification inner Task cancelled after receiveRestApiEventData consumer break")
+        client.innerTaskCancelledExpectation = innerTaskCancelled
+        client.singleEventData = json
+
+        // Act: consume first batch and break — exactly what getSleepRecordingState does
+        for try await _ in client.receiveRestApiEventData(identifier: UUID().uuidString) {
+            break
+        }
+
+        // Assert: inner Task must have been cancelled so its for-await on waitNotification() exits
+        await fulfillment(of: [innerTaskCancelled], timeout: 2.0)
+    }
+
+    // GIVEN receiveRestApiEvents is backed by an infinite waitNotification stream
+    // WHEN the consumer breaks out after the first item
+    // THEN the inner Tasks of both receiveRestApiEvents and receiveRestApiEventData are cancelled,
+    //      propagating all the way to the waitNotification() stream
+    func testReceiveRestApiEventsCancelsInnerTaskWhenConsumerBreaks() async throws {
+
+        struct TestEvent: Decodable { let key: String }
+
+        class InfiniteWaitNotificationMock: MockBlePsFtpClient {
+            var innerTaskCancelledExpectation: XCTestExpectation!
+            var singleEventData: Data = Data()
+
+            override func waitNotification() -> AsyncThrowingStream<PsFtpNotification, Error> {
+                let data = singleEventData
+                let exp = innerTaskCancelledExpectation!
+                return AsyncThrowingStream { continuation in
+                    let notification = PsFtpNotification()
+                    notification.id = Int32(Protocol_PbPFtpDevToHostNotification.restApiEvent.rawValue)
+                    var event = Protocol_PbPftpDHRestApiEvent()
+                    event.uncompressed = true
+                    event.event = [data]
+                    notification.parameters = NSMutableData(data: (try? event.serializedData()) ?? Data())
+                    continuation.yield(notification)
+                    continuation.onTermination = { _ in exp.fulfill() }
+                }
+            }
+        }
+
+        let json = #"{"key":"value"}"#.data(using: .utf8)!
+        let client = InfiniteWaitNotificationMock(gattServiceTransmitter: MockPolarGattServiceTransmitter())
+        let innerTaskCancelled = XCTestExpectation(
+            description: "waitNotification inner Task cancelled after receiveRestApiEvents consumer break")
+        client.innerTaskCancelledExpectation = innerTaskCancelled
+        client.singleEventData = json
+
+        // Act
+        for try await _ in client.receiveRestApiEvents(identifier: UUID().uuidString) as AsyncThrowingStream<[TestEvent], Error> {
+            break
+        }
+
+        // Assert
+        await fulfillment(of: [innerTaskCancelled], timeout: 2.0)
+    }
 }

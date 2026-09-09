@@ -7,9 +7,9 @@ private let NIGHTLY_RECOVERY_DIRECTORY = "NR/"
 private let NIGHTLY_RECOVERY_PROTO = "NR.BPB"
 private let dateFormat: DateFormatter = {
     let formatter = DateFormatter()
-    formatter.dateFormat = "yyyyMMdd"
+    formatter.dateFormat = "yyyyMMdd±hh:mm"
     formatter.locale = Locale(identifier: "en_US_POSIX")
-    formatter.timeZone = TimeZone(abbreviation: "UTC")
+    formatter.timeZone = TimeZone.current
     return formatter
 }()
 private let TAG = "PolarNightlyRechargeUtils"
@@ -18,8 +18,9 @@ internal class PolarNightlyRechargeUtils {
     enum PolarNightlyRechargeError: Error { case missingOrInvalidRecoveryDate }
 
     static func readNightlyRechargeData(client: BlePsFtpClient, date: Date) async -> PolarNightlyRechargeData? {
-        BleLogger.trace(TAG, "readNightlyRechargeData: \(date)")
-        let filePath = "\(ARABICA_USER_ROOT_FOLDER)\(dateFormat.string(from: date))/\(NIGHTLY_RECOVERY_DIRECTORY)\(NIGHTLY_RECOVERY_PROTO)"
+        let dateString = dateFormat.string(from: date).components(separatedBy: "±").first ?? ""
+        BleLogger.trace(TAG, "readNightlyRechargeData: \(dateString)")
+        let filePath = "\(ARABICA_USER_ROOT_FOLDER)\(dateString)/\(NIGHTLY_RECOVERY_DIRECTORY)\(NIGHTLY_RECOVERY_PROTO)"
         let operation = Protocol_PbPFtpOperation.with { $0.command = .get; $0.path = filePath }
         do {
             let response = try await client.request(try operation.serializedBytes())

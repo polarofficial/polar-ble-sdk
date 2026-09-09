@@ -84,12 +84,14 @@ public protocol PolarTrainingSessionApi {
 
     /// Stop the current exercise session.
     ///
-    /// By default, the session is saved on the device.
-    ///
-    /// - Parameter identifier: The Polar device ID or BT address.
+    /// - Parameters:
+    ///   - identifier: The Polar device ID or BT address.
+    ///   - save: Whether to save the stopped exercise on the device. Defaults to `true`.
+    ///           Pass `false` to discard the session without persisting it, which avoids the
+    ///           need for a subsequent stop → list → delete sequence.
     /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_training_data`
     /// - Throws: See `PolarErrors` for possible errors invoked.
-    func stopExercise(identifier: String) async throws
+    func stopExercise(identifier: String, save: Bool) async throws
 
     /// Get the current exercise session status from the device.
     ///
@@ -106,3 +108,11 @@ public protocol PolarTrainingSessionApi {
     /// - Returns: `AsyncThrowingStream` emitting `PolarExerciseSession.ExerciseInfo` whenever the session status changes.
     func observeExerciseStatus(identifier: String) -> AsyncThrowingStream<PolarExerciseSession.ExerciseInfo, Error>
 }
+
+public extension PolarTrainingSessionApi {
+    /// Convenience overload that saves the exercise on the device (default behaviour).
+    func stopExercise(identifier: String) async throws {
+        try await stopExercise(identifier: identifier, save: true)
+    }
+}
+

@@ -1,5 +1,6 @@
 package com.polar.polarsensordatacollector.ui.offlinerectrigger
 
+import android.content.Context
 import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -8,11 +9,13 @@ import com.polar.polarsensordatacollector.repository.PolarDeviceRepository
 import com.polar.polarsensordatacollector.repository.ResultOfRequest
 import com.polar.polarsensordatacollector.ui.landing.AvailableOfflineRecordingsState
 import com.polar.polarsensordatacollector.ui.utils.MessageUiState
+import com.polar.polarsensordatacollector.R
 import com.polar.sdk.api.PolarBleApi
 import com.polar.sdk.api.model.PolarOfflineRecordingTrigger
 import com.polar.sdk.api.model.PolarOfflineRecordingTriggerMode
 import com.polar.sdk.api.model.PolarSensorSetting
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -43,7 +46,8 @@ internal data class OfflineRecTriggerSettings(
 @HiltViewModel
 class OfflineTriggerSettingsViewModel @Inject constructor(
     private val polarDeviceStreamingRepository: PolarDeviceRepository,
-    state: SavedStateHandle
+    state: SavedStateHandle,
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
     companion object {
         private const val TAG = "OfflineTriggerSettingsViewModel"
@@ -125,7 +129,7 @@ class OfflineTriggerSettingsViewModel @Inject constructor(
             val trigger = PolarOfflineRecordingTrigger(triggerMode = triggerMethod, triggerFeatures = triggerFeatures)
             when (val result = polarDeviceStreamingRepository.setOfflineRecordingTrigger(identifier, trigger)) {
                 is ResultOfRequest.Success -> {
-                    showInfo("Successfully set the offline trigger")
+                    showInfo(context.getString(R.string.offline_trigger_set_successfully))
                 }
                 is ResultOfRequest.Failure -> {
                     showError(result.message, result.throwable)
@@ -135,6 +139,10 @@ class OfflineTriggerSettingsViewModel @Inject constructor(
                 OfflineRecSettingsTriggerUiState.ReadyToSetUpTriggers
             }
         }
+    }
+
+    fun clearOfflineRecTriggerSettingsRequest() {
+        _uiOfflineRecTriggerSettingsState.value = null
     }
 
     fun updateSelectedStreamSettings(feature: PolarBleApi.PolarDeviceDataType, settings: Map<PolarSensorSetting.SettingType, Int>) {

@@ -142,7 +142,7 @@ internal class AccData {
         }
 
         private fun dataFromCompressedType0(frame: PmdDataFrame): AccData {
-            //Note, special Wolfi type. See SAGRFC85.3
+            //Note, special Wolfi type.
             if (frame.dataContent.isEmpty()) {
                 throw PmdDataParseException(
                     "ACC compressed TYPE_0 dataContent is empty"

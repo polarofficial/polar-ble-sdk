@@ -10,10 +10,6 @@ class ViewController: UIViewController,
                       PolarBleApiDeviceInfoObserver,
                       PolarBleApiDeviceFeaturesObserver,
                       PolarBleApiLogger {
-    func deviceDisconnected(_ identifier: PolarBleSdk.PolarDeviceInfo, pairingError: Bool) {
-        return
-    }
-    
     func hrValueReceived(_ identifier: String, data: (hr: UInt8, rrs: [Int], rrsMs: [Int], contact: Bool, contactSupported: Bool)) {
         return
     }
@@ -303,7 +299,7 @@ class ViewController: UIViewController,
                                 self.accZ.text = "\(z)"
                             })
                         case .error(let err):
-                            NSLog("ACC error: \(err)")
+                            AppLogger.log("ACC error: \(err)")
                             self.accX.text = "-"
                             self.accY.text = "-"
                             self.accZ.text = "-"
@@ -361,7 +357,7 @@ class ViewController: UIViewController,
                             self.ppg2.text = "\(item.ppg2)"
                         }
                     case .error(let err):
-                        NSLog("PPG error: \(err)")
+                        AppLogger.log("PPG error: \(err)")
                         self.ppg0.text = "-"
                         self.ppg1.text = "-"
                         self.ppg2.text = "-"
@@ -395,7 +391,7 @@ class ViewController: UIViewController,
                         }
                     }
                 } catch {
-                    NSLog("PPI error: \(error)")
+                    AppLogger.log("PPI error: \(error)")
                     await MainActor.run { self.ppi.text = "-" }
                 }
             }
@@ -426,7 +422,7 @@ class ViewController: UIViewController,
     }
     
     func message(_ str: String) {
-        NSLog(str)
+        AppLogger.log(str)
     }
     
     func deviceConnecting(_ identifier: PolarDeviceInfo) {

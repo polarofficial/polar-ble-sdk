@@ -22,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -86,7 +87,7 @@ fun ShowRecordingData(viewModel: RecordingDataViewModel = viewModel(), onNavigat
             val context = LocalContext.current
             val intent = Intent().apply {
                 action = Intent.ACTION_SEND_MULTIPLE
-                putExtra(Intent.EXTRA_SUBJECT, "Offline recorded data")
+                putExtra(Intent.EXTRA_SUBJECT, context.getString(R.string.offline_recorded_data))
                 type = "plain/text"
                 putParcelableArrayListExtra(Intent.EXTRA_STREAM, arrayListOf(uiState.data.uri))
             }
@@ -103,7 +104,11 @@ fun ShowRecordingData(viewModel: RecordingDataViewModel = viewModel(), onNavigat
             ShowFailed(uiState)
         }
         RecordingDataUiState.RecordingDeleted -> {
-            Toast.makeText(LocalContext.current, "Deleted $path ", Toast.LENGTH_LONG).show()
+            Toast.makeText(
+                LocalContext.current,
+                LocalContext.current.getString(R.string.deleted_path, path),
+                Toast.LENGTH_LONG
+            ).show()
             onNavigateBack()
         }
         RecordingDataUiState.Idle -> {
@@ -122,7 +127,7 @@ fun ShowIsLoading(progress: OfflineRecordingProgress?) {
                 path = path
             )
         },
-        dataType = "Offline Recording"
+        dataType = stringResource(R.string.offline_recording)
     )
 }
 
@@ -135,26 +140,26 @@ fun ShowData(onShare: () -> Unit,
     Column {
 
         val sizeInKb = String.format("%.2f", (recording.data.size / 1024.0))
-        Text(text = "Size", style = MaterialTheme.typography.h6)
+        Text(text = stringResource(R.string.size), style = MaterialTheme.typography.h6)
         Text(
             text = "$sizeInKb kB", modifier = Modifier
                 .padding(8.dp)
         )
 
         val downLoadRate = String.format("%.2f", recording.data.downloadSpeed)
-        Text(text = "Downloaded with rate", style = MaterialTheme.typography.h6)
+        Text(text = stringResource(R.string.downloaded_with_rate), style = MaterialTheme.typography.h6)
         Text(
             text = "$downLoadRate kB/s", modifier = Modifier
                 .padding(8.dp)
         )
 
-        Text(text = "Path", style = MaterialTheme.typography.h6)
+        Text(text = stringResource(R.string.path_label), style = MaterialTheme.typography.h6)
         Text(
             text = path, modifier = Modifier
                 .padding(8.dp)
         )
 
-        Text(text = "Start time", style = MaterialTheme.typography.h6)
+        Text(text = stringResource(R.string.start_time_label), style = MaterialTheme.typography.h6)
         Row(
             modifier = Modifier
                 .padding(8.dp)
@@ -162,7 +167,7 @@ fun ShowData(onShare: () -> Unit,
             Text(text = recording.data.startTime)
         }
         if (recording.data.usedSettings != null) {
-            Text(text = "Recording settings", style = MaterialTheme.typography.h6)
+            Text(text = stringResource(R.string.recording_settings), style = MaterialTheme.typography.h6)
             Row {
                 Column(
                     modifier = Modifier
@@ -170,19 +175,19 @@ fun ShowData(onShare: () -> Unit,
                 ) {
 
                     Row {
-                        Text(text = "Sample rate: ")
+                        Text(text = stringResource(R.string.sample_rate_label) + " ")
                         Text(text = "${recording.data.usedSettings.settings[PolarSensorSetting.SettingType.SAMPLE_RATE]?.first()}Hz")
                     }
                     Row {
-                        Text(text = "Resolution: ")
+                        Text(text = stringResource(R.string.resolution_label) + " ")
                         Text(text = "${recording.data.usedSettings.settings[PolarSensorSetting.SettingType.RESOLUTION]?.first()}bits")
                     }
                     Row {
-                        Text(text = "Range: ")
+                        Text(text = stringResource(R.string.range_label) + " ")
                         Text(text = recording.data.usedSettings.settings[PolarSensorSetting.SettingType.RANGE]?.first().toString())
                     }
                     Row {
-                        Text(text = "Channels: ")
+                        Text(text = stringResource(R.string.channels_label) + " ")
                         Text(text = recording.data.usedSettings.settings[PolarSensorSetting.SettingType.CHANNELS]?.first().toString())
                     }
                 }
@@ -204,11 +209,11 @@ fun ShowData(onShare: () -> Unit,
             // Inner content including an icon and a text label
             Icon(
                 Icons.Filled.Share,
-                contentDescription = "Share",
+                contentDescription = stringResource(R.string.share_action),
                 modifier = Modifier.size(ButtonDefaults.IconSize)
             )
             Spacer(Modifier.size(ButtonDefaults.IconSpacing))
-            Text("Share")
+            Text(stringResource(R.string.share_action))
         }
 
         Button(
@@ -254,11 +259,11 @@ fun ShowData(onShare: () -> Unit,
             // Inner content including an icon and a text label
             Icon(
                 Icons.Filled.Delete,
-                contentDescription = "Delete",
+                contentDescription = stringResource(R.string.delete),
                 modifier = Modifier.size(ButtonDefaults.IconSize)
             )
             Spacer(Modifier.size(ButtonDefaults.IconSpacing))
-            Text("Delete")
+            Text(stringResource(R.string.delete))
         }
     }
 }
@@ -277,7 +282,7 @@ private fun ShowFailed(failure: RecordingDataUiState.Failure) {
 
                 if (failure.throwable != null) {
                     Column {
-                        Text(text = "Details:")
+                        Text(text = stringResource(R.string.details_label))
                         Text(text = "${failure.throwable}")
                     }
                 }

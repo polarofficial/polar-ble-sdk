@@ -588,7 +588,7 @@ struct TriggerSetupView: View {
         case "EXERCISE START":
             mode = .triggerExerciseStart
         default:
-            NSLog("Invalid trigger mode: \(triggerMode)")
+            AppLogger.log("Invalid trigger mode: \(triggerMode)")
             return
         }
 
@@ -599,7 +599,7 @@ struct TriggerSetupView: View {
             triggerFeatures.removeAll()
             let trigger = PolarOfflineRecordingTrigger(triggerMode: mode, triggerFeatures: triggerFeatures)
 
-            NSLog("[TriggerSetupView] Applying trigger mode: \(triggerMode), Features: \(triggerFeatures)")
+            AppLogger.log("[TriggerSetupView] Applying trigger mode: \(triggerMode), Features: \(triggerFeatures)")
 
             Task {
                 await MainActor.run { isApplyingTriggerSetup = true }
@@ -613,12 +613,12 @@ struct TriggerSetupView: View {
                     await MainActor.run {
                         appState.bleSdkManager.generalMessage = Message(text: "Offline triggers disabled")
                     }
-                    NSLog("[TriggerSetupView] Successfully disabled offline recording triggers")
+                    AppLogger.log("[TriggerSetupView] Successfully disabled offline recording triggers")
                 } catch {
                     await MainActor.run {
                         appState.bleSdkManager.generalMessage = Message(text: "Error: Failed to disable offline triggers: \(error.localizedDescription)")
                     }
-                    NSLog("[TriggerSetupView] Error disabling offline recording triggers: \(error)")
+                    AppLogger.log("[TriggerSetupView] Error disabling offline recording triggers: \(error)")
                 }
             }
             return
@@ -646,7 +646,7 @@ struct TriggerSetupView: View {
 
         let trigger = PolarOfflineRecordingTrigger(triggerMode: mode, triggerFeatures: triggerFeatures)
 
-        NSLog("[TriggerSetupView] Applying trigger mode: \(triggerMode), Features: \(triggerFeatures)")
+        AppLogger.log("[TriggerSetupView] Applying trigger mode: \(triggerMode), Features: \(triggerFeatures)")
 
         Task {
             await MainActor.run { isApplyingTriggerSetup = true }
@@ -660,12 +660,12 @@ struct TriggerSetupView: View {
                 await MainActor.run {
                     appState.bleSdkManager.generalMessage = Message(text: "Offline trigger setup updated")
                 }
-                NSLog("[TriggerSetupView] Successfully set offline recording trigger: Mode: \(triggerMode), Features: \(triggerFeatures)")
+                AppLogger.log("[TriggerSetupView] Successfully set offline recording trigger: Mode: \(triggerMode), Features: \(triggerFeatures)")
             } catch {
                 await MainActor.run {
                     appState.bleSdkManager.generalMessage = Message(text: "Error: Failed to set offline triggers: \(error.localizedDescription)")
                 }
-                NSLog("[TriggerSetupView] Error setting offline recording trigger: \(error)")
+                AppLogger.log("[TriggerSetupView] Error setting offline recording trigger: \(error)")
             }
         }
     }
@@ -816,7 +816,7 @@ struct OfflineRecStartButton: View {
     }
 
     private func offlineRecButtonToggle(_ feature:PolarDeviceDataType, _ isRecording:Bool?) {
-        NSLog("Offline recording toggle for feature \(feature)")
+        AppLogger.log("Offline recording toggle for feature \(feature)")
         guard let toggleStartStop = isRecording else {
             return
         }

@@ -6,6 +6,9 @@
 /// slot value matches the expected encoded integer.
 ///
 /// Timestamp used in all frames: 0x005ED0B2 (bytes LE: B2 D0 5E 00 00 00 00 00)
+///
+/// Derived-frame dataContent layout (headerSize=4, methodBitsOffset=2):
+///   [source(1B)] [src_frame(1B)] [methodBitsLow(1B)] [methodBitsHigh(1B)] [sampleData...]
 
 import XCTest
 @testable import iOSCommunications
@@ -29,13 +32,13 @@ final class DerivedMeasurementDataTest: XCTestCase {
     // MARK: - Test Case 1: Gyroscope — Min, Std, Norm, StdOfNorms, NormOfStds
 
     func testDerivedGyroscopeTC1() throws {
-        // [type(0F)] [timestamp 8B] [frame_type(00)] [source_type(05)] [source_frame_type(00)]
+        // [type(0F)] [timestamp 8B] [frame_type(00)] [source(05)] [src_frame(00)]
         // [method_bits LE: 32 03] [slot0: 18B] [slot1: 18B] [slot2: 18B]
         let rawBytes: [UInt8] = [
             0x0F,
             0xB2, 0xD0, 0x5E, 0x00, 0x00, 0x00, 0x00, 0x00,  // timestamp
             0x00,                                               // frame type = type_0
-            0x05, 0x00, 0x00, 0x32, 0x03,                     // source=gyro, src_frame=0, [reserved], methodBits=0x0332
+            0x05, 0x00, 0x32, 0x03,                           // source=gyro, src_frame=0, methodBits=0x0332
             // Slot 0 (samples 0–49)
             0x47, 0x00, 0xE9, 0xFF, 0xEE, 0xFF, // M1 Min  [x=71, y=-23, z=-18]
             0x16, 0x00, 0x49, 0x00, 0x21, 0x00, // M4 Std  [22, 73, 33]
@@ -113,7 +116,7 @@ final class DerivedMeasurementDataTest: XCTestCase {
             0x0F,
             0xB2, 0xD0, 0x5E, 0x00, 0x00, 0x00, 0x00, 0x00,
             0x00,
-            0x02, 0x01, 0x00, 0x05, 0x01,                     // source=acc, src_frame=1, [reserved], methodBits=0x0105
+            0x02, 0x01, 0x05, 0x01,                           // source=acc, src_frame=1, methodBits=0x0105
             // Slot 0
             0x5A, 0x00, 0xBA, 0xFF, 0xCF, 0x03, // M0 Downsample [90, -70, 975]
             0x78, 0x00, 0xE2, 0xFF, 0xDE, 0x03, // M2 Max        [120, -30, 990]
@@ -171,7 +174,7 @@ final class DerivedMeasurementDataTest: XCTestCase {
             0x0F,
             0xB2, 0xD0, 0x5E, 0x00, 0x00, 0x00, 0x00, 0x00,
             0x00,
-            0x02, 0x01, 0x00, 0x21, 0x01,                     // source=acc, src_frame=1, [reserved], methodBits=0x0121
+            0x02, 0x01, 0x21, 0x01,                           // source=acc, src_frame=1, methodBits=0x0121
             // Slot 0
             0x5A, 0x00, 0xBA, 0xFF, 0xCF, 0x03, // M0 Downsample [90, -70, 975]
             0xD6, 0x03,                          // M5 Norm [982]
@@ -223,7 +226,7 @@ final class DerivedMeasurementDataTest: XCTestCase {
             0x0F,
             0xB2, 0xD0, 0x5E, 0x00, 0x00, 0x00, 0x00, 0x00,
             0x00,
-            0x02, 0x01, 0x00, 0xF7, 0x01,                     // source=acc, src_frame=1, [reserved], methodBits=0x01F7
+            0x02, 0x01, 0xF7, 0x01,                           // source=acc, src_frame=1, methodBits=0x01F7
             // Slot 0 (last=(90,-70,975), norms=[986.36,997.70,975.14,991.93,981.64])
             0x5A, 0x00, 0xBA, 0xFF, 0xCF, 0x03, // M0 Downsample [90,  -70, 975]
             0x50, 0x00, 0xBA, 0xFF, 0xCA, 0x03, // M1 Min        [80,  -70, 970]
@@ -325,7 +328,7 @@ final class DerivedMeasurementDataTest: XCTestCase {
             0x0F,                                               // derivedMeasurement
             0xB2, 0xD0, 0x5E, 0x00, 0x00, 0x00, 0x00, 0x00,
             0x00,                                               // frame type 0
-            0x02, 0x01, 0x00, 0x00, 0x01,                     // source=acc, src_frame=1, [reserved], methodBits=0x0100 (bit 8 = StdOfNorms)
+            0x02, 0x01, 0x00, 0x01,                           // source=acc, src_frame=1, methodBits=0x0100 (bit 8 = StdOfNorms)
             0x05, 0x00,                                         // one uint16 scalar slot: value=5
         ]
         let frame = try makeFrame(rawBytes)
@@ -350,13 +353,13 @@ final class DerivedMeasurementDataTest: XCTestCase {
         XCTAssertTrue(result.derivedSamples.isEmpty)
     }
 
-    /// A derived frame with content shorter than the 5-byte header returns empty samples.
+    /// A derived frame with content shorter than the 4-byte header returns empty samples.
     func testTruncatedHeaderReturnsNoSamples() throws {
         let rawBytes: [UInt8] = [
             0x0F,
             0xB2, 0xD0, 0x5E, 0x00, 0x00, 0x00, 0x00, 0x00,
             0x00,
-            0x02, 0x01, 0x00, 0x05, // only 4 bytes — less than 5-byte header
+            0x02, 0x01, 0x05, // only 3 bytes — less than 4-byte header
         ]
         let frame = try makeFrame(rawBytes)
         let result = try DerivedAccData.parseDataFromDataFrame(frame: frame, activeMethods: [])
@@ -372,7 +375,7 @@ final class DerivedMeasurementDataTest: XCTestCase {
             0x0F,
             0xB2, 0xD0, 0x5E, 0x00, 0x00, 0x00, 0x00, 0x00,
             0x00,
-            0x02, 0x01, 0x00, 0x05, 0x01,
+            0x02, 0x01, 0x05, 0x01,                           // methodBits=0x0105
             // Slot 0
             0x5A, 0x00, 0xBA, 0xFF, 0xCF, 0x03,
             0x78, 0x00, 0xE2, 0xFF, 0xDE, 0x03,
@@ -397,9 +400,3 @@ final class DerivedMeasurementDataTest: XCTestCase {
         }
     }
 }
-
-
-
-
-
-

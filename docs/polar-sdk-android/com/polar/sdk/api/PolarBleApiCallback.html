@@ -283,10 +283,18 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApiCallback.ht
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarBleApiCallback.html#deviceDisconnected(com.polar.sdk.api.model.PolarDeviceInfo)>deviceDisconnected</a>(<a href=model/PolarDeviceInfo.html>PolarDeviceInfo</a> polarDeviceInfo) </code>
                                             </th>
-                                            <td class="colLast">Device is now disconnected</td>
+                                            <td class="colLast">Device is now disconnected.</td>
                                         </tr>
                                         
                                         <tr id="i4" class="altColor">
+                                            <td class="colFirst"><code><a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=PolarBleApiCallback.html#deviceDisconnected(com.polar.sdk.api.model.PolarDeviceInfo,com.polar.sdk.api.PolarBleDisconnectInfo)>deviceDisconnected</a>(<a href=model/PolarDeviceInfo.html>PolarDeviceInfo</a> polarDeviceInfo, <a href=PolarBleDisconnectInfo.html>PolarBleDisconnectInfo</a> info) </code>
+                                            </th>
+                                            <td class="colLast">Device is disconnected with a reason and recovery recommendation.</td>
+                                        </tr>
+                                        
+                                        <tr id="i5" class="rowColor">
                                             <td class="colFirst"><code><a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarBleApiCallback.html#bleSdkFeatureReady(java.lang.String,com.polar.sdk.api.PolarBleApi.PolarBleSdkFeature)>bleSdkFeatureReady</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=PolarBleApi.PolarBleSdkFeature.html>PolarBleApi.PolarBleSdkFeature</a> feature) </code>
@@ -294,7 +302,7 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApiCallback.ht
                                             <td class="colLast">Called when the feature in connected device is available and it is ready.</td>
                                         </tr>
                                         
-                                        <tr id="i5" class="rowColor">
+                                        <tr id="i6" class="altColor">
                                             <td class="colFirst"><code><a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarBleApiCallback.html#disInformationReceived(java.lang.String,java.util.UUID,java.lang.String)>disInformationReceived</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/util/UUID.html>UUID</a> uuid, <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> value) </code>
@@ -302,7 +310,7 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApiCallback.ht
                                             <td class="colLast">DIS information received.</td>
                                         </tr>
                                         
-                                        <tr id="i6" class="altColor">
+                                        <tr id="i7" class="rowColor">
                                             <td class="colFirst"><code><a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarBleApiCallback.html#batteryLevelReceived(java.lang.String,java.lang.Integer)>batteryLevelReceived</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> level) </code>
@@ -310,7 +318,7 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApiCallback.ht
                                             <td class="colLast">Battery level received.</td>
                                         </tr>
                                         
-                                        <tr id="i7" class="rowColor">
+                                        <tr id="i8" class="altColor">
                                             <td class="colFirst"><code><a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarBleApiCallback.html#batteryChargingStatusReceived(java.lang.String,.<Error class: unknown class>)>batteryChargingStatusReceived</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, &lt;Error class: unknown class&gt; chargingStatus) </code>
@@ -318,7 +326,7 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApiCallback.ht
                                             <td class="colLast">Battery charging status received.</td>
                                         </tr>
                                         
-                                        <tr id="i8" class="altColor">
+                                        <tr id="i9" class="rowColor">
                                             <td class="colFirst"><code><a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarBleApiCallback.html#powerSourcesStateReceived(java.lang.String,.<Error class: unknown class>)>powerSourcesStateReceived</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, &lt;Error class: unknown class&gt; powerSourcesState) </code>
@@ -326,7 +334,7 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApiCallback.ht
                                             <td class="colLast">Battery power sources state received.</td>
                                         </tr>
                                         
-                                        <tr id="i9" class="rowColor">
+                                        <tr id="i10" class="altColor">
                                             <td class="colFirst"><code><a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarBleApiCallback.html#hrNotificationReceived(java.lang.String,com.polar.sdk.api.model.PolarHrData.PolarHrSample)>hrNotificationReceived</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=model/PolarHrData.PolarHrSample.html>PolarHrData.PolarHrSample</a> data) </code>
@@ -334,7 +342,7 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApiCallback.ht
                                             <td class="colLast">HR notification data received from device.</td>
                                         </tr>
                                         
-                                        <tr id="i10" class="altColor">
+                                        <tr id="i11" class="rowColor">
                                             <td class="colFirst"><code><a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarBleApiCallback.html#bleSdkFeaturesReadiness(java.lang.String,java.util.List,java.util.List)>bleSdkFeaturesReadiness</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=PolarBleApi.PolarBleSdkFeature.html>PolarBleApi.PolarBleSdkFeature</a>&gt; ready, <a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=PolarBleApi.PolarBleSdkFeature.html>PolarBleApi.PolarBleSdkFeature</a>&gt; unavailable) </code>
@@ -500,8 +508,8 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApiCallback.ht
                                           >
                                     <li class="blockList">
                                         <h4>deviceDisconnected</h4>
-                                        <pre class="methodSignature"> <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a> <a href=PolarBleApiCallback.html#deviceDisconnected(com.polar.sdk.api.model.PolarDeviceInfo)>deviceDisconnected</a>(<a href=model/PolarDeviceInfo.html>PolarDeviceInfo</a> polarDeviceInfo)</pre>
-                                        <div class="block"><p>Device is now disconnected</p></div>
+                                        <pre class="methodSignature">@<a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-deprecated/index.html>Deprecated</a>(message = &quot;Use deviceDisconnected(polarDeviceInfo, info) for typed disconnect diagnostics&quot;) <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a> <a href=PolarBleApiCallback.html#deviceDisconnected(com.polar.sdk.api.model.PolarDeviceInfo)>deviceDisconnected</a>(<a href=model/PolarDeviceInfo.html>PolarDeviceInfo</a> polarDeviceInfo)</pre>
+                                        <div class="block"><p>Device is now disconnected.</p></div>
 
                                         <dl>
 
@@ -510,6 +518,40 @@ public abstract class <span class="typeNameLabel"><a href=PolarBleApiCallback.ht
                                             
                                             
                                             <dd><code>polarDeviceInfo</code> - Polar device information</dd>
+                                            
+                                            
+                                        
+
+                                        
+
+                                        
+
+                                        </dl>
+                                    </li>
+                                </ul>
+                                
+                                <a id="deviceDisconnected(com.polar.sdk.api.model.PolarDeviceInfo,com.polar.sdk.api.PolarBleDisconnectInfo)">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockList"
+                                          >
+                                    <li class="blockList">
+                                        <h4>deviceDisconnected</h4>
+                                        <pre class="methodSignature"> <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a> <a href=PolarBleApiCallback.html#deviceDisconnected(com.polar.sdk.api.model.PolarDeviceInfo,com.polar.sdk.api.PolarBleDisconnectInfo)>deviceDisconnected</a>(<a href=model/PolarDeviceInfo.html>PolarDeviceInfo</a> polarDeviceInfo, <a href=PolarBleDisconnectInfo.html>PolarBleDisconnectInfo</a> info)</pre>
+                                        <div class="block"><p>Device is disconnected with a reason and recovery recommendation.</p><p>For <a href=PolarBleRecoveryAction.html#RETRY_OPERATION>PolarBleRecoveryAction.RETRY_OPERATION</a>, wait for the next <a href=PolarBleApiCallback.html#deviceConnected(com.polar.sdk.api.model.PolarDeviceInfo)>deviceConnected</a> callback before retrying the failed idempotent SDK operation. The SDK does not replay arbitrary application operations; do not blindly repeat a non-idempotent write.</p><p>For <a href=PolarBleRecoveryAction.html#RETRY_CONNECTION>PolarBleRecoveryAction.RETRY_CONNECTION</a>, keep the device nearby and powered on while the SDK reconnects and rebuilds the GATT session. Retry the interrupted operation only after <a href=PolarBleApiCallback.html#deviceConnected(com.polar.sdk.api.model.PolarDeviceInfo)>deviceConnected</a>. A timeout alone does not prove that pairing information was removed.</p><p>For <a href=PolarBleRecoveryAction.html#REMOVE_PAIRING_AND_PAIR_AGAIN>PolarBleRecoveryAction.REMOVE_PAIRING_AND_PAIR_AGAIN</a>, stop automatic retries, remove/forget the pairing in Android Bluetooth settings and from the device when required, put the device into pairing mode, and connect again.</p><p>For <a href=PolarBleRecoveryAction.html#RETRY_PAIRING>PolarBleRecoveryAction.RETRY_PAIRING</a>, Android started or retried security negotiation but the peripheral did not complete it. Put the device into its explicit pairing mode, keep it disconnected from other phones, and connect again. This does not prove that an existing Android bond was removed.</p><p>For <a href=PolarBleRecoveryAction.html#NONE>PolarBleRecoveryAction.NONE</a>, use normal disconnected-device handling. An explicit <a href=PolarBleApi.html#disconnectFromDevice(java.lang.String)>PolarBleApi.disconnectFromDevice</a> call is intentional and is reported with <a href=PolarBleDisconnectReason.html#CONNECTION_LOST>PolarBleDisconnectReason.CONNECTION_LOST</a> and <a href=PolarBleRecoveryAction.html#NONE>PolarBleRecoveryAction.NONE</a>; applications should not present pairing recovery instructions for that case.</p></div>
+
+                                        <dl>
+
+                                        
+                                            <dt><span class="paramLabel">Parameters:</span></dt>
+                                            
+                                            
+                                            <dd><code>polarDeviceInfo</code> - Polar device information</dd>
+                                            
+                                            
+                                            
+                                            <dd><code>info</code> - typed disconnect reason and recovery recommendation</dd>
                                             
                                             
                                         

@@ -94,7 +94,7 @@ class LoggingSettingsViewController: UIViewController {
                 try await self.api.setLogConfig(self.deviceId, logConfig: self.logConfig!).value
             }
             catch let err {
-                NSLog("Setting log config failed: \(err)")
+                AppLogger.log("Setting log config failed: \(err)")
             }
         }
     }

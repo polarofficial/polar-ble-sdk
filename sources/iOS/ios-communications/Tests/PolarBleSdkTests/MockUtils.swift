@@ -979,6 +979,71 @@ public class MockBlePsFtpClient: BlePsFtpClient {
     }
 }
 
+public class BroadcastingMockBlePsFtpClient: MockBlePsFtpClient, @unchecked Sendable {
+    private let lock = NSLock()
+    private var continuations: [UUID: AsyncThrowingStream<PsFtpNotification, Error>.Continuation] = [:]
+
+    /// Number of currently active (not yet terminated) `waitNotification()` subscribers.
+    public var subscriberCount: Int {
+        lock.lock()
+        defer { lock.unlock() }
+        return continuations.count
+    }
+
+    public override func waitNotification() -> AsyncThrowingStream<PsFtpNotification, Error> {
+        let id = UUID()
+        return AsyncThrowingStream { continuation in
+            self.lock.lock()
+            self.continuations[id] = continuation
+            self.lock.unlock()
+            continuation.onTermination = { [weak self] _ in
+                guard let self else { return }
+                self.lock.lock()
+                self.continuations.removeValue(forKey: id)
+                self.lock.unlock()
+            }
+        }
+    }
+
+    /// Simulates the BLE device pushing a REST API event notification to every currently
+    /// subscribed `waitNotification()` consumer, exactly like the real broadcast loop does.
+    public func pushRestApiEvent(uncompressed data: [Data]) {
+        let notification = PsFtpNotification()
+        notification.id = Int32(Protocol_PbPFtpDevToHostNotification.restApiEvent.rawValue)
+        var event = Protocol_PbPftpDHRestApiEvent()
+        event.uncompressed = true
+        event.event = data
+        notification.parameters = NSMutableData(data: (try? event.serializedData()) ?? Data())
+
+        lock.lock()
+        let subscribers = Array(continuations.values)
+        lock.unlock()
+        for continuation in subscribers {
+            continuation.yield(notification)
+        }
+    }
+}
+
+public func waitForSubscriberCount(
+    _ expected: Int,
+    on client: BroadcastingMockBlePsFtpClient,
+    timeout: TimeInterval = 2.0,
+    file: StaticString = #filePath,
+    line: UInt = #line
+) async throws {
+    let deadline = Date().addingTimeInterval(timeout)
+    while client.subscriberCount != expected {
+        if Date() >= deadline {
+            XCTFail(
+                "Timed out waiting for subscriberCount == \(expected), got \(client.subscriberCount)",
+                file: file, line: line
+            )
+            return
+        }
+        try await Task.sleep(nanoseconds: 10_000_000) // 10ms
+    }
+}
+
 // MARK: - MockBleMdsClient
 
 public class MockBleMdsClient: BleMdsClient, @unchecked Sendable {

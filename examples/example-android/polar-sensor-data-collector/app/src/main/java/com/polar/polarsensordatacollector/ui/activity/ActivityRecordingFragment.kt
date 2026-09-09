@@ -189,7 +189,7 @@ class ActivityRecordingFragment : Fragment(R.layout.fragment_activity_recording)
         val dateRange: MaterialDatePicker<Pair<Long, Long>> = MaterialDatePicker
             .Builder
             .dateRangePicker()
-            .setTitleText("Select date range")
+            .setTitleText(getString(R.string.select_date_range))
             .setTheme(R.style.MaterialCalendarTheme)
             .setCalendarConstraints(constraints.build())
             .build()

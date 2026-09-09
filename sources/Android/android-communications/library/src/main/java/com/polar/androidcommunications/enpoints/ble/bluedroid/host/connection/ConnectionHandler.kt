@@ -41,6 +41,12 @@ class ConnectionHandler(
          */
         @VisibleForTesting
         const val CONNECTION_WATCHDOG_TIMEOUT_MS = 30_000L
+
+        /**
+         * Base backoff delay between no-callback (watchdog-triggered) connection attempts.
+         */
+        private const val INITIAL_CONNECT_BACKOFF_MS = 5_000L    // 5 s
+        private const val MAX_CONNECT_BACKOFF_MS     = 120_000L  // 2 min cap
     }
 
     /**
@@ -58,6 +64,7 @@ class ConnectionHandler(
         ENTRY,
         EXIT,
         CONNECT_DEVICE,
+        CONNECT_DEVICE_DIRECT,
         ADVERTISEMENT_HEAD_RECEIVED,
         DISCONNECT_DEVICE,
         DEVICE_DISCONNECTED,
@@ -137,6 +144,31 @@ class ConnectionHandler(
     fun connectDevice(bleDeviceSession: BDDeviceSessionImpl, bluetoothEnabled: Boolean) {
         if (bluetoothEnabled) {
             commandState(bleDeviceSession, ConnectionHandlerAction.CONNECT_DEVICE)
+        } else {
+            when (bleDeviceSession.sessionState) {
+                DeviceSessionState.SESSION_CLOSED,
+                DeviceSessionState.SESSION_CLOSING -> {
+                    updateSessionState(bleDeviceSession, DeviceSessionState.SESSION_OPEN_PARK)
+                }
+                else -> {
+                    //Do nothing
+                }
+            }
+        }
+    }
+
+    /**
+     * Initiate a GATT connection directly by MAC address, bypassing the
+     * advertisement-connectable guard. Call this when the peripheral is known
+     * to be reachable (e.g. via CompanionDeviceManager) but has stopped advertising.
+     */
+    fun connectDeviceDirect(bleDeviceSession: BDDeviceSessionImpl, bluetoothEnabled: Boolean) {
+        bleDeviceSession.directConnect = true
+        // Clear any active watchdog backoff so the direct-connect is not gated
+        bleDeviceSession.consecutiveNoCallbackConnects = 0
+        bleDeviceSession.nextConnectAllowedTimeMs = 0L
+        if (bluetoothEnabled) {
+            commandState(bleDeviceSession, ConnectionHandlerAction.CONNECT_DEVICE_DIRECT)
         } else {
             when (bleDeviceSession.sessionState) {
                 DeviceSessionState.SESSION_CLOSED,
@@ -251,6 +283,8 @@ class ConnectionHandler(
                 // ADVERTISEMENT_HEAD_RECEIVED is not silently skipped.
                 reconnectAttempts.remove(session.address)
                 reconnectNotBeforeMs.remove(session.address)
+                session.consecutiveNoCallbackConnects = 0
+                session.nextConnectAllowedTimeMs = 0L
                 when (session.sessionState) {
                     DeviceSessionState.SESSION_OPEN_PARK,
                     DeviceSessionState.SESSION_CLOSED -> {
@@ -276,11 +310,39 @@ class ConnectionHandler(
                     DeviceSessionState.SESSION_OPENING -> { /* Do nothing */ }
                 }
             }
+            ConnectionHandlerAction.CONNECT_DEVICE_DIRECT -> {
+                // Bypass the advertisement-connectable guard — the caller asserts the
+                // device is reachable by MAC even though it may have stopped advertising.
+                reconnectAttempts.remove(session.address)
+                reconnectNotBeforeMs.remove(session.address)
+                when (session.sessionState) {
+                    DeviceSessionState.SESSION_OPEN_PARK,
+                    DeviceSessionState.SESSION_CLOSED -> {
+                        changeState(session, ConnectionHandlerState.CONNECTING)
+                    }
+                    DeviceSessionState.SESSION_CLOSING -> {
+                        updateSessionState(session, DeviceSessionState.SESSION_OPEN_PARK)
+                    }
+                    DeviceSessionState.SESSION_OPEN -> {
+                        updateSessionState(session, DeviceSessionState.SESSION_OPEN)
+                    }
+                    DeviceSessionState.SESSION_OPENING -> { /* Do nothing */ }
+                }
+            }
             ConnectionHandlerAction.ADVERTISEMENT_HEAD_RECEIVED -> {
                 if (session.sessionState == DeviceSessionState.SESSION_OPEN_PARK) {
+                    val now = System.currentTimeMillis()
+                    // Respect per-session reconnect backoff set by the watchdog-cancel path.
+                    if (now < session.nextConnectAllowedTimeMs) {
+                        val remaining = session.nextConnectAllowedTimeMs - now
+                        BleLogger.d(TAG, "Reconnect backoff in effect for ${session.address} – skipping advertisement (${remaining}ms remaining)")
+                        return
+                    }
+                    // Direct-connect calls always bypass this gate; advertisement-triggered
+                    // connects respect it so a wedged adapter isn't hammered endlessly.
                     val cooldownUntil = reconnectNotBeforeMs[session.address] ?: 0L
-                    if (System.currentTimeMillis() < cooldownUntil) {
-                        BleLogger.d(TAG, "Skipping reconnect for ${session.address}, backoff cooldown active (${cooldownUntil - System.currentTimeMillis()}ms remaining)")
+                    if (now < cooldownUntil) {
+                        BleLogger.d(TAG, "Skipping reconnect for ${session.address}, backoff cooldown active (${cooldownUntil - now}ms remaining)")
                     } else if (session.isConnectableAdvertisement && containsRequiredUuids(session)) {
                         changeState(session, ConnectionHandlerState.CONNECTING)
                     } else {
@@ -315,6 +377,8 @@ class ConnectionHandler(
                     connectionWatchdogJob = scope.launch {
                         delay(CONNECTION_WATCHDOG_TIMEOUT_MS)
                         BleLogger.w(TAG, "Connection watchdog triggered: SESSION_OPENING timed out after ${CONNECTION_WATCHDOG_TIMEOUT_MS}ms, forcing disconnect")
+                        // Mark as watchdog cancel so the handler applies reconnect backoff.
+                        session.pendingWatchdogCancel = true
                         // Go through the normal disconnectDevice path so the state machine and
                         // mutex are respected, rather than mutating state directly from a coroutine.
                         disconnectDevice(session)
@@ -350,6 +414,12 @@ class ConnectionHandler(
                 // fire and disconnect an already-open session 30 s from now.
                 connectionWatchdogJob?.cancel()
                 connectionWatchdogJob = null
+
+                // Reset no-callback backoff state on successful connection.
+                session.consecutiveNoCallbackConnects = 0
+                session.nextConnectAllowedTimeMs = 0L
+                session.pendingWatchdogCancel = false
+
                 // There are devices needing a delay after connection parameters are negotiated and first attribute operation is done
                 firstAttributeOperationJob?.cancel()
                 firstAttributeOperationJob = scope.launch {
@@ -383,15 +453,46 @@ class ConnectionHandler(
                 }
             }
 
+            ConnectionHandlerAction.CONNECT_DEVICE_DIRECT -> {
+                if (session.sessionState == DeviceSessionState.SESSION_CLOSED) {
+                    updateSessionState(session, DeviceSessionState.SESSION_OPEN_PARK)
+                }
+            }
+
             ConnectionHandlerAction.DISCONNECT_DEVICE -> {
                 if (session != current) {
                     handleDisconnectDevice(session)
                 } else {
+                    // Determine whether this disconnect was triggered by our own watchdog timer
+                    // (i.e. OS never delivered onConnectionStateChange) vs. a user-requested
+                    // disconnect.  Watchdog-triggered cancels are counted for escalating backoff.
+                    val isWatchdogCancel = session.pendingWatchdogCancel
+                    session.pendingWatchdogCancel = false
+
                     // cancel pending connection
                     cancelAllSafeGuardJobs()
                     cancelDisconnectSafeGuard(session)
                     connectionInterface.cancelDeviceConnection(session)
                     observer.deviceConnectionCancelled(session)
+
+                    if (isWatchdogCancel) {
+                        session.consecutiveNoCallbackConnects++
+                        val backoffMs = minOf(
+                            INITIAL_CONNECT_BACKOFF_MS shl minOf(session.consecutiveNoCallbackConnects - 1, 4),
+                            MAX_CONNECT_BACKOFF_MS
+                        )
+                        session.nextConnectAllowedTimeMs = System.currentTimeMillis() + backoffMs
+                        BleLogger.w(
+                            TAG,
+                            "Watchdog-triggered cancel #${session.consecutiveNoCallbackConnects} for ${session.address}" +
+                                " – next advertisement-triggered connect gated for ${backoffMs}ms"
+                        )
+                    } else {
+                        // User-requested disconnect: clear watchdog backoff so a fresh openSession works immediately.
+                        session.consecutiveNoCallbackConnects = 0
+                        session.nextConnectAllowedTimeMs = 0L
+                    }
+
                     updateSessionState(session, DeviceSessionState.SESSION_CLOSED)
                     changeState(session, ConnectionHandlerState.FREE)
                 }
@@ -399,6 +500,12 @@ class ConnectionHandler(
             ConnectionHandlerAction.DEVICE_DISCONNECTED -> {
                 if (current === session) {
                     cancelAllSafeGuardJobs()
+                    if (isTerminalPairingFailure(session)) {
+                        BleLogger.w(TAG, "Terminal pairing failure for ${session.address}; stopping automatic reconnection")
+                        updateSessionState(session, DeviceSessionState.SESSION_CLOSED)
+                        changeState(session, ConnectionHandlerState.FREE)
+                        return
+                    }
                     val attempts = (reconnectAttempts[session.address] ?: 0) + 1
                     reconnectAttempts[session.address] = attempts
                     val backoffMs = minOf(RECONNECT_BACKOFF_BASE_MS * (1L shl (attempts - 1)), RECONNECT_BACKOFF_MAX_MS)
@@ -451,7 +558,10 @@ class ConnectionHandler(
         cancelDisconnectSafeGuard(session)
         when (session.sessionState) {
             DeviceSessionState.SESSION_OPEN -> {
-                if (automaticReconnection) {
+                if (isTerminalPairingFailure(session)) {
+                    BleLogger.w(TAG, "Terminal pairing failure for ${session.address}; keeping session closed")
+                    updateSessionState(session, DeviceSessionState.SESSION_CLOSED)
+                } else if (automaticReconnection) {
                     updateSessionState(session, DeviceSessionState.SESSION_OPEN_PARK)
                 } else {
                     updateSessionState(session, DeviceSessionState.SESSION_CLOSED)
@@ -466,5 +576,10 @@ class ConnectionHandler(
                 // Do nothing
             }
         }
+    }
+
+    private fun isTerminalPairingFailure(session: BDDeviceSessionImpl): Boolean {
+        return session.disconnectReason == com.polar.androidcommunications.api.ble.model.BleDeviceSession.DisconnectReason.PAIRING_INFORMATION_REMOVED ||
+            session.disconnectReason == com.polar.androidcommunications.api.ble.model.BleDeviceSession.DisconnectReason.PAIRING_NEGOTIATION_FAILED
     }
 }

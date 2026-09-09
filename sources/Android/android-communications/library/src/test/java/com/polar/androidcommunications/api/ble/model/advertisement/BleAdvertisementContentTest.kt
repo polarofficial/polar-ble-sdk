@@ -108,7 +108,7 @@ internal class BleAdvertisementContentTest {
     }
 
     @Test
-    fun `test parse hr from manufacturer data SAGRFC23 format`() {
+    fun `test parse hr from manufacturer data TC format`() {
         // Arrange
         val gpbAndHrManufacturerData = byteArrayOf(
             0x6b.toByte(), 0x00.toByte(),
@@ -125,7 +125,7 @@ internal class BleAdvertisementContentTest {
     }
 
     @Test
-    fun `test parse hr from manufacturer data SAGRFC31 format`() {
+    fun `test parse hr from manufacturer data BLE advertise format`() {
         // Arrange
         val onlyHrManufacturerData = byteArrayOf(0x6b.toByte(), 0x00.toByte(), 0x2b.toByte(), 0x0b.toByte(), 0xb6.toByte(), 0xac.toByte())
         val onlyHr: HashMap<BleUtils.AD_TYPE, ByteArray> = hashMapOf(BleUtils.AD_TYPE.GAP_ADTYPE_MANUFACTURER_SPECIFIC to onlyHrManufacturerData)

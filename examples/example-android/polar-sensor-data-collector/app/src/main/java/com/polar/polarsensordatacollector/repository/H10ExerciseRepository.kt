@@ -93,7 +93,7 @@ class H10ExerciseRepository @Inject constructor(
                 identifier,
                 exerciseId,
                 PolarH10OfflineExerciseApi.RecordingInterval.INTERVAL_1S,
-                PolarH10OfflineExerciseApi.SampleType.HR
+                sampleType = PolarH10OfflineExerciseApi.SampleType.HR
             )
             Log.d(TAG, "Recording started for $identifier, exerciseId=$exerciseId")
         } catch (e: Exception) {

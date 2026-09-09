@@ -91,12 +91,13 @@ interface PolarTrainingSessionApi {
     /**
      * Stop the current exercise session. Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_TRAINING_DATA]
      *
-     * By default, the session is saved on the device.
-     *
      * @param identifier The Polar device ID or BT address.
+     * @param save Whether to save the stopped exercise on the device. Defaults to `true`.
+     *             Pass `false` to discard the session without persisting it, which avoids the
+     *             need for a subsequent stop → list → delete sequence.
      * @throws Throwable if the operation fails
      */
-    suspend fun stopExercise(identifier: String)
+    suspend fun stopExercise(identifier: String, save: Boolean = true)
 
     /**
      * Get the current exercise session status from the device. Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_TRAINING_DATA]

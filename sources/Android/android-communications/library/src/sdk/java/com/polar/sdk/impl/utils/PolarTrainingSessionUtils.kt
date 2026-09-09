@@ -107,30 +107,30 @@ internal object PolarTrainingSessionUtils {
                     PolarTrainingSessionDataTypes.entries.firstOrNull { path.first.endsWith(it.deviceFileName) }
                         ?: PolarExerciseDataTypes.entries.firstOrNull { path.first.endsWith(it.deviceFileName) }
 
+                val sessionKey = "${dateStr}_${timeStr}"
                 if (dataType is PolarTrainingSessionDataTypes) {
-                    if (trainingNodeList.find { it.first == dateStr} == null) {
+                    if (trainingNodeList.find { it.first == sessionKey } == null) {
                         trainingNodeList.add(
                             Pair(
-                                dateStr,
+                                sessionKey,
                                 TrainingSessionNode(dateStr, timeStr, path.first, dataType, path.second)
                             )
                         )
                     }
-                }  else if (dataType is PolarExerciseDataTypes) {
-                    var exercise =
-                        ExerciseNode(dateStr, timeStr, path.first, dataType, path.second)
+                } else if (dataType is PolarExerciseDataTypes) {
+                    val exercise = ExerciseNode(dateStr, timeStr, path.first, dataType, path.second)
 
-                    trainingSessionChildNodeList.find { it.exerciseIndex == exerciseIndex &&  it.date == dateStr &&  it.time == timeStr}?.children?.add(exercise)
+                    trainingSessionChildNodeList.find { it.exerciseIndex == exerciseIndex && it.date == dateStr && it.time == timeStr }?.children?.add(exercise)
                         ?: trainingSessionChildNodeList.add(
                             TrainingSessionChildNode(
                                 exerciseIndex ?: 0,
-                                 dateStr,
-                                 timeStr,
+                                dateStr,
+                                timeStr,
                                 mutableListOf(exercise)
                             )
                         )
-                    trainingNodeList.find { it.first == dateStr }?.second?.children =
-                        trainingSessionChildNodeList.filter { it.date == dateStr } as MutableList<TrainingSessionChildNode>
+                    trainingNodeList.find { it.first == sessionKey }?.second?.children =
+                        trainingSessionChildNodeList.filter { it.date == dateStr && it.time == timeStr } as MutableList<TrainingSessionChildNode>
                 }
             }
         }.also {

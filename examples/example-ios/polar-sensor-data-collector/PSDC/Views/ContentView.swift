@@ -15,7 +15,6 @@ enum SelectedAction: String, CaseIterable {
 
 struct ContentView: View {
     @EnvironmentObject private var appState: AppState
-    @State private var selectedTab: SelectedAction = .online
     @State private var isSearchingDevices = false
     @State private var connectedDevicesText = ""
     @State private var showHrBroadcastView = false
@@ -25,6 +24,8 @@ struct ContentView: View {
     @State private var appHeader: String = NSLocalizedString("APP_NAME", comment: "")
     @State private var localModifications: String = ""
     @State private var presenting: Bool = false
+    @State private var presentedMessageText: String = ""
+    @State private var shownMessageIds: Set<UUID> = []
     
     var body: some View {
         
@@ -127,7 +128,7 @@ struct ContentView: View {
                     })
                 }
                 
-                Picker("Choose operation", selection: $selectedTab) {
+                Picker("Choose operation", selection: $bleSdkManager.selectedTab) {
                     ForEach(SelectedAction.allCases, id: \.self) { action in
                         if shouldShowTab(action) {
                             Text(action.rawValue)
@@ -142,7 +143,7 @@ struct ContentView: View {
                 case .connecting:
                    ProgressView()
                 case .connected:
-                    OperationModesTabView(chosenActionView: selectedTab)
+                    OperationModesTabView(chosenActionView: bleSdkManager.selectedTab)
                         .environmentObject(bleSdkManager)
                     
                 }
@@ -153,10 +154,16 @@ struct ContentView: View {
         .alert("", isPresented: $presenting, actions: {
             // do nothing
         }, message: {
-            Text(appState.bleSdkManager.generalMessage?.text ?? "?")
+            Text(presentedMessageText)
         })
         .onChange(of: appState.bleSdkManager.generalMessage?.id) { id in
-           presenting = id != nil
+            // Track ids already shown so switching managers back and forth doesn't
+            // re-present a message, without mutating the manager's state from the view.
+            guard let message = appState.bleSdkManager.generalMessage,
+                  !shownMessageIds.contains(message.id) else { return }
+            shownMessageIds.insert(message.id)
+            presentedMessageText = message.text
+            presenting = true
         }
     }
     
@@ -270,7 +277,7 @@ struct ContentView: View {
             nextSdkManager.connectToDevice(withId: nextDevice.deviceId)
             appState.switchTo(nextSdkManager)
         } else {
-            appState.switchTo(PolarBleSdkManager())
+            appState.switchTo(deviceManager.makeSdkManager())
         }
     }
 }

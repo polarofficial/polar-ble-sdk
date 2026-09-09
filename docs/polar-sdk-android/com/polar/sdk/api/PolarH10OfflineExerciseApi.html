@@ -262,7 +262,7 @@ public interface <span class="typeNameLabel"><a href=PolarH10OfflineExerciseApi.
                                         <tr id="i0" class="altColor">
                                             <td class="colFirst"><code>abstract <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
                                             </td>
-                                            <th class="colSecond" scope="row"><code><a href=PolarH10OfflineExerciseApi.html#startRecording(java.lang.String,java.lang.String,com.polar.sdk.api.PolarH10OfflineExerciseApi.RecordingInterval,com.polar.sdk.api.PolarH10OfflineExerciseApi.SampleType)>startRecording</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, @<a href=https://developer.android.com/reference/kotlin/androidx/annotation/Size.html>Size</a>(min = 1, max = 64) <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> exerciseId, <a href=PolarH10OfflineExerciseApi.RecordingInterval.html>PolarH10OfflineExerciseApi.RecordingInterval</a> interval, <a href=PolarH10OfflineExerciseApi.SampleType.html>PolarH10OfflineExerciseApi.SampleType</a> type) </code>
+                                            <th class="colSecond" scope="row"><code><a href=PolarH10OfflineExerciseApi.html#startRecording(java.lang.String,java.lang.String,com.polar.sdk.api.PolarH10OfflineExerciseApi.RecordingInterval,com.polar.sdk.api.PolarH10OfflineExerciseApi.SampleType)>startRecording</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, @<a href=https://developer.android.com/reference/kotlin/androidx/annotation/Size.html>Size</a>(min = 1, max = 64) <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> exerciseId, <a href=PolarH10OfflineExerciseApi.RecordingInterval.html>PolarH10OfflineExerciseApi.RecordingInterval</a> interval, <a href=PolarH10OfflineExerciseApi.SampleType.html>PolarH10OfflineExerciseApi.SampleType</a> sampleType) </code>
                                             </th>
                                             <td class="colLast">Request start recording.</td>
                                         </tr>
@@ -359,7 +359,7 @@ public interface <span class="typeNameLabel"><a href=PolarH10OfflineExerciseApi.
                                           >
                                     <li class="blockList">
                                         <h4>startRecording</h4>
-                                        <pre class="methodSignature"> abstract <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a> <a href=PolarH10OfflineExerciseApi.html#startRecording(java.lang.String,java.lang.String,com.polar.sdk.api.PolarH10OfflineExerciseApi.RecordingInterval,com.polar.sdk.api.PolarH10OfflineExerciseApi.SampleType)>startRecording</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, @<a href=https://developer.android.com/reference/kotlin/androidx/annotation/Size.html>Size</a>(min = 1, max = 64) <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> exerciseId, <a href=PolarH10OfflineExerciseApi.RecordingInterval.html>PolarH10OfflineExerciseApi.RecordingInterval</a> interval, <a href=PolarH10OfflineExerciseApi.SampleType.html>PolarH10OfflineExerciseApi.SampleType</a> type)</pre>
+                                        <pre class="methodSignature"> abstract <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a> <a href=PolarH10OfflineExerciseApi.html#startRecording(java.lang.String,java.lang.String,com.polar.sdk.api.PolarH10OfflineExerciseApi.RecordingInterval,com.polar.sdk.api.PolarH10OfflineExerciseApi.SampleType)>startRecording</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, @<a href=https://developer.android.com/reference/kotlin/androidx/annotation/Size.html>Size</a>(min = 1, max = 64) <a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> exerciseId, <a href=PolarH10OfflineExerciseApi.RecordingInterval.html>PolarH10OfflineExerciseApi.RecordingInterval</a> interval, <a href=PolarH10OfflineExerciseApi.SampleType.html>PolarH10OfflineExerciseApi.SampleType</a> sampleType)</pre>
                                         <div class="block"><p>Request start recording. Requires feature <a href=PolarBleApi.PolarBleSdkFeature.html#FEATURE_POLAR_H10_EXERCISE_RECORDING>PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_H10_EXERCISE_RECORDING</a></p></div>
 
                                         <dl>
@@ -376,11 +376,11 @@ public interface <span class="typeNameLabel"><a href=PolarH10OfflineExerciseApi.
                                             
                                             
                                             
-                                            <dd><code>interval</code> - recording interval to be used, parameter has no effect if the <code>type</code> parameter is SampleType.</dd>
+                                            <dd><code>interval</code> - recording interval to be used, parameter has no effect if the <code>sampleType</code> parameter is SampleType.</dd>
                                             
                                             
                                             
-                                            <dd><code>type</code> - sample type to be used</dd>
+                                            <dd><code>sampleType</code> - sample type to be used</dd>
                                             
                                             
                                         

@@ -6,6 +6,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.polar.polarsensordatacollector.R
 import com.polar.polarsensordatacollector.repository.PolarDeviceRepository
+import com.polar.sdk.api.errors.PolarBleSdkInternalException
+import com.polar.sdk.api.errors.PolarDeviceNotConnected
+import com.polar.sdk.api.errors.PolarDeviceNotFound
+import com.polar.sdk.api.errors.PolarServiceNotAvailable
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -63,7 +67,7 @@ internal class UserDeviceSettingsViewModel @Inject constructor(
             } catch (e: Exception) {
                 _message.value = application.getString(
                     R.string.failed_to_save_settings,
-                    e.localizedMessage
+                    describeUserDeviceSettingsError(e)
                 )
             }
         }
@@ -86,10 +90,21 @@ internal class UserDeviceSettingsViewModel @Inject constructor(
             } catch (e: Exception) {
                 _message.value = application.getString(
                     R.string.failed_to_load_settings,
-                    e.localizedMessage
+                    describeUserDeviceSettingsError(e)
                 )
                 _uiState.value = _uiState.value.copy(isLoading = false)
             }
+        }
+    }
+
+    private fun describeUserDeviceSettingsError(error: Throwable): String {
+        return when (error) {
+            is PolarDeviceNotFound -> application.getString(R.string.user_device_settings_device_session_not_found)
+            is PolarDeviceNotConnected -> application.getString(R.string.user_device_settings_device_not_connected)
+            is PolarServiceNotAvailable -> application.getString(R.string.user_device_settings_service_not_found)
+            is PolarBleSdkInternalException -> error.message
+                ?: application.getString(R.string.user_device_settings_file_not_readable)
+            else -> error.localizedMessage ?: application.getString(R.string.unknown_error)
         }
     }
 

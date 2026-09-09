@@ -7,7 +7,7 @@ extension BlePsFtpClient {
 
     func receiveRestApiEventData(identifier: String) -> AsyncThrowingStream<[Data], Error> {
         return AsyncThrowingStream { continuation in
-            Task {
+            let task = Task {
                 do {
                     for try await notification in self.waitNotification() {
                         guard notification.id == Protocol_PbPFtpDevToHostNotification.restApiEvent.rawValue else { continue }
@@ -31,12 +31,16 @@ extension BlePsFtpClient {
                     continuation.finish(throwing: error)
                 }
             }
+            // Propagate stream termination (consumer gone / Task cancelled) to the inner
+            // Task so it stops consuming waitNotification() and the serial
+            // waitNotificationOperationQueue is freed for the next caller.
+            continuation.onTermination = { _ in task.cancel() }
         }
     }
 
     func receiveRestApiEvents<T: Decodable>(identifier: String) -> AsyncThrowingStream<[T], Error> {
         return AsyncThrowingStream { continuation in
-            Task {
+            let task = Task {
                 do {
                     for try await eventDataList in self.receiveRestApiEventData(identifier: identifier) {
                         let decoded = eventDataList.compactMap { data -> T? in
@@ -50,6 +54,8 @@ extension BlePsFtpClient {
                     continuation.finish(throwing: error)
                 }
             }
+            // Same cancellation propagation as receiveRestApiEventData.
+            continuation.onTermination = { _ in task.cancel() }
         }
     }
 }

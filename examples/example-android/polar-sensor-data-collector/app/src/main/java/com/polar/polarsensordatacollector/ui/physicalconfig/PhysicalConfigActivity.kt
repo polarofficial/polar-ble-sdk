@@ -255,17 +255,17 @@ class PhysicalConfigActivity : AppCompatActivity() {
         )
 
         val deviceId = intent.getStringExtra(ONLINE_OFFLINE_KEY_DEVICE_ID) ?: run {
-            showToast("Device ID not found")
+            showToast(getString(R.string.device_id_not_found))
             return
         }
 
         lifecycleScope.launch {
             try {
                 api.doFirstTimeUse(deviceId, ftuConfig = polarFirstTimeUseConfig)
-                showToast("Physical data sent successfully")
+                showToast(getString(R.string.physical_data_sent_successfully))
             } catch (error: Exception) {
                 Log.e("FirstTimeUseActivity", "Error sending Physical data: ${error.localizedMessage}", error)
-                showToast("Error sending Physical data")
+                showToast(getString(R.string.error_sending_physical_data))
             }
         }
     }

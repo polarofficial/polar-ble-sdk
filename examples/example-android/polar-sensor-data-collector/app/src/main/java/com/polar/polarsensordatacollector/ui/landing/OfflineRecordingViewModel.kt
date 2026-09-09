@@ -16,6 +16,7 @@ import com.polar.sdk.api.model.PolarDerivedMeasurementMethod
 import com.polar.sdk.api.model.PolarDerivedMeasurementSettings
 import com.polar.sdk.api.model.PolarDerivedMeasurementSettingsGroup
 import com.polar.sdk.api.model.PolarSensorSetting
+import java.util.EnumMap
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -25,6 +26,9 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.*
@@ -107,13 +111,22 @@ class OfflineRecordingViewModel @Inject constructor(
     val uiDerivedSettingsState: StateFlow<DerivedSettingsUiState?> = _uiDerivedSettingsState.asStateFlow()
 
     init {
-        getOfflineRecordingStatus()
+        viewModelScope.launch {
+            polarDeviceStreamingRepository.availableFeatures
+                .filter { it.identifier == identifier }
+                .collect { deviceStreamsAvailable ->
+                    val filteredFeatures = EnumMap(deviceStreamsAvailable.availableOfflineFeatures.filter { it.key != PolarBleApi.PolarDeviceDataType.DERIVED_MEASUREMENT })
+                    updateOfflineRecordingsAvailableUiState(deviceStreamsAvailable.identifier, featuresAvailable = filteredFeatures)
+                }
+        }
 
         viewModelScope.launch {
             polarDeviceStreamingRepository.availableFeatures
-                .collect { deviceStreamsAvailable ->
-                    updateOfflineRecordingsAvailableUiState(deviceStreamsAvailable.identifier, featuresAvailable = deviceStreamsAvailable.availableOfflineFeatures)
-                }
+                .filter { it.identifier == identifier }
+                .map { it.availableOfflineFeatures.values.any { available -> available } }
+                .distinctUntilChanged()
+                .filter { it }
+                .collect { getOfflineRecordingStatus() }
         }
     }
 
@@ -269,6 +282,10 @@ class OfflineRecordingViewModel @Inject constructor(
         )
     }
 
+    fun clearOfflineRecSettingsRequest() {
+        _uiOfflineRequestedSettingsState.value = null
+    }
+
     // TODO, move to utils
     private fun maxSettingsFromStreamSettings(sensorSetting: PolarSensorSetting): Map<PolarSensorSetting.SettingType, Int> {
         val settings: MutableMap<PolarSensorSetting.SettingType, Int> = mutableMapOf()
@@ -321,14 +338,15 @@ class OfflineRecordingViewModel @Inject constructor(
         }
     }
 
-    fun stopOfflineRecording(features: List<PolarBleApi.PolarDeviceDataType>) {
+    fun stopOfflineRecording(features: List<PolarDeviceDataType>) {
         viewModelScope.launch(Dispatchers.IO) {
             for (feature in features) {
-                polarDeviceStreamingRepository.stopDerivedOfflineRecording(identifier)
-
-                val isDerivedOnly = feature == PolarBleApi.PolarDeviceDataType.ACC &&
-                        settingsCache[feature]?.selectedDerivedSettings != null
+                val enabled = uiOfflineRecordingState.value as? OfflineRecordingUiState.Enabled
+                val enabledFeatures = enabled?.recordingFeatures
+                val isDerivedOnly = feature == PolarDeviceDataType.ACC &&
+                        enabledFeatures?.contains(PolarDeviceDataType.DERIVED_MEASUREMENT) == true
                 if (isDerivedOnly) {
+                    polarDeviceStreamingRepository.stopDerivedOfflineRecording(identifier)
                     offlineRecDisabledUpdateUiState(disabledFeature = feature)
                     continue
                 }
@@ -336,6 +354,7 @@ class OfflineRecordingViewModel @Inject constructor(
                 when (val result = polarDeviceStreamingRepository.stopOfflineRecording(identifier, feature)) {
                     is ResultOfRequest.Success -> {
                         offlineRecDisabledUpdateUiState(disabledFeature = feature)
+                        getOfflineRecordingStatus()
                     }
                     is ResultOfRequest.Failure -> {
                         offlineRecDisabledUpdateUiState(disabledFeature = feature)

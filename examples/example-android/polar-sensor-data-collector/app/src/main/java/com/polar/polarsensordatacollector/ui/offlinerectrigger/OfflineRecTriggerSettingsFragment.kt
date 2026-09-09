@@ -169,6 +169,7 @@ class OfflineRecTriggerSettingsFragment : Fragment(R.layout.fragment_offline_tri
 
     private fun userSelectsOfflineSettings(settingsUiState: OfflineRecTriggerSettingsUiState?) {
         if (settingsUiState != null && settingsUiState.settings.currentlyAvailable != null) {
+            offlineTriggerViewModel.clearOfflineRecTriggerSettingsRequest()
             DialogUtility.showAllSettingsDialog(
                 requireActivity() as android.app.Activity,
                 settingsUiState.settings.currentlyAvailable.settings.toMap(),
@@ -211,6 +212,9 @@ class OfflineRecTriggerSettingsFragment : Fragment(R.layout.fragment_offline_tri
 
                 // clean all the current selections
                 for (feature in PolarDeviceDataType.values()) {
+                    if (feature == PolarDeviceDataType.DERIVED_MEASUREMENT) {
+                        continue
+                    }
                     val cb = getRecTriggerSettingsCheckBox(feature)
                     if (cb.isEnabled && cb.isChecked) {
                         cb.isChecked = false
@@ -254,7 +258,12 @@ class OfflineRecTriggerSettingsFragment : Fragment(R.layout.fragment_offline_tri
     }
 
     private fun setTriggerSettingsButton(feature: PolarDeviceDataType) {
-        val settingsButton = getRecTriggerSettingsButtonView(feature)
+        val settingsButton = try {
+            getRecTriggerSettingsButtonView(feature)
+        } catch (e: IllegalArgumentException) {
+            Log.e(TAG, "Failed to get trigger settings button view for $feature", e)
+            return
+        }
         settingsButton?.setOnClickListener {
             askStreamSettingsFromUser(feature)
         }
@@ -266,6 +275,9 @@ class OfflineRecTriggerSettingsFragment : Fragment(R.layout.fragment_offline_tri
 
         val triggersToSetup = mutableListOf<PolarDeviceDataType>()
         for (feature in PolarDeviceDataType.values()) {
+            if (feature == PolarDeviceDataType.DERIVED_MEASUREMENT) {
+                continue
+            }
             val cb = getRecTriggerSettingsCheckBox(feature)
             if (cb.isEnabled && cb.isChecked) {
                 triggersToSetup.add(feature)
@@ -281,13 +293,16 @@ class OfflineRecTriggerSettingsFragment : Fragment(R.layout.fragment_offline_tri
                     features = triggersToSetup
                 )
             } else {
-                showToast("None selected")
+                showToast(getString(R.string.none_selected))
             }
         }
     }
 
     private fun disableTriggerSettingsSection() {
         for (feature in PolarDeviceDataType.values()) {
+            if (feature == PolarDeviceDataType.DERIVED_MEASUREMENT) {
+                continue
+            }
             val view = getTriggerSettingsView(feature)
             disableView(view)
             getRecTriggerSettingsButtonView(feature)?.isEnabled = false
@@ -297,12 +312,18 @@ class OfflineRecTriggerSettingsFragment : Fragment(R.layout.fragment_offline_tri
 
     private fun clearTriggerSelection() {
         for (feature in PolarDeviceDataType.values()) {
+            if (feature == PolarDeviceDataType.DERIVED_MEASUREMENT) {
+                continue
+            }
             getRecTriggerSettingsCheckBox(feature).isChecked = false
         }
     }
 
     private fun enableTriggerSettingsSection() {
         for (feature in PolarDeviceDataType.values()) {
+            if (feature == PolarDeviceDataType.DERIVED_MEASUREMENT) {
+                continue
+            }
             val view = getTriggerSettingsView(feature)
             enableView(view)
             getRecTriggerSettingsButtonView(feature)?.isEnabled = true
@@ -323,6 +344,7 @@ class OfflineRecTriggerSettingsFragment : Fragment(R.layout.fragment_offline_tri
             PolarDeviceDataType.TEMPERATURE -> temperatureTriggerSettings
             PolarDeviceDataType.SKIN_TEMPERATURE -> skinTemperatureTriggerSettings
             PolarDeviceDataType.HR -> hrTriggerSettings
+            PolarDeviceDataType.DERIVED_MEASUREMENT -> throw IllegalArgumentException("Derived measurement does not have settings")
         }
     }
 
@@ -353,16 +375,40 @@ class OfflineRecTriggerSettingsFragment : Fragment(R.layout.fragment_offline_tri
             PolarDeviceDataType.TEMPERATURE -> "TEM"
             PolarDeviceDataType.SKIN_TEMPERATURE -> "SKIM_TEM"
             PolarDeviceDataType.HR -> "HR"
+            // For now, only supported source measurement type for derived measurements is ACC
+            PolarDeviceDataType.DERIVED_MEASUREMENT -> throw IllegalArgumentException("Derived measurement does not have settings")
         }
     }
 
     private fun setTriggerSettingsView(feature: PolarDeviceDataType, enable: Boolean) {
-        val view = getTriggerSettingsView(feature)
+        val view = try {
+            getTriggerSettingsView(feature)
+        } catch (e: IllegalArgumentException) {
+            Log.e(TAG, "Failed to get trigger settings view for $feature", e)
+            return
+        }
+
         if (enable) {
             val header: TextView = view.findViewById(R.id.feature_selection_feature_header)
-            header.text = getRecTriggerSettingsHeaderText(feature)
-            val settingsButton = getRecTriggerSettingsButtonView(feature)
-            val checkBox = getRecTriggerSettingsCheckBox(feature)
+            try {
+                header.text = getRecTriggerSettingsHeaderText(feature)
+            } catch (e: IllegalArgumentException) {
+                Log.e(TAG, "Failed to get trigger settings header text for $feature", e)
+                return
+            }
+
+            val settingsButton = try {
+                getRecTriggerSettingsButtonView(feature)
+            } catch (e: IllegalArgumentException) {
+                Log.e(TAG, "Failed to get trigger settings button view for $feature", e)
+                return
+            }
+            val checkBox = try {
+                getRecTriggerSettingsCheckBox(feature)
+            } catch (e: IllegalArgumentException) {
+                Log.e(TAG, "Failed to get trigger settings check box for $feature", e)
+                return
+            }
             settingsButton?.visibility = VISIBLE
             checkBox.visibility = VISIBLE
             view.visibility = VISIBLE

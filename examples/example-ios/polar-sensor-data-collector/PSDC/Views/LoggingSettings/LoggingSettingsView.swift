@@ -24,8 +24,6 @@ struct LoggingSettingsView: View {
     @State private var sleepTitle = "No Sleep settings available"
     @State private var skinTempTitle = "No Skin temp settings available"
     
-    @State private var isShareSheetPresented = false
-    @State private var logFileURL: URL?
     @State private var isLoading = true
 
     @State private var isExportingDeviceLogs = false
@@ -163,21 +161,6 @@ struct LoggingSettingsView: View {
                 .buttonStyle(getButtonStyle(toggle: isSkinTempLoggingEnabled))
                 
                 Spacer()
-                
-                Button("Export PSDC app logs") {
-                    if logFileURL == nil {
-                        logFileURL = getLogFile()
-                    }
-                    if logFileURL != nil {
-                        isShareSheetPresented = true
-                    }
-                }
-                .buttonStyle(SecondaryButtonStyle(buttonState: .pressedDown))
-                .sheet(isPresented: $isShareSheetPresented) {
-                    if let url = logFileURL {
-                        ExportLogsView(text: "Export PSDC app logs", fileURL: url)
-                    }
-                }
 
                 ZStack {
                     Button("Export device logs and telemetry") {
@@ -243,7 +226,6 @@ struct LoggingSettingsView: View {
                             skinTempTitle = getButtonText(measurement: "skinTemp")
                         }
                     }
-                    logFileURL = getLogFile()
                     isLoading = false
                 }
             }
@@ -283,7 +265,7 @@ struct LoggingSettingsView: View {
             deviceLogsZipURL = zipURL
             isDeviceLogsSharePresented = true
         } catch {
-            NSLog("Export device logs failed: \(error)")
+            AppLogger.log("Export device logs failed: \(error)")
             exportDeviceLogsError = error.localizedDescription
             showExportDeviceLogsAlert = true
         }
@@ -349,18 +331,6 @@ struct LoggingSettingsView: View {
         }
     }
 
-    private func getLogFile() -> URL? {
-        let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-        let logFileURL = documentsDirectory.appendingPathComponent("PSDCAppLogs.txt")
-
-        if FileManager.default.fileExists(atPath: logFileURL.path) {
-            NSLog("Reading from existing log file at: \(logFileURL)")
-        } else {
-            NSLog("Sample log file not found at: \(logFileURL)")
-        }
-
-        return logFileURL
-    }
 }
 
 struct ExportLogsView: UIViewControllerRepresentable {
@@ -368,17 +338,17 @@ struct ExportLogsView: UIViewControllerRepresentable {
     let fileURL: URL
     
     func makeUIViewController(context: Context) -> UIActivityViewController {
-        NSLog("Creating share sheet with file: \(fileURL)")
+        AppLogger.log("Creating share sheet with file: \(fileURL)")
 
         let activityController = UIActivityViewController(activityItems: [text, fileURL], applicationActivities: nil)
 
         activityController.completionWithItemsHandler = { activityType, completed, returnedItems, error in
             if completed {
-                NSLog("Share completed successfully")
+                AppLogger.log("Share completed successfully")
             } else if let error = error {
-                NSLog("Error during share: \(error.localizedDescription)")
+                AppLogger.log("Error during share: \(error.localizedDescription)")
             } else {
-                NSLog("Share was canceled")
+                AppLogger.log("Share was canceled")
             }
         }
 

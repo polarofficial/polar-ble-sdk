@@ -217,7 +217,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="10dp"
                         android:layout_marginBottom="10dp"
-                        android:text="--"
+                        android:text="@string/placeholder_double_dash"
                         android:textAlignment="center"
                         android:textStyle="bold"
                         app:layout_constraintEnd_toEndOf="parent"
@@ -233,7 +233,7 @@
                         android:layout_marginTop="10dp"
                         android:layout_marginRight="10dp"
                         android:layout_marginBottom="10dp"
-                        android:text="MARKER START"
+                        android:text="@string/marker_start"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@+id/timer" />

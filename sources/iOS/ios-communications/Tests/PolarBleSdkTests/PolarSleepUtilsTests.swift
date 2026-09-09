@@ -120,7 +120,87 @@ class PolarSleepUtilsTests: XCTestCase {
         XCTAssertEqual(sleepData.sleepWakePhases.first?.state, mockSleepData.sleepWakePhases.first?.state)
     }
 
+    func testReadSleepData_FileNotFound_ReturnsEmptyPlaceholder() async throws {
+        mockClient.requestReturnValues.append(
+            .failure(BlePsFtpException.responseError(errorCode: Protocol_PbPFtpError.noSuchFileOrDirectory.rawValue))
+        )
+        let result = try await PolarSleepUtils.readSleepData(client: mockClient, date: Date())
+        XCTAssertNil(result.sleepStartTime, "Expected empty placeholder for missing sleep file")
+    }
+
+    func testReadSleepData_ParseError_Throws() async throws {
+        mockClient.requestReturnValues.append(.success(Data([0xFF, 0xFE, 0xFD])))
+        do {
+            _ = try await PolarSleepUtils.readSleepData(client: mockClient, date: Date())
+            XCTFail("Expected readSleepData to throw on a proto parse error")
+        } catch {
+        }
+    }
+
+    func testReadSleepData_OtherPsFtpError_Throws() async throws {
+        mockClient.requestReturnValues.append(
+            .failure(BlePsFtpException.responseError(errorCode: 500))
+        )
+        do {
+            _ = try await PolarSleepUtils.readSleepData(client: mockClient, date: Date())
+            XCTFail("Expected readSleepData to throw on a non-404 PFTP error")
+        } catch BlePsFtpException.responseError(let code) {
+            XCTAssertEqual(code, 500)
+        }
+    }
+
+    func testReadSleepFromDayDirectory_SkinTempFileNotFound_ReturnsSleepResultWithoutTemperature() async throws {
+        mockClient.requestReturnValues.append(.success(try Self.minimalValidSleepProtoData()))
+        mockClient.requestReturnValues.append(
+            .failure(BlePsFtpException.responseError(errorCode: Protocol_PbPFtpError.noSuchFileOrDirectory.rawValue))
+        )
+        let result = try await PolarSleepUtils.readSleepFromDayDirectory(client: mockClient, date: Date())
+        XCTAssertNil(result.sleepSkinTemperatureResult, "Expected no skin-temperature data when file is absent")
+        XCTAssertNotNil(result.sleepStartTime, "Expected sleep start time to still be present")
+    }
+
+    func testReadSleepFromDayDirectory_SkinTempParseError_Throws() async throws {
+        mockClient.requestReturnValues.append(.success(try Self.minimalValidSleepProtoData()))
+        mockClient.requestReturnValues.append(.success(Data([0xFF, 0xFE, 0xFD])))
+        do {
+            _ = try await PolarSleepUtils.readSleepFromDayDirectory(client: mockClient, date: Date())
+            XCTFail("Expected readSleepFromDayDirectory to throw on a skin-temperature parse error")
+        } catch {
+        }
+    }
+
     // MARK: - Helpers
+
+    private static func minimalValidSleepProtoData() throws -> Data {
+        let pbDate: (UInt32, UInt32, UInt32) -> PbDate = { d, mo, y in
+            PbDate.with { $0.day = d; $0.month = mo; $0.year = y }
+        }
+        let pbTime: (UInt32, UInt32, UInt32) -> PbTime = { h, m, s in
+            PbTime.with { $0.hour = h; $0.minute = m; $0.seconds = s }
+        }
+        let localDT: (UInt32, UInt32, UInt32, UInt32, UInt32, UInt32) -> PbLocalDateTime = { h, m, s, d, mo, y in
+            PbLocalDateTime.with {
+                $0.date = pbDate(d, mo, y); $0.time = pbTime(h, m, s); $0.obsoleteTrusted = true
+            }
+        }
+        let sysDT: (UInt32, UInt32, UInt32, UInt32, UInt32, UInt32) -> PbSystemDateTime = { h, m, s, d, mo, y in
+            PbSystemDateTime.with {
+                $0.date = pbDate(d, mo, y); $0.time = pbTime(h, m, s); $0.trusted = true
+            }
+        }
+        let proto = Data_PbSleepAnalysisResult.with {
+            $0.sleepStartTime  = localDT(23, 0, 0, 1, 1, 2025)
+            $0.sleepEndTime    = localDT(7,  0, 0, 2, 1, 2025)
+            $0.lastModified    = sysDT(8, 0, 0, 2, 1, 2025)
+            $0.sleepGoalMinutes = 480
+            $0.sleepResultDate = pbDate(2, 1, 2025)
+            $0.originalSleepRange = PbLocalDateTimeRange.with {
+                $0.startTime = localDT(23, 0, 0, 1, 1, 2025)
+                $0.endTime   = localDT(7,  0, 0, 2, 1, 2025)
+            }
+        }
+        return try proto.serializedData()
+    }
 
     private static func createPolarSleepAnalysisData() throws -> PolarSleepData.PolarSleepAnalysisResult {
         return PolarSleepData.PolarSleepAnalysisResult(
