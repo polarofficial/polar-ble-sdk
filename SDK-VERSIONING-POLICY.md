@@ -60,9 +60,7 @@ Non-platform dependencies follow these rules:
 
 ## Breaking Change Notice Period
 
-Polar announces breaking changes at least **two (2) minor releases before a MAJOR release**. This provides a window for SDK users to test deprecation paths and prepare migration.
-
-Example: If SDK 6.2 is released, breaking changes for 7.0 are announced in 6.2 release notes and documented in a migration guide published with the 6.2 release.
+Polar announces breaking changes at least **two (2) minor releases before a MAJOR release**. For example, changes planned for 7.0 must be announced no later than 6.1, leaving 6.1 and 6.2 for users to test deprecation paths and prepare migration.
 
 ## Feature Announcement
 
