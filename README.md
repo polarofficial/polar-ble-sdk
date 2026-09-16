@@ -307,8 +307,8 @@ override fun bleSdkFeatureReady(identifier: String, feature: PolarBleApi.PolarBl
 - Xcode 13.2+ / Swift 5.5+ when using Swift Package Manager
 
 ### Dependencies
-*  [Swift Protobuf 1.6.0](https://github.com/apple/swift-protobuf) or newer
-*  [Zip 2.1.2](https://github.com/marmelroy/Zip) or newer
+*  [Swift Protobuf 1.6.0](https://github.com/apple/swift-protobuf) (SPM: `from: 1.6.0`; CocoaPods: `~> 1.0`)
+*  [Zip 2.1.2](https://github.com/marmelroy/Zip) (SPM: `from: 2.1.2`; CocoaPods: `~> 2.1.2`)
 *  [RxSwift 6.0](https://github.com/ReactiveX/RxSwift) or above
 
 For SDK 8.x and newer, RxSwift is not required; the SDK uses Swift concurrency / async-await APIs
