@@ -346,7 +346,6 @@ This is not required if you are using automatic connection.
 1. Import needed packages.
 ```swift
 import PolarBleSdk
-import RxSwift
 ```
 
 2. Load the default api implementation and implement desired protocols.
@@ -361,7 +360,7 @@ class MyController: UIViewController,
     // e.g. [.feature_hr, .feature_battery_info]
     var api = PolarBleApiDefaultImpl.polarImplementation(DispatchQueue.main, 
                                                           features: [.feature_hr])
-    let disposeBag = DisposeBag()
+    var hrStreamTask: Task<Void, Never>?
     var deviceId = "0A3BA92B" // TODO replace this with your device id
 
     override func viewDidLoad() {
@@ -370,6 +369,10 @@ class MyController: UIViewController,
         api.powerStateObserver = self
         api.deviceFeaturesObserver = self
         api.deviceInfoObserver = self
+    }
+
+    deinit {
+        hrStreamTask?.cancel()
     }
 
     func deviceConnecting(_ polarDeviceInfo: PolarDeviceInfo) {
@@ -396,14 +399,18 @@ class MyController: UIViewController,
         print("Feature \(feature) is ready.")
         if feature == .feature_hr {
             // Start HR streaming when feature is ready
-            api.startHrStreaming(identifier)
-                .observe(on: MainScheduler.instance)
-                .subscribe(onNext: { hrData in
-                    for sample in hrData.samples {
-                        print("HR: \(sample.hr) rrsMs: \(sample.rrsMs)")
+            hrStreamTask?.cancel()
+            hrStreamTask = Task {
+                do {
+                    for try await hrData in api.startHrStreaming(identifier) {
+                        for sample in hrData.samples {
+                            print("HR: \(sample.hr) rrsMs: \(sample.rrsMs)")
+                        }
                     }
-                })
-                .disposed(by: disposeBag)
+                } catch {
+                    print("HR stream failed: \(error)")
+                }
+            }
         }
     }
     
@@ -418,7 +425,7 @@ class MyController: UIViewController,
 }
 ```
 
-3. Connect to a Polar device using  `api.connectToDevice(id)` ,  `api.startAutoConnectToDevice(_ rssi: Int, service: CBUUID?, polarDeviceType: String?)` to connect nearby device or  `api.searchForDevice()` to scan and select the device
+3. Connect to a Polar device using `try api.connectToDevice(deviceId)` for a known device id, `Task { try await api.startAutoConnectToDevice(-55, service: nil, polarDeviceType: nil) }` to auto-connect to a nearby device, or `Task { for try await device in api.searchForDevice() { /* inspect and select a device */ } }` to scan and select the device
 
 **Full example:** [examples/example-ios](examples/example-ios)
 
