@@ -268,15 +268,23 @@ val searchJob = lifecycleScope.launch {
             Log.d("MyApp", "FOUND: ${polarDeviceInfo.deviceId}")
         }
 }
+// Cancel the scan when you no longer need it.
+searchJob.cancel()
 
 override fun bleSdkFeatureReady(identifier: String, feature: PolarBleApi.PolarBleSdkFeature) {
-    if (feature == PolarBleApi.PolarBleSdkFeature.FEATURE_HR) {
+    if (feature == PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_ONLINE_STREAMING) {
         lifecycleScope.launch {
-            api.startHrStreaming(identifier)
-                .catch { error -> Log.e("MyApp", "HR stream failed", error) }
-                .collect { hrData ->
-                    Log.d("MyApp", "HR: ${hrData.samples.first().hr}")
+            try {
+                if (PolarBleApi.PolarDeviceDataType.PPI in api.getAvailableOnlineStreamDataTypes(identifier)) {
+                    api.startPpiStreaming(identifier)
+                        .catch { error -> Log.e("MyApp", "PPI stream failed", error) }
+                        .collect { ppiData ->
+                            Log.d("MyApp", "PPI samples: ${ppiData.samples.size}")
+                        }
                 }
+            } catch (e: Exception) {
+                Log.e("MyApp", "Failed to query stream types", e)
+            }
         }
     }
 }
