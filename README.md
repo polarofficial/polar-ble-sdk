@@ -251,7 +251,36 @@ public override fun onDestroy() {
 }
 ```
 
-4.  Connect to a Polar device using  `api.connectToDevice(<DEVICE_ID>)` where <DEVICE_ID> is the deviceID printed to your sensor,  using  `api.autoConnectToDevice(-50, null, null).subscribe()`  to connect nearby device or  `api.searchForDevice()` to scan and then select the device
+4.  Connect to a Polar device using `api.connectToDevice(<DEVICE_ID>)` where `<DEVICE_ID>` is the deviceID printed to your sensor. To connect to a nearby device or use scan/stream APIs, launch a coroutine and collect the returned `Flow`s:
+```kt
+lifecycleScope.launch {
+    try {
+        api.autoConnectToDevice(-50, null, null)
+    } catch (e: Exception) {
+        Log.e("MyApp", "Auto connect failed", e)
+    }
+}
+
+val searchJob = lifecycleScope.launch {
+    api.searchForDevice()
+        .catch { error -> Log.e("MyApp", "Search failed", error) }
+        .collect { polarDeviceInfo ->
+            Log.d("MyApp", "FOUND: ${polarDeviceInfo.deviceId}")
+        }
+}
+
+override fun bleSdkFeatureReady(identifier: String, feature: PolarBleApi.PolarBleSdkFeature) {
+    if (feature == PolarBleApi.PolarBleSdkFeature.FEATURE_HR) {
+        lifecycleScope.launch {
+            api.startHrStreaming(identifier)
+                .catch { error -> Log.e("MyApp", "HR stream failed", error) }
+                .collect { hrData ->
+                    Log.d("MyApp", "HR: ${hrData.samples.first().hr}")
+                }
+        }
+    }
+}
+```
 
 
 
