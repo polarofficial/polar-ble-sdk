@@ -1,8 +1,6 @@
 # Polar BLE SDK for sensors and watches
 
-Official SDK for Polar sensors and watches on **Android** (minSdk 24) and **iOS** (14.0+). Build apps that connect via Bluetooth LE and stream real-time heart rate, ECG, accelerometer, PPG, and more from Polar devices.
-
-The SDK API uses [ReactiveX](http://reactivex.io) for asynchronous operations.
+Official SDK for Polar sensors and watches on **Android** and **iOS**. Build apps that connect via Bluetooth LE and stream real-time heart rate, ECG, accelerometer, PPG, and more from Polar devices.
 
 ---
 
@@ -18,6 +16,7 @@ The SDK API uses [ReactiveX](http://reactivex.io) for asynchronous operations.
 - [Migration guides](#migration-guides)
 - [Troubleshooting and known issues](#troubleshooting-and-known-issues)
 - [Collaboration](#collaboration)
+- [Versioning Policy](#sdk-versioning-policy)
 - [License](#license)
 - [Third-party code and licenses](#third-party-code-and-licenses)
 
@@ -105,7 +104,7 @@ android {
 }
 ```
 
-3. Add the dependency to Polar BLE SDK library. Also you will need the dependencies to [Kotlin Coroutines](https://kotlinlang.org/docs/coroutines-overview.html) to use the Polar BLE SDK Library
+3. Add the dependency to Polar BLE SDK library. The current SDK source also uses the Kotlin Coroutines dependencies below for async work and Rx interop.
 ```gradle
 dependencies {
     implementation 'com.github.polarofficial:polar-ble-sdk:${sdk_version}'
@@ -267,12 +266,16 @@ public override fun onDestroy() {
 
 **Requirements:**
 - iOS 14.0+
-- Xcode 13.2+
-- Swift 5.x
+- watchOS 5.0+ for watchOS support
+- Xcode 13.2+ / Swift 5.5+ when using Swift Package Manager
 
 ### Dependencies
+*  [Swift Protobuf 1.6.0](https://github.com/apple/swift-protobuf) or newer
+*  [Zip 2.1.2](https://github.com/marmelroy/Zip) or newer
 *  [RxSwift 6.0](https://github.com/ReactiveX/RxSwift) or above
-*  [Swift Protobuf 1.18.0](https://github.com/apple/swift-protobuf) or above
+
+For SDK 8.x and newer, RxSwift is not required; the SDK uses Swift concurrency / async-await APIs
+
 ### Installation
 #### CocoaPods
 
@@ -284,7 +287,7 @@ If you use [CocoaPods](https://guides.cocoapods.org/using/using-cocoapods.html) 
 use_frameworks!
 
 target 'YOUR_TARGET_NAME' do
-    pod 'PolarBleSdk', '~> 7.0.1'
+    pod 'PolarBleSdk', '~> 8.3.0' # Update version to latest available SDK version
 end
 ```
 
@@ -293,7 +296,7 @@ Add PolarBleSdk as a dependency to your `Package.swift` manifest
 
 ```swift
 dependencies: [
-    .package(name: "PolarBleSdk", url: "https://github.com/polarofficial/polar-ble-sdk.git", .upToNextMajor(from: "7.0.1"))
+    .package(name: "PolarBleSdk", url: "https://github.com/polarofficial/polar-ble-sdk.git", .upToNextMajor(from: "8.3.0"))
 ]
 ```
 or alternatively use [XCode package manager](https://developer.apple.com/documentation/swift_packages/adding_package_dependencies_to_your_app) to add Swift package to your project.
@@ -428,6 +431,18 @@ Common issues:
 ## Collaboration
 
 For commercial collaboration with Polar, visit [polar.com/en/business/developers](https://www.polar.com/en/business/developers).
+
+[↑ Back to contents](#contents)
+
+---
+
+## SDK Versioning Policy
+
+[Polar BLE SDK Versioning Policy](SDK-VERSIONING-POLICY.md) has been prepared to help users of SDK published in this repository to keep up with its development. It outlines how Polar SDK team handles SDK versioning, OS platform support, and dependencies according to well-defined and widely accepted practices for functional, secure, and useful software toolkits for application developers.
+
+If you use or plan to use SDK in your iOS or Android apps, also make sure to get familiar with the versioning policy. It  helps you to plan how to keep your app up-to-date in terms of SDK features, bug fixes, and platform support. 
+
+We encourage you to update your app with latest SDK code as soon as it becomes available, and work together with us on any issues that you may have with the SDK and its evolution. 
 
 [↑ Back to contents](#contents)
 
