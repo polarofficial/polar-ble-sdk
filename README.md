@@ -104,12 +104,10 @@ android {
 }
 ```
 
-3. Add the dependency to Polar BLE SDK library. The current SDK source also uses the Kotlin Coroutines dependencies below for async work and Rx interop.
+3. Add the Polar BLE SDK dependency to your app.
 ```gradle
 dependencies {
     implementation 'com.github.polarofficial:polar-ble-sdk:${sdk_version}'
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-rx3:1.10.2"
 }
 ```
 
