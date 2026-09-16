@@ -303,7 +303,7 @@ override fun bleSdkFeatureReady(identifier: String, feature: PolarBleApi.PolarBl
 
 **Requirements:**
 - iOS 14.0+
-- watchOS 5.0+ for watchOS support
+- watchOS is listed in the package manifest but is not fully supported; see [issue #479](https://github.com/polarofficial/polar-ble-sdk/issues/479) for current status.
 - Xcode 13.2+ / Swift 5.5+ when using Swift Package Manager
 
 ### Dependencies
