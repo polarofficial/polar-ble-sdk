@@ -14,10 +14,10 @@ When the SDK updates its minimum required platform or runtime versions, this is 
 
 | Change Type | Minimum Support | Treatment |
 |---|---|---|
-| Minimum Android version increase | Official Google security support | MINOR release |
-| Minimum iOS version increase | Official Apple security support | MINOR release |
-| Minimum Java / Kotlin version | LTS and active support versions | MINOR release |
-| Minimum Swift version | Official Apple support | MINOR release |
+| Minimum Android version increase | Official Google security support | MAJOR release |
+| Minimum iOS version increase | Official Apple security support | MAJOR release |
+| Minimum Java / Kotlin version | LTS and active support versions | MAJOR release |
+| Minimum Swift version | Official Apple support | MAJOR release |
 
 **Rationale**: SDK security support depends on platform security support. Raising minimum versions aligns SDK support scope with platform lifecycle.
 
