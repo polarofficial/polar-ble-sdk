@@ -62,6 +62,9 @@ Non-platform dependencies follow these rules:
 
 Polar announces breaking changes at least **two (2) minor releases before a MAJOR release**. For example, changes planned for 7.0 must be announced no later than 6.1, leaving 6.1 and 6.2 for users to test deprecation paths and prepare migration.
 
+Breaking changes due updating minimum OS targets required by latest development tools on platforms -- Xcode tools for iOS, Android Studio tools for Android -- may be released as major SDK releases also without prior announcements by Polar. 
+Follow Apple and Google announcements on these types of changes to prepare for possible minimum platform OS updates that follow platform OS and toolchain releases. 
+
 ## Feature Announcement
 
 New features are announced at release time via:
