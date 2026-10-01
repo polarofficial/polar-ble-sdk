@@ -13,6 +13,7 @@ import io.mockk.verify
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
@@ -164,8 +165,9 @@ class BleMdsClientTest {
     }
 
     @Test
-    fun clientReady_supportedFeaturesReadError_throwsBleAttributeError() = runTest {
+    fun clientReady_supportedFeaturesReadError_failsImmediatelyOnFirstError_withoutRetryingYet() = runTest {
         // Arrange
+        every { txInterface.readValue(any(), any()) } returns Unit
         sut.descriptorWritten(BleMdsClient.MDS_DATA_EXPORT, true, BleGattBase.ATT_SUCCESS)
         var caughtError: Throwable? = null
         val job = launch {
@@ -175,9 +177,9 @@ class BleMdsClientTest {
                 caughtError = error
             }
         }
-        testScheduler.advanceUntilIdle()
+        awaitSupportedFeaturesCheck(1)
 
-        // Act
+        // Act: first failure (e.g. telemetry/consent disabled at the time of the auto-read)
         sut.processServiceData(
             BleMdsClient.MDS_SUPPORTED_FEATURES,
             byteArrayOf(),
@@ -187,9 +189,185 @@ class BleMdsClientTest {
         testScheduler.advanceUntilIdle()
         job.join()
 
-        // Assert
+        // Assert: caller fails right away; no retry read is issued yet — that only happens on
+        // the next clientReady() call, once the caller has a reason to believe state changed.
         assertTrue(caughtError is BleAttributeError)
         assertEquals(BleGattBase.ATT_READ_NOT_PERMITTED, (caughtError as BleAttributeError).error)
+        verify(exactly = 0) { txInterface.readValue(BleMdsClient.MDS_SERVICE, BleMdsClient.MDS_SUPPORTED_FEATURES) }
+    }
+
+    @Test
+    fun clientReady_triggersFreshRetryReadOnNextCall_afterPreviousSupportedFeaturesError() = runTest {
+        // Arrange: first call already failed
+        every { txInterface.readValue(any(), any()) } returns Unit
+        sut.descriptorWritten(BleMdsClient.MDS_DATA_EXPORT, true, BleGattBase.ATT_SUCCESS)
+        val firstJob = launch {
+            try {
+                sut.clientReady(true)
+            } catch (_: Throwable) {
+                // ignored, covered by another test
+            }
+        }
+        awaitSupportedFeaturesCheck(1)
+        sut.processServiceData(BleMdsClient.MDS_SUPPORTED_FEATURES, byteArrayOf(), BleGattBase.ATT_READ_NOT_PERMITTED, false)
+        testScheduler.advanceUntilIdle()
+        firstJob.join()
+
+        // Act: caller calls clientReady() again (e.g. after verifying telemetry/consent is fixed)
+        var caughtError: Throwable? = null
+        val secondJob = launch {
+            try {
+                sut.clientReady(true)
+            } catch (error: Throwable) {
+                caughtError = error
+            }
+        }
+        awaitSupportedFeaturesCheck(2)
+
+        // Assert: this call waits instead of instantly replaying the stale error, and a fresh
+        // read was issued exactly once
+        assertFalse(secondJob.isCompleted)
+        assertNull(caughtError)
+        verify(exactly = 1) { txInterface.readValue(BleMdsClient.MDS_SERVICE, BleMdsClient.MDS_SUPPORTED_FEATURES) }
+
+        secondJob.cancel()
+    }
+
+    @Test
+    fun clientReady_recoversViaFreshRetryRead_afterStaleSupportedFeaturesError() = runTest {
+        // Arrange: first call failed, second call triggered the retry and is waiting
+        every { txInterface.readValue(any(), any()) } returns Unit
+        sut.descriptorWritten(BleMdsClient.MDS_DATA_EXPORT, true, BleGattBase.ATT_SUCCESS)
+        val firstJob = launch {
+            try {
+                sut.clientReady(true)
+            } catch (_: Throwable) {
+                // ignored, covered by another test
+            }
+        }
+        awaitSupportedFeaturesCheck(1)
+        sut.processServiceData(BleMdsClient.MDS_SUPPORTED_FEATURES, byteArrayOf(), BleGattBase.ATT_READ_NOT_PERMITTED, false)
+        testScheduler.advanceUntilIdle()
+        firstJob.join()
+
+        var caughtError: Throwable? = null
+        val secondJob = launch {
+            try {
+                sut.clientReady(true)
+            } catch (error: Throwable) {
+                caughtError = error
+            }
+        }
+        awaitSupportedFeaturesCheck(2)
+
+        // Act: the retried read succeeds (e.g. telemetry got enabled in between)
+        sut.processServiceData(BleMdsClient.MDS_SUPPORTED_FEATURES, byteArrayOf(0x01), BleGattBase.ATT_SUCCESS, false)
+        testScheduler.advanceUntilIdle()
+        secondJob.join()
+
+        // Assert
+        assertNull(caughtError)
+        assertEquals(0x01, sut.supportedFeatures)
+    }
+
+    @Test
+    fun clientReady_retryFailsAgain_isReportedAsFinalError() = runTest {
+        // Arrange: first call failed, second call triggered the retry and is waiting
+        every { txInterface.readValue(any(), any()) } returns Unit
+        sut.descriptorWritten(BleMdsClient.MDS_DATA_EXPORT, true, BleGattBase.ATT_SUCCESS)
+        val firstJob = launch {
+            try {
+                sut.clientReady(true)
+            } catch (_: Throwable) {
+                // ignored, covered by another test
+            }
+        }
+        awaitSupportedFeaturesCheck(1)
+        sut.processServiceData(BleMdsClient.MDS_SUPPORTED_FEATURES, byteArrayOf(), BleGattBase.ATT_READ_NOT_PERMITTED, false)
+        testScheduler.advanceUntilIdle()
+        firstJob.join()
+
+        var caughtError: Throwable? = null
+        val secondJob = launch {
+            try {
+                sut.clientReady(true)
+            } catch (error: Throwable) {
+                caughtError = error
+            }
+        }
+        awaitSupportedFeaturesCheck(2)
+
+        // Act: the retried read fails again — the device genuinely rejects the read
+        sut.processServiceData(BleMdsClient.MDS_SUPPORTED_FEATURES, byteArrayOf(), BleGattBase.ATT_READ_NOT_PERMITTED, false)
+        testScheduler.advanceUntilIdle()
+        secondJob.join()
+
+        // Assert
+        assertTrue(caughtError is BleAttributeError)
+        // Only a single retry per connection — no further reads are issued.
+        verify(exactly = 1) { txInterface.readValue(BleMdsClient.MDS_SERVICE, BleMdsClient.MDS_SUPPORTED_FEATURES) }
+    }
+
+    @Test
+    fun clientReady_afterRetryAlreadyFailedForThisConnection_failsFastWithoutFurtherReads() = runTest {
+        // Arrange: exhaust the single retry for this connection
+        every { txInterface.readValue(any(), any()) } returns Unit
+        sut.descriptorWritten(BleMdsClient.MDS_DATA_EXPORT, true, BleGattBase.ATT_SUCCESS)
+        val firstJob = launch {
+            try {
+                sut.clientReady(true)
+            } catch (_: Throwable) {
+                // ignored, covered by another test
+            }
+        }
+        awaitSupportedFeaturesCheck(1)
+        sut.processServiceData(BleMdsClient.MDS_SUPPORTED_FEATURES, byteArrayOf(), BleGattBase.ATT_READ_NOT_PERMITTED, false)
+        testScheduler.advanceUntilIdle()
+        firstJob.join()
+
+        val secondJob = launch {
+            try {
+                sut.clientReady(true)
+            } catch (_: Throwable) {
+                // ignored, covered by another test
+            }
+        }
+        awaitSupportedFeaturesCheck(2)
+        sut.processServiceData(BleMdsClient.MDS_SUPPORTED_FEATURES, byteArrayOf(), BleGattBase.ATT_READ_NOT_PERMITTED, false)
+        testScheduler.advanceUntilIdle()
+        secondJob.join()
+
+        // Act: a third clientReady() call on the same (still failed) connection
+        var caughtError: Throwable? = null
+        val thirdJob = launch {
+            try {
+                sut.clientReady(true)
+            } catch (error: Throwable) {
+                caughtError = error
+            }
+        }
+        awaitSupportedFeaturesCheck(3)
+        thirdJob.join()
+
+        // Assert: fails immediately, no additional retry read triggered
+        assertTrue(caughtError is BleAttributeError)
+        verify(exactly = 1) { txInterface.readValue(BleMdsClient.MDS_SERVICE, BleMdsClient.MDS_SUPPORTED_FEATURES) }
+    }
+
+    /**
+     * Blocks (briefly, bounded, without relying on virtual time) until [BleMdsClient] has
+     * evaluated the supported-features error/retry state [expectedCount] times. clientReady()
+     * hops through a real Dispatchers.IO thread inside waitNotificationEnabled(), so
+     * [kotlinx.coroutines.test.TestCoroutineScheduler.advanceUntilIdle] alone cannot guarantee
+     * that hop has completed before the test simulates the next GATT callback.
+     */
+    private fun TestScope.awaitSupportedFeaturesCheck(expectedCount: Int) {
+        val deadline = System.currentTimeMillis() + 2_000
+        while (sut.supportedFeaturesCheckCountForTest.get() < expectedCount && System.currentTimeMillis() < deadline) {
+            testScheduler.advanceUntilIdle()
+            Thread.sleep(1)
+        }
+        assertEquals(expectedCount, sut.supportedFeaturesCheckCountForTest.get())
     }
 
     // --- processServiceData: MDS_DEVICE_IDENTIFIER ---

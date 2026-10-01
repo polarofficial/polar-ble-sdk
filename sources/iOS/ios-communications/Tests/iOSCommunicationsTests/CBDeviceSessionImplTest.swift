@@ -8,6 +8,131 @@ import CoreBluetooth
 /// `CBDeviceSessionImpl.swift`.
 final class CBDeviceSessionImplTest: XCTestCase {
 
+    private let writer = PeripheralWriteSpy()
+    private var logs: [String] = []
+    private var acknowledgements = 0
+    private let packet = Data(repeating: 0xAB, count: 495)
+    private let writeUuid = CBUUID(string: "FB005C51-02E7-F387-1CAD-8ACD2D8DF0C8")
+
+    private func send(properties: CBCharacteristicProperties = [.write, .writeWithoutResponse], withResponse: Bool = false) throws -> Bool {
+        let characteristic = CBMutableCharacteristic(type: writeUuid, properties: properties, value: nil, permissions: [.writeable])
+        return try CBDeviceSessionImpl.transmitPacket(
+            packet, for: characteristic, withResponse: withResponse,
+            canSendWriteWithoutResponse: writer.canSendWriteWithoutResponse,
+            maximumWriteWithResponseLength: writer.maximumWriteValueLength(for: .withResponse),
+            writeValue: writer.writeValue,
+            acknowledge: {
+                self.acknowledgements += 1
+                self.writer.events.append("ack")
+            },
+            log: { self.logs.append($0) }
+        )
+    }
+
+    func testTransmit_readyUsesWithoutResponseAndAcknowledgesAfterWrite() throws {
+        XCTAssertTrue(try send())
+        XCTAssertEqual(writer.writes.map { $0.type }, [.withoutResponse])
+        XCTAssertEqual(writer.events, ["write", "ack"])
+        XCTAssertEqual(acknowledgements, 1)
+        XCTAssertEqual(writer.maximumLengthQueries, 0)
+        XCTAssertTrue(logs.isEmpty, "Do not log fallback messages on the normal fast path")
+    }
+
+    func testTransmit_blockedFallsBackWithoutWaitingForReadinessCallback() throws {
+        writer.canSendWriteWithoutResponse = false
+        XCTAssertTrue(try send(), "Fallback was submitted and must not be parked for replay")
+        XCTAssertEqual(writer.writes.map { $0.type }, [.withResponse])
+        XCTAssertEqual(writer.writes.first?.data, packet)
+        XCTAssertEqual(writer.writes.first?.uuid, writeUuid)
+        XCTAssertEqual(writer.events, ["write"])
+        XCTAssertEqual(acknowledgements, 0, "Only didWriteValueFor may acknowledge the fallback")
+    }
+
+    func testTransmit_fallbackLogsReasonAndMetadataWithoutPayload() throws {
+        writer.canSendWriteWithoutResponse = false
+        _ = try send()
+        let message = try XCTUnwrap(logs.first)
+        XCTAssertEqual(logs.count, 1)
+        XCTAssertTrue(message.contains("BLE write fallback"))
+        XCTAssertTrue(message.contains("chr=\(writeUuid.uuidString)"))
+        XCTAssertTrue(message.contains("bytes=495"))
+        XCTAssertTrue(message.contains("canSendWriteWithoutResponse=false"))
+        XCTAssertTrue(message.contains("withResponseLimit=512"))
+        XCTAssertTrue(message.contains("awaiting didWriteValueFor"))
+        XCTAssertFalse(message.lowercased().contains("abab"))
+    }
+
+    func testTransmit_fallbackAllowsPacketExactlyAtResponseLimit() throws {
+        writer.canSendWriteWithoutResponse = false
+        writer.responseLimit = packet.count
+        XCTAssertTrue(try send())
+        XCTAssertEqual(writer.writes.map { $0.type }, [.withResponse])
+        XCTAssertEqual(acknowledgements, 0)
+    }
+
+    func testTransmit_oversizedFallbackIsParkedNotTruncatedOrAcknowledged() throws {
+        writer.canSendWriteWithoutResponse = false
+        writer.responseLimit = packet.count - 1
+        XCTAssertFalse(try send())
+        XCTAssertTrue(writer.writes.isEmpty)
+        XCTAssertEqual(acknowledgements, 0)
+        XCTAssertTrue(logs.first?.contains("exceeds withResponseLimit=494") == true)
+    }
+
+    func testTransmit_zeroResponseLimitDoesNotForceFallback() throws {
+        writer.canSendWriteWithoutResponse = false
+        writer.responseLimit = 0
+        XCTAssertFalse(try send())
+        XCTAssertTrue(writer.writes.isEmpty)
+        XCTAssertEqual(acknowledgements, 0)
+    }
+
+    func testTransmit_withoutResponseOnlyCharacteristicStaysParkedWhenBlocked() throws {
+        writer.canSendWriteWithoutResponse = false
+        XCTAssertFalse(try send(properties: [.writeWithoutResponse]))
+        XCTAssertTrue(writer.writes.isEmpty)
+        XCTAssertEqual(acknowledgements, 0)
+        XCTAssertEqual(writer.maximumLengthQueries, 0)
+        XCTAssertTrue(logs.first?.contains("write-with-response unsupported") == true)
+        XCTAssertTrue(logs.first?.contains("waiting for peripheralIsReady") == true)
+    }
+
+    func testTransmit_explicitResponseStillWaitsForDelegateAcknowledgement() throws {
+        writer.canSendWriteWithoutResponse = false
+        XCTAssertTrue(try send(properties: [.write], withResponse: true))
+        XCTAssertEqual(writer.writes.map { $0.type }, [.withResponse])
+        XCTAssertEqual(acknowledgements, 0)
+        XCTAssertEqual(writer.maximumLengthQueries, 0)
+        XCTAssertTrue(logs.isEmpty)
+    }
+
+    func testTransmit_requestedResponseOnCommandOnlyCharacteristicPreservesExistingBehavior() throws {
+        XCTAssertTrue(try send(properties: [.writeWithoutResponse], withResponse: true))
+        XCTAssertEqual(writer.writes.map { $0.type }, [.withoutResponse])
+        XCTAssertEqual(acknowledgements, 1)
+    }
+
+    func testTransmit_unwritableCharacteristicThrowsWithoutWriteOrAck() {
+        XCTAssertThrowsError(try send(properties: [.read])) { error in
+            guard case BleGattException.gattCharacteristicError = error else {
+                return XCTFail("Unexpected error: \(error)")
+            }
+        }
+        XCTAssertTrue(writer.writes.isEmpty)
+        XCTAssertEqual(acknowledgements, 0)
+    }
+
+    func testTransmit_returnsToFastPathWhenReadinessRecovers() throws {
+        writer.canSendWriteWithoutResponse = false
+        XCTAssertTrue(try send())
+        writer.canSendWriteWithoutResponse = true
+        XCTAssertTrue(try send())
+        XCTAssertEqual(writer.writes.map { $0.type }, [.withResponse, .withoutResponse])
+        XCTAssertEqual(writer.events, ["write", "write", "ack"])
+        XCTAssertEqual(acknowledgements, 1)
+        XCTAssertEqual(logs.count, 1)
+    }
+
     // MARK: - CBATTError cases
 
     func testIndicatesBLEPairingProblem_CBATTError_insufficientEncryption_returnsTrue() {
@@ -119,4 +244,23 @@ private func makeCBError(_ code: CBError.Code) -> Error {
 
 private enum CustomTestError: Error {
     case someError
+}
+
+private final class PeripheralWriteSpy {
+    var canSendWriteWithoutResponse = true
+    var responseLimit = 512
+    var maximumLengthQueries = 0
+    var writes: [(data: Data, uuid: CBUUID, type: CBCharacteristicWriteType)] = []
+    var events: [String] = []
+
+    func maximumWriteValueLength(for type: CBCharacteristicWriteType) -> Int {
+        XCTAssertEqual(type, .withResponse)
+        maximumLengthQueries += 1
+        return responseLimit
+    }
+
+    func writeValue(_ data: Data, for characteristic: CBCharacteristic, type: CBCharacteristicWriteType) {
+        writes.append((data, characteristic.uuid, type))
+        events.append("write")
+    }
 }

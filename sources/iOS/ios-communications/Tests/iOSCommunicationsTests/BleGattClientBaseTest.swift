@@ -117,4 +117,127 @@ class BleGattClientBaseTest: XCTestCase {
 
         wait(for: [expectation], timeout: 1.0)
     }
+
+    // GIVEN waitDiscovered() is subscribed to before the service has been discovered
+    // WHEN setServiceDiscovered(true) is called afterwards
+    // THEN the already-registered subscriber completes successfully instead of hanging forever
+    func testWaitDiscovered_completesForSubscriberRegisteredBeforeDiscovery() {
+        let expectation = expectation(description: "waitDiscovered completes")
+        var cancellable: AnyCancellable?
+        var completed = false
+
+        cancellable = bleGattClientBase.waitDiscovered(checkConnection: false)
+            .sink(
+                receiveCompletion: { completion in
+                    if case .finished = completion { completed = true }
+                    expectation.fulfill()
+                    _ = cancellable
+                },
+                receiveValue: { _ in }
+            )
+
+        XCTAssertFalse(completed)
+        bleGattClientBase.setServiceDiscovered(true)
+
+        wait(for: [expectation], timeout: 1.0)
+        XCTAssertTrue(completed)
+    }
+
+    // GIVEN waitDiscovered() is subscribed to before the service has been discovered
+    // WHEN disconnected() happens before discovery completes
+    // THEN the subscriber fails with gattDisconnected instead of hanging forever
+    func testWaitDiscovered_failsOnDisconnectWhilePending() {
+        let expectation = expectation(description: "waitDiscovered fails")
+        var cancellable: AnyCancellable?
+        var caughtError: Error?
+
+        cancellable = bleGattClientBase.waitDiscovered(checkConnection: false)
+            .sink(
+                receiveCompletion: { completion in
+                    if case .failure(let error) = completion { caughtError = error }
+                    expectation.fulfill()
+                    _ = cancellable
+                },
+                receiveValue: { _ in }
+            )
+
+        bleGattClientBase.disconnected()
+
+        wait(for: [expectation], timeout: 1.0)
+        guard case BleGattException.gattDisconnected = caughtError ?? BleGattException.gattCharacteristicNotFound else {
+            return XCTFail("Expected gattDisconnected")
+        }
+    }
+
+    // GIVEN waitCharacteristicsDiscovered() is subscribed to before characteristics have been discovered
+    // WHEN setCharacteristicsDiscovered(true) is called afterwards
+    // THEN the already-registered subscriber completes successfully instead of hanging forever
+    func testWaitCharacteristicsDiscovered_completesForSubscriberRegisteredBeforeDiscovery() {
+        let expectation = expectation(description: "waitCharacteristicsDiscovered completes")
+        var cancellable: AnyCancellable?
+        var completed = false
+
+        cancellable = bleGattClientBase.waitCharacteristicsDiscovered(checkConnection: false)
+            .sink(
+                receiveCompletion: { completion in
+                    if case .finished = completion { completed = true }
+                    expectation.fulfill()
+                    _ = cancellable
+                },
+                receiveValue: { _ in }
+            )
+
+        XCTAssertFalse(completed)
+        bleGattClientBase.setCharacteristicsDiscovered(true)
+
+        wait(for: [expectation], timeout: 1.0)
+        XCTAssertTrue(completed)
+    }
+
+    // GIVEN the service has been discovered but its characteristics have not
+    // THEN waitCharacteristicsDiscovered() must still be pending (service-discovered alone is
+    // not sufficient readiness).
+    func testWaitCharacteristicsDiscovered_doesNotCompleteWhenOnlyServiceDiscovered() {
+        var completed = false
+        var cancellable: AnyCancellable?
+
+        bleGattClientBase.setServiceDiscovered(true)
+        cancellable = bleGattClientBase.waitCharacteristicsDiscovered(checkConnection: false)
+            .sink(
+                receiveCompletion: { completion in
+                    if case .finished = completion { completed = true }
+                    _ = cancellable
+                },
+                receiveValue: { _ in }
+            )
+
+        XCTAssertFalse(completed)
+    }
+
+    // GIVEN waitCharacteristicsDiscovered() is subscribed to before discovery completes
+    // WHEN disconnected() happens before discovery completes
+    // THEN the subscriber fails with gattDisconnected instead of hanging forever
+    func testWaitCharacteristicsDiscovered_failsOnDisconnectWhilePending() {
+        let expectation = expectation(description: "waitCharacteristicsDiscovered fails")
+        var cancellable: AnyCancellable?
+        var caughtError: Error?
+
+        cancellable = bleGattClientBase.waitCharacteristicsDiscovered(checkConnection: false)
+            .sink(
+                receiveCompletion: { completion in
+                    if case .failure(let error) = completion { caughtError = error }
+                    expectation.fulfill()
+                    _ = cancellable
+                },
+                receiveValue: { _ in }
+            )
+
+        bleGattClientBase.disconnected()
+
+        wait(for: [expectation], timeout: 1.0)
+        guard case BleGattException.gattDisconnected = caughtError ?? BleGattException.gattCharacteristicNotFound else {
+            return XCTFail("Expected gattDisconnected")
+        }
+    }
 }
+

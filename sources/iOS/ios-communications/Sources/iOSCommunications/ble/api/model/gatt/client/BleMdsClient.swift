@@ -192,9 +192,11 @@ open class BleMdsClient: BleGattClientBase, @unchecked Sendable {
         }
     }
 
-    /// MDS is considered ready as soon as the service is discovered; notifications are on-demand.
     public override func clientReady(_ checkConnection: Bool) -> AnyPublisher<Never, Error> {
-        waitDiscovered(checkConnection: checkConnection)
+        Publishers.Concatenate(
+            prefix: waitDiscovered(checkConnection: checkConnection),
+            suffix: waitCharacteristicsDiscovered(checkConnection: checkConnection)
+        ).eraseToAnyPublisher()
     }
 
     /// Intercept CCCD write results for MDS_DATA_EXPORT and forward them to `cccdContinuation`.

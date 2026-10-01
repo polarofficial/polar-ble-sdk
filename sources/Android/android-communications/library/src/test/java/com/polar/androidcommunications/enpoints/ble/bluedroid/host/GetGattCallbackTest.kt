@@ -27,6 +27,8 @@ class GetGattCallbackTest {
         every { connectionHandler.deviceDisconnected(any()) } just runs
         every { gatt.close() } just runs
         every { gatt.device } returns mockk(relaxed = true) { every { address } returns "AA:BB:CC:DD:EE:FF" }
+        // Connection events are delivered through the handler's GATT-identity check.
+        every { connectionHandler.dispatchGattCallback(any(), any(), any()) } answers { thirdArg<Runnable>().run() }
 
         val initializedLatch = CountDownLatch(1)
         every { connectionHandler.connectionInitialized(deviceSession) } answers {

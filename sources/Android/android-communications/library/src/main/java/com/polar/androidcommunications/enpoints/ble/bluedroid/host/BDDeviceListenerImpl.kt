@@ -41,12 +41,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 
@@ -134,48 +133,35 @@ class BDDeviceListenerImpl(
 
     @SuppressLint("MissingPermission")
     override fun search(fetchKnownDevices: Boolean): Flow<BleDeviceSession> {
-        return callbackFlow {
+        return flow {
             val channel = Channel<BleDeviceSession>(Channel.UNLIMITED)
             observers.add(channel)
-            scanCallback.clientAdded()
-
-            if (fetchKnownDevices) {
-                val devices = btManager.getDevicesMatchingConnectionStates(
-                    BluetoothProfile.GATT,
-                    intArrayOf(BluetoothProfile.STATE_CONNECTED or BluetoothProfile.STATE_CONNECTING)
-                )
-                for (device in devices) {
-                    if (device.type == BluetoothDevice.DEVICE_TYPE_LE && sessions.getSession(device) == null) {
-                        val newDevice = BDDeviceSessionImpl(context, device,
-                            scanCallback, bondingManager, factory)
-                        sessions.addSession(newDevice)
-                    }
-                }
-                val bondedDevices = bluetoothAdapter.bondedDevices
-                if (bondedDevices != null) {
-                    for (device in bondedDevices) {
-                        if (device.type == BluetoothDevice.DEVICE_TYPE_LE && sessions.getSession(device) == null) {
-                            val newDevice = scanCallback.let {
-                                BDDeviceSessionImpl(context, device, it, bondingManager, factory)
-                            }
-                            sessions.addSession(newDevice)
+            try {
+                scanCallback.clientAdded()
+                if (fetchKnownDevices) {
+                    val devices = btManager.getDevicesMatchingConnectionStates(
+                        BluetoothProfile.GATT,
+                        intArrayOf(BluetoothProfile.STATE_CONNECTED, BluetoothProfile.STATE_CONNECTING)
+                    )
+                    for (device in devices + bluetoothAdapter.bondedDevices.orEmpty()) {
+                        if (device.type != BluetoothDevice.DEVICE_TYPE_LE && device.type != BluetoothDevice.DEVICE_TYPE_DUAL) continue
+                        val session = sessions.getSession(device) ?: BDDeviceSessionImpl(
+                            context, device, scanCallback, bondingManager, factory
+                        ).also { sessions.addSession(it) }
+                        // Fill missing identity only; cached names must not replace advertised names.
+                        if (session.name.isEmpty()) {
+                            session.advertisementContent.advertisementDeviceNamePrefix = advertisingDeviceNamePrefix
+                            device.name?.let { session.advertisementContent.processName(it) }
                         }
                     }
+                    for (session in sessions.copyDeviceList()) {
+                        emit(session)
+                    }
                 }
-                for (deviceSession in sessions.copyDeviceList()) {
-                    send(deviceSession)
-                }
-            }
-
-            // Forward items from the observer channel into this callbackFlow
-            val forwardJob = launch {
                 for (item in channel) {
-                    send(item)
+                    emit(item)
                 }
-            }
-
-            awaitClose {
-                forwardJob.cancel()
+            } finally {
                 observers.remove(channel)
                 channel.close()
                 scanCallback.clientRemoved()
@@ -199,10 +185,12 @@ class BDDeviceListenerImpl(
     override fun shutDown() {
         bondingManager.stopBroadcastReceiver()
         powerManager.stopBroadcastReceiver()
+        // Stop the handler from scheduling new work before the sessions disappear underneath it.
+        connectionHandler.setAutomaticReconnection(false)
+        // Gate callbacks and release every session's GATT through the handler, so its own state
+        // (current session, watchdogs, queued retries) is torn down in step with the sessions.
+        connectionHandler.blePoweredOff(sessions.sessions.objects())
         scanCallback.stopScan()
-        sessions.sessions.accessAll<BDDeviceSessionImpl>() { obj ->
-            (obj as BDDeviceSessionImpl).resetGatt()
-        }
         sessions.sessions.clear()
         gattCallback.cancel()
         connectionHandler.cancel()
@@ -243,6 +231,9 @@ class BDDeviceListenerImpl(
             && sessions.sessions.contains(deviceSession as BDDeviceSessionImpl)
         ) {
             sessions.sessions.remove(deviceSession)
+            // Ensure ConnectionHandler does not keep pointing at a removed session as 'current',
+            // which would orphan it and wedge CONNECTING forever.
+            connectionHandler.sessionRemoved(deviceSession)
             return true
         }
         return false
@@ -253,17 +244,18 @@ class BDDeviceListenerImpl(
     }
 
     override fun removeAllSessions(inStates: Set<DeviceSessionState?>): Int {
-        var count = 0
+        val removedSessions = ArrayList<BDDeviceSessionImpl>()
         val list = sessions.copyDeviceList()
         for (session in list) {
             if (inStates.contains(session.sessionState)
                 && sessions.sessions.contains(session as BDDeviceSessionImpl)
             ) {
                 sessions.sessions.remove(session)
-                count += 1
+                removedSessions.add(session)
             }
         }
-        return count
+        connectionHandler.sessionsRemoved(removedSessions)
+        return removedSessions.size
     }
 
     override fun setPowerMode(@PowerMode mode: Int) {
@@ -378,16 +370,21 @@ class BDDeviceListenerImpl(
 
             // Protection mechanism if service discovery won't complete
             session.serviceDiscovery?.cancel()
+            // Capture the GATT this discovery was started on. If a reconnect swapped it in the
+            // meantime the timeout must not fabricate a failure for the new connection.
+            val discoveryGatt = session.gatt
             session.serviceDiscovery = scope.launch {
                 delay(10_000L)
                 e(TAG, "service discovery timed out")
-                if (session.gatt != null) {
-                    session.markDisconnect(
-                        BleDeviceSession.DisconnectReason.SERVICE_DISCOVERY_FAILED,
-                        BluetoothGatt.GATT_FAILURE
-                    )
-                    indicatesPairingProblem = kotlin.Pair(false, -1)
-                    gattCallback.onServicesDiscovered(session.gatt!!, BluetoothGatt.GATT_FAILURE)
+                if (discoveryGatt != null) {
+                    connectionHandler.dispatchGattCallback(session, discoveryGatt) {
+                        session.markDisconnect(
+                            BleDeviceSession.DisconnectReason.SERVICE_DISCOVERY_FAILED,
+                            BluetoothGatt.GATT_FAILURE
+                        )
+                        indicatesPairingProblem = kotlin.Pair(false, -1)
+                        gattCallback.onServicesDiscovered(discoveryGatt, BluetoothGatt.GATT_FAILURE)
+                    }
                 }
             }
             return result
@@ -494,13 +491,9 @@ class BDDeviceListenerImpl(
                     session.resetDirectConnect()
                 } else {
                     d(TAG, "Direct-connect session parked, scheduling retry $attempt/$MAX_DIRECT_CONNECT_RETRIES for ${session.address}")
-                    scope.launch {
-                        delay(DIRECT_RECONNECT_DELAY_MS)
-                        if (session.sessionState == DeviceSessionState.SESSION_OPEN_PARK && session.directConnect) {
-                            d(TAG, "Direct-connect retry $attempt firing for ${session.address}")
-                            connectionHandler.connectDeviceDirect(session, bleActive())
-                        }
-                    }
+                    // Queue through the handler instead of a free-standing timer, so the retry is
+                    // cancelled by shutdown, session removal, power-off or disabling reconnection.
+                    connectionHandler.scheduleDirectReconnect(session, DIRECT_RECONNECT_DELAY_MS)
                 }
             }
 
@@ -536,21 +529,16 @@ class BDDeviceListenerImpl(
             e(TAG, "BLE powered off")
             scanCallback.powerOff()
             powerStateChangedCallback?.stateChanged(false)
-            for (deviceSession in sessions.sessions.objects()) {
-                when (deviceSession.sessionState) {
-                    DeviceSessionState.SESSION_OPEN,
-                    DeviceSessionState.SESSION_OPENING,
-                    DeviceSessionState.SESSION_CLOSING -> if (deviceSession.gatt != null) {
-                        indicatesPairingProblem = kotlin.Pair(true, BluetoothGatt.STATE_DISCONNECTED)
-                        gattCallback.onConnectionStateChange(deviceSession.gatt!!, 0, BluetoothProfile.STATE_DISCONNECTED)
-                    }
-                    else -> connectionHandler.deviceDisconnected(deviceSession)
-                }
-            }
+            indicatesPairingProblem = kotlin.Pair(true, BluetoothGatt.STATE_DISCONNECTED)
+            // Handled inside the handler: the tracked list cannot reach a session that is still
+            // pinned as 'current' after being removed, and driving synthetic disconnects through
+            // the GATT callback races with the handler's own cleanup.
+            connectionHandler.blePoweredOff(sessions.sessions.objects())
         }
 
         override fun blePoweredOn() {
             d(TAG, "BLE powered on")
+            connectionHandler.blePoweredOn(sessions.sessions.objects())
             scanCallback.powerOn()
             powerStateChangedCallback?.stateChanged(true)
         }
@@ -571,9 +559,20 @@ class BDDeviceListenerImpl(
         cb.stateChanged(this.bleActive())
     }
 
+    @SuppressLint("MissingPermission")
     override fun openSessionDirect(session: BleDeviceSession) {
         session.connectionUuids = ArrayList()
-        connectionHandler.connectDevice(session as BDDeviceSessionImpl, bleActive())
+        val bdSession = session as BDDeviceSessionImpl
+        val powered = bleActive()
+        if (powered &&
+            btManager.getConnectionState(bdSession.bluetoothDevice, BluetoothProfile.GATT) == BluetoothProfile.STATE_CONNECTED) {
+            // Share an existing Android link without waiting for advertisements.
+            // A bond alone does not establish that the device is currently reachable.
+            bdSession.resetDirectConnect()
+            connectionHandler.connectDeviceDirect(bdSession, powered)
+        } else {
+            connectionHandler.connectDevice(bdSession, powered)
+        }
     }
 
     override fun openSessionDirect(session: BleDeviceSession, uuids: List<String>) {

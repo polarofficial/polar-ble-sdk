@@ -17,7 +17,10 @@
     <a title="PolarSleepApi Protocol Reference"></a>
     <header>
       <div class="content-wrapper">
-        <p><a href="../index.html">PolarBleSdk 8.2.4 Docs</a> (43% documented)</p>
+        <p><a href="../index.html">PolarBleSdk 8.3.3
+&gt;= 1.10
+    s.source            = { :git =&gt; &#39;https://github.com/polarofficial/polar-ble-sdk.git&#39;, :tag =&gt; s.version.to_s } Docs</a> (43% documented)</p>
+        <p class="header-right"><a href="https://github.com/polarofficial/polar-ble-sdk"><img src="../img/gh.png" alt="GitHub"/>View on GitHub</a></p>
         <div class="header-right">
           <form role="search" action="../search.json">
             <input type="text" placeholder="Search documentation" data-typeahead>
@@ -222,6 +225,9 @@
                 <a href="../Enums/PolarReadinessForSpeedAndStrengthTraining.html">PolarReadinessForSpeedAndStrengthTraining</a>
               </li>
               <li class="nav-group-task">
+                <a href="../Enums/PolarSleepRecordingStatus.html">PolarSleepRecordingStatus</a>
+              </li>
+              <li class="nav-group-task">
                 <a href="../Enums/PolarTrainingSessionDataTypes.html">PolarTrainingSessionDataTypes</a>
               </li>
               <li class="nav-group-task">
@@ -340,6 +346,9 @@
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/DeviceTelemetrySupport.html">DeviceTelemetrySupport</a>
+              </li>
+              <li class="nav-group-task">
+                <a href="../Structs/HrSensorConfig.html">HrSensorConfig</a>
               </li>
               <li class="nav-group-task">
                 <a href="../Structs/LedConfig.html">LedConfig</a>
@@ -615,7 +624,8 @@
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">getSleepRecordingState</span><span class="p">(</span><span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">timeoutMs</span><span class="p">:</span> <span class="kt">UInt64</span><span class="p">)</span> <span class="k">async</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">Bool</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">@available</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">deprecated</span><span class="p">,</span> <span class="nv">message</span><span class="p">:</span> <span class="s">"Use getSleepRecordingStatus(identifier:timeoutMs:﹚, which reports unknown state instead of off"</span><span class="p">)</span>
+<span class="kd">func</span> <span class="nf">getSleepRecordingState</span><span class="p">(</span><span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">timeoutMs</span><span class="p">:</span> <span class="kt">UInt64</span><span class="p">)</span> <span class="k">async</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">Bool</span></code></pre>
 
                         </div>
                       </div>
@@ -676,13 +686,119 @@
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">observeSleepRecordingState</span><span class="p">(</span><span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">AsyncThrowingStream</span><span class="o">&lt;</span><span class="p">[</span><span class="kt">Bool</span><span class="p">],</span> <span class="kt">Error</span><span class="o">&gt;</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">@available</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">deprecated</span><span class="p">,</span> <span class="nv">message</span><span class="p">:</span> <span class="s">"Use observeSleepRecordingStatus(identifier:﹚, which reports unknown state instead of off"</span><span class="p">)</span>
+<span class="kd">func</span> <span class="nf">observeSleepRecordingState</span><span class="p">(</span><span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">AsyncThrowingStream</span><span class="o">&lt;</span><span class="p">[</span><span class="kt">Bool</span><span class="p">],</span> <span class="kt">Error</span><span class="o">&gt;</span></code></pre>
 
                         </div>
                       </div>
                       <div>
                         <h4>Return Value</h4>
                         <p>Publisher stream of Bool values indicating if sleep recording is ongoing</p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0A8SleepApiP03getD15RecordingStatus10identifier9timeoutMsAA0adgH0OSS_s6UInt64VtYaKF"></a>
+                    <a name="//apple_ref/swift/Method/getSleepRecordingStatus(identifier:timeoutMs:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0A8SleepApiP03getD15RecordingStatus10identifier9timeoutMsAA0adgH0OSS_s6UInt64VtYaKF">getSleepRecordingStatus(identifier:<wbr>timeoutMs:<wbr>)</a>
+                    </code>
+                      <span class="declaration-note">
+                        Asynchronous
+                      </span>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Get sleep recording status.</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO24feature_polar_sleep_datayA2CmF">PolarBleSdkFeature.feature_polar_sleep_data</a></code>
+
+</div><div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    <code><a href="../Enums/PolarErrors.html#/s:11PolarBleSdk0A6ErrorsO7timeoutyACSS_tcACmF">timeout(description:)</a></code> if timeout is exceeded before a status is received.
+
+</div>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">getSleepRecordingStatus</span><span class="p">(</span><span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">timeoutMs</span><span class="p">:</span> <span class="kt">UInt64</span><span class="p">)</span> <span class="k">async</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Enums/PolarSleepRecordingStatus.html">PolarSleepRecordingStatus</a></span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>identifier</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The Polar device ID or BT address</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>timeoutMs</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Timeout in milliseconds while waiting for the first sleep recording status event</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>The sleep recording status. <code>.unknown</code> means the device did not report the state.</p>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0A8SleepApiP07observeD15RecordingStatus10identifierScsySayAA0adgH0OGs5Error_pGSS_tF"></a>
+                    <a name="//apple_ref/swift/Method/observeSleepRecordingStatus(identifier:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0A8SleepApiP07observeD15RecordingStatus10identifierScsySayAA0adgH0OGs5Error_pGSS_tF">observeSleepRecordingStatus(identifier:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Observe sleep recording status.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">observeSleepRecordingStatus</span><span class="p">(</span><span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">AsyncThrowingStream</span><span class="o">&lt;</span><span class="p">[</span><span class="kt"><a href="../Enums/PolarSleepRecordingStatus.html">PolarSleepRecordingStatus</a></span><span class="p">],</span> <span class="kt">Error</span><span class="o">&gt;</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Return Value</h4>
+                        <p>Stream of sleep recording status batches. <code>.unknown</code> means the device did not report the state.</p>
                       </div>
                     </section>
                   </div>
@@ -814,7 +930,38 @@
                         <h4>Declaration</h4>
                         <div class="language">
                           <p class="aside-title">Swift</p>
-                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">getSleepRecordingState</span><span class="p">(</span><span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="k">async</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">Bool</span></code></pre>
+                          <pre class="highlight swift"><code><span class="kd">@available</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">deprecated</span><span class="p">,</span> <span class="nv">message</span><span class="p">:</span> <span class="s">"Use getSleepRecordingStatus(identifier:﹚, which reports unknown state instead of off"</span><span class="p">)</span>
+<span class="kd">func</span> <span class="nf">getSleepRecordingState</span><span class="p">(</span><span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="k">async</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">Bool</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0A8SleepApiPAAE03getD15RecordingStatus10identifierAA0adgH0OSS_tYaKF"></a>
+                    <a name="//apple_ref/swift/Method/getSleepRecordingStatus(identifier:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0A8SleepApiPAAE03getD15RecordingStatus10identifierAA0adgH0OSS_tYaKF">getSleepRecordingStatus(identifier:<wbr>)</a>
+                    </code>
+                      <span class="declaration-note">
+                        Extension method, asynchronous
+                      </span>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Get sleep recording status with default timeout of 30 seconds.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">getSleepRecordingStatus</span><span class="p">(</span><span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="k">async</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt"><a href="../Enums/PolarSleepRecordingStatus.html">PolarSleepRecordingStatus</a></span></code></pre>
 
                         </div>
                       </div>
@@ -826,7 +973,7 @@
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2026 <a class="link" href="https://github.com/polarofficial/polar-ble-sdk" target="_blank" rel="external noopener">Polar Electro Oy</a>. All rights reserved. (Last updated: 2026-09-09)</p>
+          <p>&copy; 2026 <a class="link" href="https://github.com/polarofficial/polar-ble-sdk" target="_blank" rel="external noopener">Polar Electro Oy</a>. All rights reserved. (Last updated: 2026-10-01)</p>
           <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external noopener">jazzy ♪♫ v0.15.3</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external noopener">Realm</a> project.</p>
         </section>
       </article>

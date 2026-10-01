@@ -357,6 +357,22 @@ public interface <span class="typeNameLabel"><a href=PolarBleApiCallbackProvider
                                             <td class="colLast">Health Thermometer Service.</td>
                                         </tr>
                                         
+                                        <tr id="i14" class="altColor">
+                                            <td class="colFirst"><code><a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=PolarBleApiCallbackProvider.html#polarCompanionDeviceAppeared(java.lang.String)>polarCompanionDeviceAppeared</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
+                                            </th>
+                                            <td class="colLast">The device came back into BLE range.</td>
+                                        </tr>
+                                        
+                                        <tr id="i15" class="rowColor">
+                                            <td class="colFirst"><code><a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=PolarBleApiCallbackProvider.html#polarCompanionDeviceDisappeared(java.lang.String)>polarCompanionDeviceDisappeared</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
+                                            </th>
+                                            <td class="colLast">The device is no longer in BLE range.</td>
+                                        </tr>
+                                        
                                         </tbody>
                                     </table>
                                 </div>
@@ -839,7 +855,7 @@ public interface <span class="typeNameLabel"><a href=PolarBleApiCallbackProvider
                                     <!--   -->
                                 </a>
                                 <ul class=
-                                              "blockListLast"
+                                              "blockList"
                                           >
                                     <li class="blockList">
                                         <h4>htsNotificationReceived</h4>
@@ -857,6 +873,66 @@ public interface <span class="typeNameLabel"><a href=PolarBleApiCallbackProvider
                                             
                                             
                                             <dd><code>data</code> - @see polar.com.sdk.api.model.PolarHealthThermometerData.</dd>
+                                            
+                                            
+                                        
+
+                                        
+
+                                        
+
+                                        </dl>
+                                    </li>
+                                </ul>
+                                
+                                <a id="polarCompanionDeviceAppeared(java.lang.String)">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockList"
+                                          >
+                                    <li class="blockList">
+                                        <h4>polarCompanionDeviceAppeared</h4>
+                                        <pre class="methodSignature"> <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a> <a href=PolarBleApiCallbackProvider.html#polarCompanionDeviceAppeared(java.lang.String)>polarCompanionDeviceAppeared</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
+                                        <div class="block"><p>The device came back into BLE range. Requires feature <a href=PolarBleApi.PolarBleSdkFeature.html#FEATURE_COMPANION_DEVICE_MANAGEMENT>PolarBleApi.PolarBleSdkFeature.FEATURE_COMPANION_DEVICE_MANAGEMENT</a>. This is a presence hint, not a connection event; call <a href=PolarBleApi.html#connectToDevice(java.lang.String)>PolarBleApi.connectToDevice</a> here if desired.</p></div>
+
+                                        <dl>
+
+                                        
+                                            <dt><span class="paramLabel">Parameters:</span></dt>
+                                            
+                                            
+                                            <dd><code>identifier</code> - Polar device id or bt address</dd>
+                                            
+                                            
+                                        
+
+                                        
+
+                                        
+
+                                        </dl>
+                                    </li>
+                                </ul>
+                                
+                                <a id="polarCompanionDeviceDisappeared(java.lang.String)">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockListLast"
+                                          >
+                                    <li class="blockList">
+                                        <h4>polarCompanionDeviceDisappeared</h4>
+                                        <pre class="methodSignature"> <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a> <a href=PolarBleApiCallbackProvider.html#polarCompanionDeviceDisappeared(java.lang.String)>polarCompanionDeviceDisappeared</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
+                                        <div class="block"><p>The device is no longer in BLE range. Requires feature <a href=PolarBleApi.PolarBleSdkFeature.html#FEATURE_COMPANION_DEVICE_MANAGEMENT>PolarBleApi.PolarBleSdkFeature.FEATURE_COMPANION_DEVICE_MANAGEMENT</a>.</p></div>
+
+                                        <dl>
+
+                                        
+                                            <dt><span class="paramLabel">Parameters:</span></dt>
+                                            
+                                            
+                                            <dd><code>identifier</code> - Polar device id or bt address</dd>
                                             
                                             
                                         

@@ -36,28 +36,40 @@ extension PolarBleApiImpl: PolarSleepApi {
 
     internal struct SleepRecordingState: Decodable {
         let enabled: Int?
-        var isEnabled: Bool { return enabled ?? 0 == 1 }
+        // nil means the device did not report the field; the state is unknown, not off.
+        var isEnabled: Bool? {
+            guard let enabled = enabled else { return nil }
+            return enabled == 1
+        }
     }
     internal struct SleepRecordingStateWrapper: Decodable {
         private let sleep_recording_state: SleepRecordingState
         var sleepRecordingState: SleepRecordingState { return sleep_recording_state }
     }
 
-    func getSleepRecordingState(identifier: String, timeoutMs: UInt64 = 30_000) async throws -> Bool {
-        logApiCall("getSleepRecordingState", ("identifier", identifier), ("timeoutMs", timeoutMs))
-        return try await withThrowingTaskGroup(of: Bool.self) { group in
+    private func sleepRecordingStatus(_ isEnabled: Bool?) -> PolarSleepRecordingStatus {
+        switch isEnabled {
+        case .some(true): return .enabled
+        case .some(false): return .disabled
+        case .none: return .unknown
+        }
+    }
+
+    func getSleepRecordingStatus(identifier: String, timeoutMs: UInt64 = 30_000) async throws -> PolarSleepRecordingStatus {
+        logApiCall("getSleepRecordingStatus", ("identifier", identifier), ("timeoutMs", timeoutMs))
+        return try await withThrowingTaskGroup(of: PolarSleepRecordingStatus.self) { group in
             group.addTask {
-                for try await items in self.observeSleepRecordingState(identifier: identifier) {
+                for try await items in self.observeSleepRecordingStatus(identifier: identifier) {
                     if let last = items.last {
                         return last
                     }
                 }
-                throw PolarErrors.timeout(description: "Timed out(after (\(timeoutMs) ms)) waiting for sleep recording state for device \(identifier).")
+                throw PolarErrors.timeout(description: "Timed out(after (\(timeoutMs) ms)) waiting for sleep recording status for device \(identifier).")
             }
 
             group.addTask {
                 try await Task.sleep(nanoseconds: timeoutMs * 1_000_000)
-                throw PolarErrors.timeout(description: "Timed out waiting for sleep recording state for device \(identifier).")
+                throw PolarErrors.timeout(description: "Timed out waiting for sleep recording status for device \(identifier).")
             }
 
             let result = try await group.next()!
@@ -66,8 +78,8 @@ extension PolarBleApiImpl: PolarSleepApi {
         }
     }
 
-    func observeSleepRecordingState(identifier: String) -> AsyncThrowingStream<[Bool], Error> {
-        logApiCall("observeSleepRecordingState", ("identifier", identifier))
+    func observeSleepRecordingStatus(identifier: String) -> AsyncThrowingStream<[PolarSleepRecordingStatus], Error> {
+        logApiCall("observeSleepRecordingStatus", ("identifier", identifier))
         return AsyncThrowingStream { continuation in
             let task = Task {
                 do {
@@ -81,12 +93,43 @@ extension PolarBleApiImpl: PolarSleepApi {
                         throw error
                     }
                     try Task.checkCancellation()
+
+                    // Important: create the event stream before subscribing to events:
+                    // this registers the device-notification
+                    // listener synchronously. The shared PS-FTP broadcast loop drops events that
+                    // arrive with no subscriber, so subscribing before listening can lose the
+                    // device's initial snapshot on repeated calls.
+                    let events = self.receiveRestApiEvents(identifier: identifier) as AsyncThrowingStream<[SleepRecordingStateWrapper], Error>
                     try await putNotification(identifier: identifier, notification: "{}",
                                               path: "/REST/SLEEP.API?cmd=subscribe&event=sleep_recording_state&details=[enabled]")
-                    for try await items in self.receiveRestApiEvents(identifier: identifier) as AsyncThrowingStream<[SleepRecordingStateWrapper], Error> {
+
+                    for try await items in events {
                         try Task.checkCancellation()
-                        let bools = items.map { $0.sleepRecordingState.isEnabled }
-                        continuation.yield(bools)
+                        let statuses = items.map { self.sleepRecordingStatus($0.sleepRecordingState.isEnabled) }
+                        continuation.yield(statuses)
+                    }
+                    continuation.finish()
+                } catch {
+                    continuation.finish(throwing: error)
+                }
+            }
+            continuation.onTermination = { _ in task.cancel() }
+        }
+    }
+
+    func getSleepRecordingState(identifier: String, timeoutMs: UInt64 = 30_000) async throws -> Bool {
+        logApiCall("getSleepRecordingState", ("identifier", identifier), ("timeoutMs", timeoutMs))
+        return try await getSleepRecordingStatus(identifier: identifier, timeoutMs: timeoutMs) == .enabled
+    }
+
+    func observeSleepRecordingState(identifier: String) -> AsyncThrowingStream<[Bool], Error> {
+        logApiCall("observeSleepRecordingState", ("identifier", identifier))
+        return AsyncThrowingStream { continuation in
+            let statuses = self.observeSleepRecordingStatus(identifier: identifier)
+            let task = Task {
+                do {
+                    for try await batch in statuses {
+                        continuation.yield(batch.map { $0 == .enabled })
                     }
                     continuation.finish()
                 } catch {

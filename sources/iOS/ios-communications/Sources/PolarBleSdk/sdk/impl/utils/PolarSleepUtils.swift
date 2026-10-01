@@ -67,9 +67,10 @@ internal class PolarSleepUtils {
     }
 
     static func readSleepSkinTemperatureResult(client: BlePsFtpClient, date: Date, sleepAnalysisResult: PolarSleepData.PolarSleepAnalysisResult) async throws -> PolarSleepData.PolarSleepAnalysisResult {
-        BleLogger.trace(TAG, "readSleepSkinTemperature: \(date)")
+        let dateString = dateFormat.string(from: date).components(separatedBy: "±").first ?? ""
+        BleLogger.trace(TAG, "readSleepSkinTemperature: \(dateString)")
         var result = sleepAnalysisResult
-        let filePath = "\(ARABICA_USER_ROOT_FOLDER)\(dateFormat.string(from: date))/\(NRST_DIRECTORY)\(NRST_PROTO)"
+        let filePath = "\(ARABICA_USER_ROOT_FOLDER)\(dateString)/\(NRST_DIRECTORY)\(NRST_PROTO)"
         let operation = Protocol_PbPFtpOperation.with { $0.command = .get; $0.path = filePath }
         do {
             let response = try await client.request(try operation.serializedBytes())

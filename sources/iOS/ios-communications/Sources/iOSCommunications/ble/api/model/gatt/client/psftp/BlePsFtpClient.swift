@@ -374,7 +374,7 @@ open class BlePsFtpClient: BleGattClientBase, @unchecked Sendable {
     open func write(_ header: NSData, data: InputStream) -> AsyncThrowingStream<UInt, Error> {
         var timeout = self.PROTOCOL_TIMEOUT
         do {
-            timeout = try self.writeTimeout(for: Communications_PbPFtpOperation(serializedBytes: Data(referencing: header)).path)
+            timeout = try self.writeTimeout(for: Communications_PbPFtpOperation(serializedData: Data(referencing: header)).path)
         } catch {
             BleLogger.error("Failed to parse PbPFtpOperation: \(error)")
         }

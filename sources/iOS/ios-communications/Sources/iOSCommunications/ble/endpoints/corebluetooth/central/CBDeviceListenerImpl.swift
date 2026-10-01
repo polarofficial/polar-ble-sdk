@@ -114,11 +114,17 @@ public class CBDeviceListenerImpl: NSObject, SDKCBCentralManagerDelegate {
     
     // cb central manager callbacks
     public func centralManagerDidUpdateState(_ central: CBCentralManager){
+        // Capture synchronously: CoreBluetooth can leave this state before the queued block
+        // runs, which would silently skip the .resetting purge and misreport the transition.
+        handleCentralStateUpdate(central.state)
+    }
+
+    internal func handleCentralStateUpdate(_ state: CBManagerState) {
         queue.async(execute: {
             if #available(iOS 10.0, *) {
-                BleLogger.trace("state update to: ", self.btState2String(central.state))
+                BleLogger.trace("state update to: ", self.btState2String(state))
             }
-            switch central.state {
+            switch state {
             case .unknown:
                 break
             case .resetting:
@@ -138,7 +144,7 @@ public class CBDeviceListenerImpl: NSObject, SDKCBCentralManagerDelegate {
                         session.reset()
                     }
                 }
-                if central.state == .resetting {
+                if state == .resetting {
                     // clear device list
                     self.sessions.removeAll()
                 }
@@ -167,7 +173,7 @@ public class CBDeviceListenerImpl: NSObject, SDKCBCentralManagerDelegate {
             @unknown default:
                 break
             }
-            let newBleState = BleState(rawValue: self.manager.state.rawValue) ?? BleState.unknown
+            let newBleState = BleState(rawValue: state.rawValue) ?? BleState.unknown
             self.bleStateSubject.send(newBleState)
             self.powerStateObserver?.powerStateChanged(newBleState)
         })

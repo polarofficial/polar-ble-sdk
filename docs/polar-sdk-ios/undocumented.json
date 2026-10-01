@@ -534,8 +534,43 @@
     },
     {
       "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/api/model/LogConfig.swift",
-      "line": 36,
-      "symbol": "LogConfig.init(ppiLogEnabled:accelerationLogEnabled:caloriesLogEnabled:gpsLogEnabled:gpsNmeaLogEnabled:magnetometerLogEnabled:tapLogEnabled:barometerLogEnabled:gyroscopeLogEnabled:sleepLogEnabled:slopeLogEnabled:ambientLightLogEnabled:tlrLogEnabled:ondemandLogEnabled:capsenseLogEnabled:fusionLogEnabled:metLogEnabled:ohrLogEnabled:verticalAccLogEnabled:amdLogEnabled:skinTemperatureLogEnabled:compassLogEnabled:speed3DLogEnabled:logTrigger:magnetometerFrequency:)",
+      "line": 35,
+      "symbol": "LogConfig.hrSensorConfig",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/api/model/LogConfig.swift",
+      "line": 38,
+      "symbol": "LogConfig.init(ppiLogEnabled:accelerationLogEnabled:caloriesLogEnabled:gpsLogEnabled:gpsNmeaLogEnabled:magnetometerLogEnabled:tapLogEnabled:barometerLogEnabled:gyroscopeLogEnabled:sleepLogEnabled:slopeLogEnabled:ambientLightLogEnabled:tlrLogEnabled:ondemandLogEnabled:capsenseLogEnabled:fusionLogEnabled:metLogEnabled:ohrLogEnabled:verticalAccLogEnabled:amdLogEnabled:skinTemperatureLogEnabled:compassLogEnabled:speed3DLogEnabled:logTrigger:magnetometerFrequency:hrSensorConfig:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/api/model/LogConfig.swift",
+      "line": 176,
+      "symbol": "HrSensorConfig",
+      "symbol_kind": "source.lang.swift.decl.struct",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/api/model/LogConfig.swift",
+      "line": 178,
+      "symbol": "HrSensorConfig.deviceInformation",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/api/model/LogConfig.swift",
+      "line": 179,
+      "symbol": "HrSensorConfig.waitUntilConnected",
+      "symbol_kind": "source.lang.swift.decl.var.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/api/model/LogConfig.swift",
+      "line": 181,
+      "symbol": "HrSensorConfig.init(deviceInformation:waitUntilConnected:)",
       "symbol_kind": "source.lang.swift.decl.function.method.instance",
       "warning": "undocumented"
     },

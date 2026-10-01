@@ -231,7 +231,8 @@ public typealias PolarPpiData = (timeStamp: UInt64, samples: [(timeStamp: UInt64
 ///
 ///     - ongoing: true recording running
 ///     - entryId: unique identifier
-public typealias PolarRecordingStatus = (ongoing: Bool, entryId: String)
+///     - supported: true if device supports recording
+public typealias PolarRecordingStatus = (ongoing: Bool, entryId: String, supported: Bool)
 
 /// API.
 public protocol PolarBleApi: PolarOfflineRecordingApi, PolarOnlineStreamingApi, PolarH10OfflineExerciseApi, PolarSdkModeApi, PolarFirmwareUpdateApi, PolarActivityApi, PolarTemperatureApi, PolarSleepApi, PolarTrainingSessionApi, PolarDeviceToHostNotificationsApi, PolarBleLowLevelApi, PolarRestServiceApi, PolarOfflineExerciseV2Api, PolarTestApi, PolarWatchFaceApi, PolarDerivedMeasurementApi, PolarLoggingApi, PolarDeviceTelemetryApi {

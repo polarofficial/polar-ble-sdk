@@ -446,23 +446,36 @@ class MainFragment : Fragment() {
                     viewModel.selectedDevice = reconnected
                 }
 
-                // Fresh component for each connection (handles reconnect cleanly).
-                destroyDeviceComponent(deviceId)
-                val component = DevicePagerComponent(deviceId).also {
-                    devicePagerComponents[deviceId] = it
-                    it.setupViews(pagedContainer)
+                // Build a fresh component only for a genuinely new connection. uiConnectionState
+                // is a hot StateFlow, so its collector replays the current CONNECTED value every
+                // time this Fragment's view resumes (for example, returning from the DataViewer
+                // Activity) even though the device never disconnected. Recreating the component
+                // on every replay would destroy the existing OnlineRecFragment/ViewModel and
+                // lose in-memory state such as validatedFileUris, so only (re)build it when no
+                // component exists yet for this device (real reconnects already go through
+                // destroyDeviceComponent() in the NOT_CONNECTED branch above).
+                val existingComponent = devicePagerComponents[deviceId]
+                val component = if (existingComponent != null) {
+                    existingComponent
+                } else {
+                    DevicePagerComponent(deviceId).also {
+                        devicePagerComponents[deviceId] = it
+                        it.setupViews(pagedContainer)
+                    }
                 }
 
-                component.adapter.addOnlineRecordingFragment(deviceId)
-                component.adapter.addDeviceSettingsFragment(deviceId)
-                if (selectedDevice?.name?.contains("H10") == true) component.adapter.addH10ExerciseFragment(deviceId)
+                if (existingComponent == null) {
+                    component.adapter.addOnlineRecordingFragment(deviceId)
+                    component.adapter.addDeviceSettingsFragment(deviceId)
+                    if (selectedDevice?.name?.contains("H10") == true) component.adapter.addH10ExerciseFragment(deviceId)
 
-                if (viewModel.isFeatureReady(deviceId, PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_ACTIVITY_DATA)) {
-                    component.adapter.addLoggingFragment(deviceId)
-                    component.adapter.addActivityFragment(deviceId)
+                    if (viewModel.isFeatureReady(deviceId, PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_ACTIVITY_DATA)) {
+                        component.adapter.addLoggingFragment(deviceId)
+                        component.adapter.addActivityFragment(deviceId)
+                    }
+                    val cachedEvent = viewModel.uiSdkFeaturesReadyState.value
+                    if (cachedEvent.identifier == deviceId) sdkFeaturesReadyChange(cachedEvent)
                 }
-                val cachedEvent = viewModel.uiSdkFeaturesReadyState.value
-                if (cachedEvent.identifier == deviceId) sdkFeaturesReadyChange(cachedEvent)
 
                 showPager(deviceId)
                 deviceConnectionStatusGroup.visibility = VISIBLE; phoneBleStatus.visibility = GONE

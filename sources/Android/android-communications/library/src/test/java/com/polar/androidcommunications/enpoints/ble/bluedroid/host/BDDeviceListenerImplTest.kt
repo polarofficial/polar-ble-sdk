@@ -13,6 +13,7 @@ import com.polar.androidcommunications.api.ble.BleDeviceListener
 import com.polar.androidcommunications.api.ble.exceptions.BleInvalidMtu
 import com.polar.androidcommunications.api.ble.model.BleDeviceSession
 import com.polar.androidcommunications.api.ble.model.gatt.BleGattBase
+import com.polar.androidcommunications.common.ble.AtomicSet
 import com.polar.androidcommunications.common.ble.BleUtils
 import com.polar.androidcommunications.enpoints.ble.bluedroid.host.connection.ConnectionHandler
 import io.mockk.every
@@ -24,6 +25,7 @@ import io.mockk.runs
 import io.mockk.unmockkAll
 import io.mockk.verify
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -31,6 +33,7 @@ import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import java.util.concurrent.TimeUnit
 
 class BDDeviceListenerImplTest {
 
@@ -110,6 +113,155 @@ class BDDeviceListenerImplTest {
 
         // Assert
         verify(exactly = 1) { scanCallback.clientRemoved() }
+    }
+
+    @Test
+    fun search_knownPolarDevices_restoresIdentityWithoutAdvertisementsAndDeduplicates() = runTest {
+        val connected = mockBluetoothDevice("AA:BB:CC:00:00:04", BluetoothDevice.DEVICE_TYPE_LE)
+        every { connected.name } returns "Polar 360 12345678"
+        val bonded = mockBluetoothDevice("AA:BB:CC:00:00:05", BluetoothDevice.DEVICE_TYPE_DUAL)
+        every { bonded.name } returns "Polar 360 87654321"
+        val unnamed = mockBluetoothDevice("AA:BB:CC:00:00:06", BluetoothDevice.DEVICE_TYPE_LE)
+        every { unnamed.name } returns null
+        val sut = createSut(listOf(connected), setOf(connected, bonded, unnamed), mockk(relaxed = true))
+        val values = mutableListOf<BleDeviceSession>()
+        val job = launch { sut.search(true).collect { values.add(it) } }
+        testScheduler.advanceUntilIdle()
+
+        assertEquals(3, values.size)
+        val polarSession = values.first { it.address == connected.address }
+        assertEquals("12345678", polarSession.polarDeviceId)
+        assertEquals("360", polarSession.polarDeviceType)
+        assertEquals("Polar 360 12345678", polarSession.name)
+        assertEquals("87654321", values.first { it.address == bonded.address }.polarDeviceId)
+        assertEquals("", values.first { it.address == unnamed.address }.polarDeviceId)
+        assertTrue(values.all { it.advertisementContent.getAdvertisementData().isEmpty() })
+        assertTrue(values.none { it.isAdvertising(30, TimeUnit.SECONDS) })
+        assertTrue(values.all { it.rssi == -100 })
+        job.cancel()
+    }
+
+    @Test
+    fun openSessionDirect_whenAnotherAppIsConnected_usesDirectGattWithoutAdvertisement() = runTest {
+        val device = mockBluetoothDevice("AA:BB:CC:00:00:07", BluetoothDevice.DEVICE_TYPE_LE)
+        every { device.name } returns "Polar 360 12345678"
+        val sut = createSut(listOf(device), emptySet(), mockk(relaxed = true))
+        val handler = mockk<ConnectionHandler>(relaxed = true)
+        setPrivateField(sut, "connectionHandler", handler)
+        val job = launch { sut.search(true).collect {} }
+        testScheduler.advanceUntilIdle()
+        val session = sut.sessionByAddress(device.address) as BDDeviceSessionImpl
+        assertEquals(false, session.isConnectableAdvertisement)
+
+        sut.openSessionDirect(session)
+
+        verify(exactly = 1) { handler.connectDeviceDirect(session, true) }
+        verify(exactly = 0) { handler.connectDevice(any(), any()) }
+        job.cancel()
+    }
+
+    @Test
+    fun openSessionDirect_whenOnlyBonded_keepsAdvertisementBasedConnection() = runTest {
+        val device = mockBluetoothDevice("AA:BB:CC:00:00:08", BluetoothDevice.DEVICE_TYPE_LE)
+        every { device.bondState } returns BluetoothDevice.BOND_BONDED
+        val sut = createSut(emptyList(), setOf(device), mockk(relaxed = true))
+        val handler = mockk<ConnectionHandler>(relaxed = true)
+        setPrivateField(sut, "connectionHandler", handler)
+        val job = launch { sut.search(true).collect {} }
+        testScheduler.advanceUntilIdle()
+        val session = sut.sessionByAddress(device.address) as BDDeviceSessionImpl
+
+        sut.openSessionDirect(session)
+
+        verify(exactly = 1) { handler.connectDevice(session, true) }
+        verify(exactly = 0) { handler.connectDeviceDirect(any(), any()) }
+        job.cancel()
+    }
+
+    @Test
+    fun openSessionDirect_whenUnbondedAndNotSystemConnected_keepsAdvertisementBasedConnection() {
+        val sut = createSut(emptyList(), emptySet(), mockk(relaxed = true))
+        val handler = mockk<ConnectionHandler>(relaxed = true)
+        setPrivateField(sut, "connectionHandler", handler)
+        val device = mockBluetoothDevice("AA:BB:CC:00:00:09", BluetoothDevice.DEVICE_TYPE_LE)
+        val scanInterface = getPrivateField(sut, "scanCallbackInterface") as BDScanCallback.BDScanCallbackInterface
+        scanInterface.deviceDiscovered(device, -50, byteArrayOf(), BleUtils.EVENT_TYPE.ADV_IND)
+        val session = sut.sessionByAddress(device.address) as BDDeviceSessionImpl
+
+        sut.openSessionDirect(session)
+
+        verify(exactly = 1) { handler.connectDevice(session, true) }
+        verify(exactly = 0) { handler.connectDeviceDirect(any(), any()) }
+    }
+
+    @Test
+    fun search_whenCollectorTakesFirstKnownDevice_releasesObserverAndScanClient() = runTest {
+        val device = mockBluetoothDevice("AA:BB:CC:00:00:10", BluetoothDevice.DEVICE_TYPE_LE)
+        val scanCallback = mockk<BDScanCallback>(relaxed = true)
+        val sut = createSut(listOf(device), emptySet(), scanCallback)
+
+        assertEquals(device.address, sut.search(true).first().address)
+
+        assertEquals(0, (getPrivateField(sut, "observers") as AtomicSet<*>).size())
+        verify(exactly = 1) { scanCallback.clientAdded() }
+        verify(exactly = 1) { scanCallback.clientRemoved() }
+    }
+
+    @Test
+    fun search_whenBluetoothQueryFails_releasesObserverAndPropagatesError() = runTest {
+        val scanCallback = mockk<BDScanCallback>(relaxed = true)
+        val sut = createSut(emptyList(), emptySet(), scanCallback)
+        val manager = getPrivateField(sut, "btManager") as BluetoothManager
+        val failure = SecurityException("Bluetooth permission revoked")
+        every { manager.getDevicesMatchingConnectionStates(any(), any()) } throws failure
+
+        val result = runCatching { sut.search(true).first() }
+
+        assertEquals(failure, result.exceptionOrNull())
+        assertEquals(0, (getPrivateField(sut, "observers") as AtomicSet<*>).size())
+        verify(exactly = 1) { scanCallback.clientRemoved() }
+    }
+
+    @Test
+    fun search_restoresMissingNameOnExistingSession_withoutOverwritingAdvertisedIdentity() = runTest {
+        val device = mockBluetoothDevice("AA:BB:CC:00:00:11", BluetoothDevice.DEVICE_TYPE_LE)
+        every { device.name } returns null
+        val sut = createSut(listOf(device), emptySet(), mockk(relaxed = true))
+        val session = sut.search(true).first()
+        assertEquals("", session.name)
+
+        every { device.name } returns "Polar 360 12345678"
+        assertEquals(session, sut.search(true).first())
+        assertEquals("12345678", session.polarDeviceId)
+        assertTrue(session.advertisementContent.getAdvertisementData().isEmpty())
+
+        session.advertisementContent.processAdvertisementData(
+            mapOf(BleUtils.AD_TYPE.GAP_ADTYPE_LOCAL_NAME_COMPLETE to "Polar 360 87654321".toByteArray()),
+            BleUtils.EVENT_TYPE.ADV_IND,
+            -45
+        )
+        sut.search(true).first()
+        assertEquals("87654321", session.polarDeviceId)
+        assertEquals(-45, session.rssi)
+        assertEquals(1, sut.deviceSessions().size)
+    }
+
+    @Test
+    fun openSessionDirect_whenBluetoothOff_doesNotQueryConnectionState() = runTest {
+        val device = mockBluetoothDevice("AA:BB:CC:00:00:12", BluetoothDevice.DEVICE_TYPE_LE)
+        val sut = createSut(listOf(device), emptySet(), mockk(relaxed = true))
+        val session = sut.search(true).first() as BDDeviceSessionImpl
+        val handler = mockk<ConnectionHandler>(relaxed = true)
+        setPrivateField(sut, "connectionHandler", handler)
+        val adapter = getPrivateField(sut, "bluetoothAdapter") as BluetoothAdapter
+        val manager = getPrivateField(sut, "btManager") as BluetoothManager
+        every { adapter.isEnabled } returns false
+
+        sut.openSessionDirect(session)
+
+        verify(exactly = 1) { handler.connectDevice(session, false) }
+        verify(exactly = 0) { handler.connectDeviceDirect(any(), any()) }
+        verify(exactly = 0) { manager.getConnectionState(any(), any()) }
     }
 
     @Test
@@ -562,11 +714,15 @@ class BDDeviceListenerImplTest {
         every { bluetoothManager.adapter } returns bluetoothAdapter
         every { bluetoothAdapter.isEnabled } returns true
         every { bluetoothAdapter.bondedDevices } returns bondedDevices
+        every { bluetoothManager.getConnectionState(any(), BluetoothProfile.GATT) } answers {
+            if (connectedDevices.contains(firstArg<BluetoothDevice>())) BluetoothProfile.STATE_CONNECTED
+            else BluetoothProfile.STATE_DISCONNECTED
+        }
 
         every {
             bluetoothManager.getDevicesMatchingConnectionStates(
                 BluetoothProfile.GATT,
-                intArrayOf(BluetoothProfile.STATE_CONNECTED or BluetoothProfile.STATE_CONNECTING)
+                intArrayOf(BluetoothProfile.STATE_CONNECTED, BluetoothProfile.STATE_CONNECTING)
             )
         } returns connectedDevices
 
@@ -591,6 +747,7 @@ class BDDeviceListenerImplTest {
         every { device.address } returns address
         every { device.type } returns type
         every { device.name } returns "MockDevice-$address"
+        every { device.bondState } returns BluetoothDevice.BOND_NONE
         every { device.connectGatt(any(), any(), any()) } returns mockk(relaxed = true)
         every { device.connectGatt(any(), any(), any(), any()) } returns mockk(relaxed = true)
         every { device.connectGatt(any(), any(), any(), any(), any()) } returns mockk(relaxed = true)

@@ -95,6 +95,7 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
     private lateinit var selectedDeviceId: String
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        Log.d(TAG, "onViewCreated() called, savedInstanceState is null: ${savedInstanceState == null}, validatedFileUris=${onlineViewModel.validatedFileUris.value}")
         selectedDeviceId = arguments?.getString(ONLINE_OFFLINE_KEY_DEVICE_ID)
             ?: throw Exception("OnlineRecFragment has no deviceId")
 
@@ -154,18 +155,13 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
         }
 
         // Collect validated URIs from ViewModel so viewButton/shareButton work even after
-        // Fragment view recreation (e.g. ViewPager2 destroys off-screen tabs).
+        // Fragment view recreation (e.g. ViewPager2 destroys off-screen tabs). Visibility is
+        // always recomputed from the current validatedFileUris state so it cannot get stuck
+        // hidden regardless of collector restart timing.
         viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                onlineViewModel.validatedFileUris.collect { uris ->
-                    if (uris.isNotEmpty()) {
-                        for (fileUri in uris) {
-                            val streamFileMetadata = parseStreamFileMetadata(fileUri) ?: continue
-                            if (streamFileMetadata.streamType == DataCollector.StreamType.MARKER) continue
-                            val dataType = polarDataTypeForStreamType(streamFileMetadata.streamType) ?: continue
-                            setupOnlineRecShareButtons(dataType, makeVisible = true)
-                        }
-                    }
+                onlineViewModel.validatedFileUris.collect {
+                    refreshShareButtonsVisibility()
                 }
             }
         }
@@ -408,6 +404,11 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
 
         for (feature in recordingsToStart) {
             if (getOnlineRecordingCheckBox(feature)?.isChecked == true) {
+                val staleUris = getAllUrisByDataType(feature)
+                if (staleUris.isNotEmpty()) {
+                    onlineViewModel.clearValidatedFileUris(staleUris)
+                }
+                setupOnlineRecShareButtons(feature, makeVisible = false)
                 onlineViewModel.startStream(feature)
             } else {
                 onlineViewModel.stopStream(feature)
@@ -425,6 +426,9 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
             startRecordingButton.setOnClickListener {
                 viewModel.selectedDevice?.let {
                     for (feature in PolarDeviceDataType.entries) {
+                        if (feature == PolarDeviceDataType.DERIVED_MEASUREMENT) {
+                            continue
+                        }
                         val cb = getOnlineRecordingCheckBox(feature) ?: continue
                         if (cb.isChecked) {
                             onlineViewModel.stopStream(feature)
@@ -502,6 +506,7 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
     }
 
     private fun availableFeaturesUpdate(streamingFeatureUiState: AvailableOnlineStreamDataState) {
+        Log.d(TAG, "availableFeaturesUpdate() $streamingFeatureUiState")
         if (streamingFeatureUiState.streamingFeaturesAvailable.any { it.value == true }) {
             recordingStartGroup.visibility = VISIBLE
             recordingGroup.visibility = VISIBLE
@@ -517,27 +522,14 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
                     } else {
                         setupOnlineRecStatusAndSettingsView(it.key, makeVisible = false)
                     }
-                    setupOnlineRecShareButtons(it.key, makeVisible = false)
                 }
         } else {
             recordingStartGroup.visibility = GONE
             recordingGroup.visibility = GONE
             streamSettingHeader.visibility = GONE
         }
-
-        val validatedUris = onlineViewModel.validatedFileUris.value
-        if (validatedUris.isNotEmpty()) {
-            for (fileUri in validatedUris) {
-                val streamFileMetadata = parseStreamFileMetadata(fileUri) ?: continue
-                if (streamFileMetadata.streamType == DataCollector.StreamType.MARKER) {
-                    // Marker file, do not show in sharing options for marker file. Instead share with the other files when they are shared.
-                    continue
-                }
-                val dataType = polarDataTypeForStreamType(streamFileMetadata.streamType) ?: continue
-                setupOnlineRecShareButtons(dataType, makeVisible = true)
-            }
-        }
     }
+
 
     private fun onlineRecStateUpdate(onlineRecordingUiState: OnlineRecordingUiState) {
         if (onlineRecordingUiState.timer.isNotEmpty()) {
@@ -1315,7 +1307,18 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
                 onlineViewModel.setChecked(feature, isChecked)
             }
         } else {
-            view.visibility = GONE
+            // Do not collapse the whole row if it still has a shareable/viewable file: the
+            // Share/View buttons live inside this same row, so hiding the row would hide them
+            // too, even though the user expects them to stay until a new recording starts or
+            // the device disconnects. Keep the row visible (read-only) in that case.
+            val hasValidatedFile = getUriByDataType(feature) != null
+            if (hasValidatedFile) {
+                Log.d(TAG, "setupOnlineRecStatusAndSettingsView() feature=$feature reported unavailable but keeping row visible because it has a validated file")
+                getOnlineRecordingCheckBox(feature)?.isEnabled = false
+                getOnlineRecSettingsButtonView(feature)?.isEnabled = false
+            } else {
+                view.visibility = GONE
+            }
         }
     }
 
@@ -1464,6 +1467,34 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
     }
 
     /**
+     * Finds all validated Uris for the desired PolarDeviceDataType. Used to clear out stale
+     * file references (for example, when the user restarts a recording for a data type that
+     * already has a viewable/shareable file from a previous session).
+     */
+    private fun getAllUrisByDataType(desiredDataType: PolarDeviceDataType): List<Uri> {
+        return onlineViewModel.validatedFileUris.value.filter { fileUri ->
+            parseStreamFileMetadata(fileUri)?.streamType?.name == desiredDataType.name
+        }
+    }
+
+    /**
+     * Recomputes Share/View icon visibility for every feature directly from the current
+     * validatedFileUris state. This is the single source of truth for icon visibility, so
+     * calling this repeatedly (from multiple state collectors, at any time) always converges
+     * on the correct result instead of relying on hide-then-restore ordering.
+     */
+    private fun refreshShareButtonsVisibility() {
+        val allUris = onlineViewModel.validatedFileUris.value
+        Log.d(TAG, "refreshShareButtonsVisibility() validatedFileUris=$allUris")
+        for (feature in PolarDeviceDataType.entries) {
+            if (feature == PolarDeviceDataType.DERIVED_MEASUREMENT) continue
+            val hasValidatedFile = getUriByDataType(feature) != null
+            Log.d(TAG, "refreshShareButtonsVisibility() feature=$feature hasValidatedFile=$hasValidatedFile")
+            setupOnlineRecShareButtons(feature, makeVisible = hasValidatedFile)
+        }
+    }
+
+    /**
      * Finds the Uri for the MARKER file.
      */
     private fun getUriForMarkerFile(): Uri? {
@@ -1526,10 +1557,6 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
         }
 
         return StreamFileMetadata(streamType = streamType, timestamp = timestamp)
-    }
-
-    private fun polarDataTypeForStreamType(streamType: DataCollector.StreamType): PolarDeviceDataType? {
-        return PolarDeviceDataType.entries.firstOrNull { it.name == streamType.name }
     }
 
     private fun openHrGraph() {

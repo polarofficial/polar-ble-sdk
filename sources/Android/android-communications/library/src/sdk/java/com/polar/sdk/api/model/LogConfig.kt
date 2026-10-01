@@ -2,6 +2,7 @@ package com.polar.sdk.api.model
 
 import data.SensorDataLog
 import data.SensorDataLog.PbSensorDataLog
+import fi.polar.remote.representation.protobuf.Structures.PbBleDeviceName
 
 data class LogConfig(
     val ohrLogEnabled: Boolean? = null,
@@ -29,13 +30,15 @@ data class LogConfig(
     val speed3DLogEnabled: Boolean? = null,
     val retainSettingsOverBoot: Boolean? = null,
     val logTriggerSettings: PbSensorDataLog.PbLogTrigger? = null,
-    val magnetometerFrequency: PbSensorDataLog.PbMagnetometerLogFrequency? = null
+    val magnetometerFrequency: PbSensorDataLog.PbMagnetometerLogFrequency? = null,
+    val hrSensorConfig: HrSensorConfig? = null
 ) {
     companion object {
         const val LOG_CONFIG_FILENAME = "/SDLOGS.BPB"
 
         fun fromBytes(bytes: ByteArray): LogConfig {
             val proto = PbSensorDataLog.parseFrom(bytes)
+            val hrSensorConfig: HrSensorConfig? = null
             return LogConfig(
                 ohrLogEnabled = if (proto.hasOhrLogEnabled()) proto.ohrLogEnabled else null,
                 ppiLogEnabled = if (proto.hasPpiLogEnabled()) proto.ppiLogEnabled else null,
@@ -62,13 +65,14 @@ data class LogConfig(
                 speed3DLogEnabled = if (proto.hasSpeed3DLogEnabled()) proto.speed3DLogEnabled else null,
                 retainSettingsOverBoot = if (proto.hasRetainSettingsOverBoot()) proto.retainSettingsOverBoot else null,
                 logTriggerSettings = if (proto.hasLogTrigger()) proto.logTrigger else null,
-                magnetometerFrequency = if (proto.hasMagnetometerLogFrequency()) proto.magnetometerLogFrequency else null
+                magnetometerFrequency = if (proto.hasMagnetometerLogFrequency()) proto.magnetometerLogFrequency else null,
+                hrSensorConfig = if (proto.hasBleHrSensorConfig()) HrSensorConfig.fromBytes(proto.bleHrSensorConfig.toByteArray()) else null
             )
         }
     }
 
-    fun toProto(): SensorDataLog.PbSensorDataLog {
-        val builder = SensorDataLog.PbSensorDataLog.newBuilder()
+    fun toProto(): PbSensorDataLog {
+        val builder = PbSensorDataLog.newBuilder()
         if (ohrLogEnabled != null) builder.ohrLogEnabled = ohrLogEnabled
         if (ppiLogEnabled != null) builder.ppiLogEnabled = ppiLogEnabled
         if (accelerationLogEnabled != null) builder.accelerationLogEnabled = accelerationLogEnabled
@@ -95,6 +99,34 @@ data class LogConfig(
         if (retainSettingsOverBoot != null) builder.retainSettingsOverBoot = retainSettingsOverBoot
         if (logTriggerSettings != null) builder.logTrigger = logTriggerSettings
         if (magnetometerFrequency != null) builder.magnetometerLogFrequency = magnetometerFrequency
+        if(hrSensorConfig != null) builder.bleHrSensorConfig = hrSensorConfig.toProto()
+
+        return builder.build()
+    }
+}
+
+data class HrSensorConfig(
+    val deviceInformation :String? = null, //  Device identified by its BLE Complete Local Name (e.g. "Polar H10 ABCD1234")
+    val waitUntilConnected: Boolean? = null  // When true, OHR logging will not start until this sensor is connected and delivering HR data.
+) {
+
+    companion object {
+        fun fromBytes(bytes: ByteArray): HrSensorConfig {
+            val proto = SensorDataLog.PbBleHrSensorConfig.parseFrom(bytes)
+            return HrSensorConfig(
+                deviceInformation = if (proto.hasDeviceName()) proto.deviceName.name else null,
+                waitUntilConnected = if (proto.hasWaitForConnect()) proto.waitForConnect else null
+            )
+        }
+    }
+
+
+    fun toProto(): SensorDataLog.PbBleHrSensorConfig {
+        val builder = SensorDataLog.PbBleHrSensorConfig.newBuilder()
+        val deviceNameBuilder = PbBleDeviceName.newBuilder()
+        deviceNameBuilder.name = deviceInformation
+        if (deviceInformation != null) builder.deviceName = deviceNameBuilder.build()
+        if (waitUntilConnected != null) builder.waitForConnect = waitUntilConnected
 
         return builder.build()
     }

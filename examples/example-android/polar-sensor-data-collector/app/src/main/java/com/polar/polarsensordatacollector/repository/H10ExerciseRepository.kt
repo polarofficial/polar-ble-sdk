@@ -26,18 +26,18 @@ class H10ExerciseRepository @Inject constructor(
     private val _featureState = MutableStateFlow(H10RecordingFeature())
     val featureState: StateFlow<H10RecordingFeature> = _featureState
 
-    fun updateStatus(isSupported: Boolean, isEnabled: Boolean) {
+    fun updateStatus(isSupported: Boolean, isOngoing: Boolean) {
         _featureState.value = _featureState.value.copy(
             isSupported = isSupported,
-            isEnabled = isEnabled
+            isOngoing = isOngoing
         )
     }
 
-    fun updateRecordingEnabled(isEnabled: Boolean) {
-        _featureState.value = _featureState.value.copy(isEnabled = isEnabled)
+    fun updateRecordingEnabled(isOngoing: Boolean) {
+        _featureState.value = _featureState.value.copy(isOngoing = isOngoing)
     }
 
-    suspend fun requestRecordingStatus(identifier: String): Pair<Boolean, String> {
+    suspend fun requestRecordingStatus(identifier: String): PolarH10OfflineExerciseApi.PolarRecordingStatus {
         return api.requestRecordingStatus(identifier)
     }
 
@@ -115,5 +115,5 @@ class H10ExerciseRepository @Inject constructor(
 
 data class H10RecordingFeature(
     val isSupported: Boolean = false,
-    val isEnabled: Boolean = false
+    val isOngoing: Boolean = false
 )

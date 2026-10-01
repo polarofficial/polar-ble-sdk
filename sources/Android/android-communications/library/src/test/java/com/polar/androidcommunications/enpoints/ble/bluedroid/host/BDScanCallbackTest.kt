@@ -29,6 +29,7 @@ import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -68,6 +69,9 @@ internal class BDScanCallbackTest {
     /** Latest ScanCallback passed by the SUT to BluetoothLeScanner.startScan(). */
     private val capturedCallback = slot<ScanCallback>()
 
+    /** Every ScanCallback instance the SUT has registered, in order. */
+    private val registeredCallbacks = mutableListOf<ScanCallback>()
+
     /** Tracks how many times startScan() has been called on the mock scanner. */
     private var startScanCallCount = 0
 
@@ -77,6 +81,7 @@ internal class BDScanCallbackTest {
         MockKAnnotations.init(this, relaxUnitFun = true)
         testScope = TestScope()
         startScanCallCount = 0
+        registeredCallbacks.clear()
 
         // Mock Android framework stubs used in BDScanCallback's init block.
         mockkStatic(ParcelUuid::class)
@@ -99,6 +104,7 @@ internal class BDScanCallbackTest {
         every { mockBtLeScanner.stopScan(any<ScanCallback>()) } just runs
         every { mockBtLeScanner.startScan(any(), any(), capture(capturedCallback)) } answers {
             startScanCallCount++
+            registeredCallbacks.add(capturedCallback.captured)
         }
 
         // Minimal ScanResult stub for onScanResult tests.
@@ -167,6 +173,26 @@ internal class BDScanCallbackTest {
 
         verify(atLeast = 1) { mockBtLeScanner.stopScan(any<ScanCallback>()) }
         verify(exactly = 0) { mockCallbackInterface.scanStartError(any()) }
+    }
+
+    @Test
+    fun `errorCode 2 recovery registers a fresh ScanCallback instance`() = testScope.runTest {
+        // Regression test for the field issue where scanning stayed broken for hours:
+        // SCAN_FAILED_APPLICATION_REGISTRATION_FAILED (2) leaves a stuck registration for the
+        // exact ScanCallback instance, so retrying with the same instance fails forever.
+        // Recovery must swap in a brand new ScanCallback so the platform can register again.
+        startScanningAndFlush()
+        val originalCallback = registeredCallbacks.last()
+
+        fireOnScanFailed()
+        advancePastBackoffAndFlush(1100)
+
+        val recoveredCallback = registeredCallbacks.last()
+        assertNotEquals(
+            "Recovery must register a NEW ScanCallback instance, not reuse the stuck one",
+            System.identityHashCode(originalCallback),
+            System.identityHashCode(recoveredCallback)
+        )
     }
 
     @Test

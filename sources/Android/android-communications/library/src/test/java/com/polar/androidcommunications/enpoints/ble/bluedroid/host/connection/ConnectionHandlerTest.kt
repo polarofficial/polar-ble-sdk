@@ -1,6 +1,8 @@
 package com.polar.androidcommunications.enpoints.ble.bluedroid.host.connection
 
 import com.polar.androidcommunications.api.ble.model.BleDeviceSession
+import com.polar.androidcommunications.api.ble.model.advertisement.BleAdvertisementContent
+import com.polar.androidcommunications.common.ble.BleUtils.AD_TYPE
 import com.polar.androidcommunications.enpoints.ble.bluedroid.host.BDDeviceSessionImpl
 import com.polar.androidcommunications.enpoints.ble.bluedroid.host.connection.ConnectionHandler.Companion.GUARD_TIME_MS
 import com.polar.androidcommunications.testrules.BleLoggerTestRule
@@ -9,6 +11,7 @@ import io.mockk.impl.annotations.MockK
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceTimeBy
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -330,5 +333,235 @@ internal class ConnectionHandlerTest {
         assertEquals(BleDeviceSession.DeviceSessionState.SESSION_OPENING, capturedSessionStates[3])
         assertEquals(BleDeviceSession.DeviceSessionState.SESSION_OPEN, capturedSessionStates[4])
         assertEquals(ConnectionHandler.ConnectionHandlerState.FREE, connectionHandler.state)
+    }
+
+    /**
+     * Builds a second stateful session mock. No GATT callback is produced unless a test
+     * explicitly supplies one, so the handler can be parked in CONNECTING on demand.
+     */
+    private fun newSession(address: String): BDDeviceSessionImpl {
+        val session = mockk<BDDeviceSessionImpl>(relaxed = true)
+        val states = mutableListOf<BleDeviceSession.DeviceSessionState>()
+        every { session.setSessionStates(capture(states)) } just runs
+        every { session.sessionState } answers {
+            states.lastOrNull() ?: BleDeviceSession.DeviceSessionState.SESSION_CLOSED
+        }
+        every { session.address } returns address
+        every { session.isConnectableAdvertisement } returns true
+        every { session.connectionUuids } returns ArrayList()
+        every { session.consecutiveNoCallbackConnects } returns 0
+        every { session.nextConnectAllowedTimeMs } returns 0L
+        every { session.pendingWatchdogCancel } returns false
+        every { session.disconnectReason } returns BleDeviceSession.DisconnectReason.NONE
+        return session
+    }
+
+    @Test
+    fun `connect request arriving while busy is queued and served once handler is free`() = runTest {
+        // Arrange: first session connects but never calls back, pinning the handler in CONNECTING.
+        val busy = newSession("11:11:11:11:11:11")
+        every { mockConnectionInterface.connectDevice(busy) } just runs
+
+        val capturedSessionStates = mutableListOf<BleDeviceSession.DeviceSessionState>()
+        every { mockDeviceSession.setSessionStates(capture(capturedSessionStates)) } just runs
+        every { mockDeviceSession.sessionState } answers {
+            capturedSessionStates.lastOrNull() ?: BleDeviceSession.DeviceSessionState.SESSION_CLOSED
+        }
+
+        connectionHandler.connectDevice(busy, true)
+        assertEquals(ConnectionHandler.ConnectionHandlerState.CONNECTING, connectionHandler.state)
+
+        // Act: a second connect request arrives while busy — previously dropped and never retried.
+        connectionHandler.connectDevice(mockDeviceSession, true)
+        testScope.advanceTimeBy(10)
+        verify(exactly = 0) { mockConnectionInterface.connectDevice(mockDeviceSession) }
+
+        // The blocking session finally disconnects, freeing the handler.
+        connectionHandler.deviceDisconnected(busy)
+        testScope.advanceTimeBy(10)
+
+        // Assert: the queued request was resumed rather than lost.
+        verify(exactly = 1) { mockConnectionInterface.connectDevice(mockDeviceSession) }
+        assertEquals(BleDeviceSession.DeviceSessionState.SESSION_OPEN, mockDeviceSession.sessionState)
+    }
+
+    @Test
+    fun `disabling automatic reconnection drops queued automatic retries but keeps explicit ones`() = runTest {
+        // Arrange: park the handler in CONNECTING so requests queue up.
+        val busy = newSession("11:11:11:11:11:11")
+        every { mockConnectionInterface.connectDevice(busy) } just runs
+        val capturedSessionStates = mutableListOf<BleDeviceSession.DeviceSessionState>()
+        every { mockDeviceSession.setSessionStates(capture(capturedSessionStates)) } just runs
+        every { mockDeviceSession.sessionState } answers {
+            capturedSessionStates.lastOrNull() ?: BleDeviceSession.DeviceSessionState.SESSION_CLOSED
+        }
+        connectionHandler.connectDevice(busy, true)
+
+        // Act: an explicit user request is queued, then automatic reconnection is turned off.
+        connectionHandler.connectDevice(mockDeviceSession, true)
+        connectionHandler.setAutomaticReconnection(false)
+        connectionHandler.deviceDisconnected(busy)
+        testScope.advanceTimeBy(10)
+
+        // Assert: an explicit request survives - only library-scheduled retries are dropped.
+        verify(exactly = 1) { mockConnectionInterface.connectDevice(mockDeviceSession) }
+    }
+
+    @Test
+    fun `duplicate negotiation callback is ignored instead of skipping a stage`() = runTest {
+        // Arrange: re-deliver SERVICES_DISCOVERED once while the attempt is still mid-negotiation
+        // (at the PHY stage), which is where a stale guard timer would land.
+        var duplicateEmitted = false
+        every { mockConnectionInterface.setPhy(any()) } answers {
+            if (!duplicateEmitted) {
+                duplicateEmitted = true
+                connectionHandler.servicesDiscovered(mockDeviceSession)
+            }
+            connectionHandler.phyUpdated(mockDeviceSession)
+        }
+        val capturedSessionStates = mutableListOf<BleDeviceSession.DeviceSessionState>()
+        every { mockDeviceSession.setSessionStates(capture(capturedSessionStates)) } just runs
+        every { mockDeviceSession.sessionState } answers {
+            capturedSessionStates.lastOrNull() ?: BleDeviceSession.DeviceSessionState.SESSION_CLOSED
+        }
+
+        // Act
+        connectionHandler.connectDevice(mockDeviceSession, true)
+
+        // Assert: the out-of-order repeat is rejected, so the PHY stage is not restarted.
+        verify(exactly = 1) { mockConnectionInterface.setPhy(mockDeviceSession) }
+        assertEquals(BleDeviceSession.DeviceSessionState.SESSION_OPEN, mockDeviceSession.sessionState)
+        assertEquals(ConnectionHandler.ConnectionHandlerState.FREE, connectionHandler.state)
+    }
+
+    @Test
+    fun `odd length advertisement uuid payload is rejected without crashing`() = runTest {
+        // Arrange: no UUID matches, and the payload ends in a truncated trailing byte. Walking
+        // past the end previously threw IndexOutOfBoundsException from the advertisement path.
+        val advertisement = BleAdvertisementContent()
+        advertisement.advertisementData[AD_TYPE.GAP_ADTYPE_16BIT_COMPLETE] = byteArrayOf(0x0F, 0x18, 0x0A)
+        every { mockDeviceSession.advertisementContent } returns advertisement
+        every { mockDeviceSession.connectionUuids } returns arrayListOf("180D")
+        every { mockDeviceSession.sessionState } returns BleDeviceSession.DeviceSessionState.SESSION_OPEN_PARK
+
+        // Act
+        connectionHandler.advertisementHeadReceived(mockDeviceSession)
+
+        // Assert: the truncated entry is ignored and the device is simply not connected.
+        verify(exactly = 0) { mockConnectionInterface.connectDevice(mockDeviceSession) }
+        assertEquals(ConnectionHandler.ConnectionHandlerState.FREE, connectionHandler.state)
+    }
+
+    @Test
+    fun `required uuid is matched from either 16 bit advertisement list`() = runTest {
+        // Arrange: the required UUID is only in the MORE list, which the old single-list lookup
+        // could skip entirely.
+        val advertisement = BleAdvertisementContent()
+        advertisement.advertisementData[AD_TYPE.GAP_ADTYPE_16BIT_MORE] = byteArrayOf(0x0F, 0x18)
+        advertisement.advertisementData[AD_TYPE.GAP_ADTYPE_16BIT_COMPLETE] = byteArrayOf(0x0D, 0x18)
+        every { mockDeviceSession.advertisementContent } returns advertisement
+        every { mockDeviceSession.connectionUuids } returns arrayListOf("180D")
+        val capturedSessionStates = mutableListOf<BleDeviceSession.DeviceSessionState>()
+        every { mockDeviceSession.setSessionStates(capture(capturedSessionStates)) } just runs
+        every { mockDeviceSession.sessionState } answers {
+            capturedSessionStates.lastOrNull() ?: BleDeviceSession.DeviceSessionState.SESSION_OPEN_PARK
+        }
+
+        // Act
+        connectionHandler.advertisementHeadReceived(mockDeviceSession)
+
+        // Assert
+        verify(exactly = 1) { mockConnectionInterface.connectDevice(mockDeviceSession) }
+    }
+
+    @Test
+    fun `sessionRemoved frees a handler wedged on the removed session`() = runTest {
+        // Arrange: connection never calls back, so the handler stays in CONNECTING.
+        every { mockConnectionInterface.connectDevice(any()) } just runs
+        val capturedSessionStates = mutableListOf<BleDeviceSession.DeviceSessionState>()
+        every { mockDeviceSession.setSessionStates(capture(capturedSessionStates)) } just runs
+        every { mockDeviceSession.sessionState } answers {
+            capturedSessionStates.lastOrNull() ?: BleDeviceSession.DeviceSessionState.SESSION_CLOSED
+        }
+        connectionHandler.connectDevice(mockDeviceSession, true)
+        assertEquals(ConnectionHandler.ConnectionHandlerState.CONNECTING, connectionHandler.state)
+
+        // Act: the listener drops the session from its tracking list.
+        connectionHandler.sessionRemoved(mockDeviceSession)
+
+        // Assert: GATT released and the handler is usable again instead of wedged forever.
+        verify(exactly = 1) { mockConnectionInterface.cancelDeviceConnection(mockDeviceSession) }
+        verify(exactly = 1) { mockConnectionHandlerObserver.deviceConnectionCancelled(mockDeviceSession) }
+        assertEquals(ConnectionHandler.ConnectionHandlerState.FREE, connectionHandler.state)
+        assertEquals(BleDeviceSession.DeviceSessionState.SESSION_CLOSED, mockDeviceSession.sessionState)
+    }
+
+    @Test
+    fun `dispatchGattCallback runs the action only for the session's current gatt`() {
+        val currentGatt = mockk<android.bluetooth.BluetoothGatt>(relaxed = true)
+        val staleGatt = mockk<android.bluetooth.BluetoothGatt>(relaxed = true)
+        every { mockDeviceSession.gatt } returns currentGatt
+
+        var currentRan = false
+        var staleRan = false
+        connectionHandler.dispatchGattCallback(mockDeviceSession, currentGatt) { currentRan = true }
+        connectionHandler.dispatchGattCallback(mockDeviceSession, staleGatt) { staleRan = true }
+
+        assertEquals(true, currentRan)
+        // A callback from a GATT object a reconnect already replaced must never reach the
+        // state machine of the new connection.
+        assertEquals(false, staleRan)
+    }
+
+    @Test
+    fun `dispatchGattCallback drops events queued before a power off`() {
+        val gatt = mockk<android.bluetooth.BluetoothGatt>(relaxed = true)
+        every { mockDeviceSession.gatt } returns gatt
+        connectionHandler.blePoweredOff()
+
+        var ran = false
+        connectionHandler.dispatchGattCallback(mockDeviceSession, gatt) { ran = true }
+
+        assertEquals(false, ran)
+    }
+
+    @Test
+    fun `blePoweredOff frees a handler wedged on a session the listener no longer tracks`() = runTest {
+        // Arrange: connection never calls back, so the handler stays pinned on this session.
+        every { mockConnectionInterface.connectDevice(any()) } just runs
+        val capturedSessionStates = mutableListOf<BleDeviceSession.DeviceSessionState>()
+        every { mockDeviceSession.setSessionStates(capture(capturedSessionStates)) } just runs
+        every { mockDeviceSession.sessionState } answers {
+            capturedSessionStates.lastOrNull() ?: BleDeviceSession.DeviceSessionState.SESSION_CLOSED
+        }
+        connectionHandler.connectDevice(mockDeviceSession, true)
+        assertEquals(ConnectionHandler.ConnectionHandlerState.CONNECTING, connectionHandler.state)
+
+        // Act: power off, passing an EMPTY tracked list – the session is only known as 'current'.
+        connectionHandler.blePoweredOff(emptyList())
+
+        // Assert: a Bluetooth toggle clears the wedge instead of needing an app restart.
+        verify(exactly = 1) { mockConnectionInterface.cancelDeviceConnection(mockDeviceSession) }
+        assertEquals(ConnectionHandler.ConnectionHandlerState.FREE, connectionHandler.state)
+        assertEquals(BleDeviceSession.DeviceSessionState.SESSION_OPEN_PARK, mockDeviceSession.sessionState)
+    }
+
+    @Test
+    fun `connect requests are ignored while powered off and direct reconnect resumes on power on`() = runTest {
+        val session = newSession("22:22:22:22:22:22")
+        every { session.directConnect } returns true
+        connectionHandler.blePoweredOff(emptyList())
+
+        // Act: a connect attempt while the adapter is down must not reach the GATT layer.
+        connectionHandler.connectDevice(session, true)
+        verify(exactly = 0) { mockConnectionInterface.connectDevice(session) }
+
+        // Park it so it is eligible for the automatic direct reconnect on power on.
+        session.setSessionStates(BleDeviceSession.DeviceSessionState.SESSION_OPEN_PARK)
+        connectionHandler.blePoweredOn(listOf(session))
+        testScope.advanceTimeBy(10_000)
+        testScope.runCurrent()
+
+        verify(exactly = 1) { mockConnectionInterface.connectDevice(session) }
     }
 }

@@ -30,6 +30,24 @@ internal class GattCallback(
         scope.cancel()
     }
 
+    /**
+     * Hand a connection-state event to the [ConnectionHandler] only if it still belongs to the
+     * session's current GATT. Android keeps delivering events from a GATT object that a reconnect
+     * has already replaced; those must not drive the state machine of the new connection. The
+     * delayed variants are especially exposed, since a reconnect can happen during the delay.
+     */
+    private fun postGattEvent(
+        session: BDDeviceSessionImpl,
+        gatt: BluetoothGatt,
+        delayMs: Long = 0L,
+        action: () -> Unit
+    ) {
+        scope.launch {
+            if (delayMs > 0) delay(delayMs)
+            connectionHandler.dispatchGattCallback(session, gatt) { action() }
+        }
+    }
+
     companion object {
         private const val TAG = "GattCallback"
         private const val GATT_CONNECTION_L2C_FAILURE = 22
@@ -88,15 +106,14 @@ internal class GattCallback(
             if (newState == BluetoothGatt.STATE_CONNECTED) {
                 if (status == BluetoothGatt.GATT_SUCCESS) {
                     deviceSession.clearDisconnectReason()
-                    scope.launch {
-                        delay(CONNECTION_PARAMETER_NEGOTIATION_WAIT_DELAY)
+                    postGattEvent(deviceSession, gatt, CONNECTION_PARAMETER_NEGOTIATION_WAIT_DELAY) {
                         deviceSession.markBondedAtConnection(
                             deviceSession.bluetoothDevice.bondState == android.bluetooth.BluetoothDevice.BOND_BONDED
                         )
                         connectionHandler.connectionInitialized(deviceSession)
                     }
                 } else {
-                    scope.launch { connectionHandler.deviceDisconnected(deviceSession) }
+                    postGattEvent(deviceSession, gatt) { connectionHandler.deviceDisconnected(deviceSession) }
                 }
             } else if (newState == BluetoothGatt.STATE_DISCONNECTED) {
                 val hadPendingDeviceCommand = deviceSession.isExpectedDeviceCommandDisconnectStillValid()
@@ -134,8 +151,7 @@ internal class GattCallback(
                 // Classify before the feature monitor can observe the disconnect;
                 // otherwise a terminal pairing failure can be parked for reconnect.
                 deviceSession.markDisconnect(disconnectReason, status)
-                scope.launch {
-                    delay(CONNECTION_PARAMETER_NEGOTIATION_WAIT_DELAY)
+                postGattEvent(deviceSession, gatt, CONNECTION_PARAMETER_NEGOTIATION_WAIT_DELAY) {
                     connectionHandler.deviceDisconnected(deviceSession)
                 }
             }
@@ -167,13 +183,12 @@ internal class GattCallback(
 
         if (status == BluetoothGatt.GATT_SUCCESS) {
             deviceSession.handleServicesDiscovered()
-            scope.launch {
-                delay(CONNECTION_PARAMETER_NEGOTIATION_WAIT_DELAY)
+            postGattEvent(deviceSession, gatt, CONNECTION_PARAMETER_NEGOTIATION_WAIT_DELAY) {
                 connectionHandler.servicesDiscovered(deviceSession)
             }
         } else {
             BleLogger.e(TAG, "service discovery failed: $status")
-            scope.launch { connectionHandler.disconnectDevice(deviceSession) }
+            postGattEvent(deviceSession, gatt) { connectionHandler.disconnectDevice(deviceSession) }
         }
     }
 
@@ -291,7 +306,7 @@ internal class GattCallback(
         val deviceSession = sessions.getSession(gatt)
         if (deviceSession != null) {
             deviceSession.handleMtuChanged(mtu, status)
-            scope.launch { connectionHandler.mtuUpdated(deviceSession) }
+            postGattEvent(deviceSession, gatt) { connectionHandler.mtuUpdated(deviceSession) }
         } else {
             BleLogger.e(TAG, "Dead gatt event?")
             gatt.close()
@@ -302,7 +317,7 @@ internal class GattCallback(
         BleLogger.d(TAG, " phy updated tx: $txPhy rx: $rxPhy status: $status")
         val deviceSession = sessions.getSession(gatt)
         if (deviceSession != null) {
-            scope.launch { connectionHandler.phyUpdated(deviceSession) }
+            postGattEvent(deviceSession, gatt) { connectionHandler.phyUpdated(deviceSession) }
         }
     }
 
@@ -310,7 +325,7 @@ internal class GattCallback(
         BleLogger.d(TAG, " phy read tx: $txPhy rx: $rxPhy status: $status")
         val deviceSession = sessions.getSession(gatt)
         if (deviceSession != null) {
-            scope.launch { connectionHandler.phyUpdated(deviceSession) }
+            postGattEvent(deviceSession, gatt) { connectionHandler.phyUpdated(deviceSession) }
         }
     }
 

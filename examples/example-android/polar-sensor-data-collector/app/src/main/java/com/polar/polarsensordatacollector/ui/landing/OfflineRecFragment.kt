@@ -218,6 +218,7 @@ class OfflineRecFragment : Fragment(R.layout.fragment_offline_rec) {
     private fun startAllSelected() {
         val recordingsToStart = mutableListOf<PolarDeviceDataType>()
         for (feature in PolarDeviceDataType.values()) {
+            if (feature == PolarDeviceDataType.DERIVED_MEASUREMENT) continue
             val cb = getOfflineRecCheckBox(feature)
             if (cb.isEnabled && cb.isChecked) {
                 recordingsToStart.add(feature)

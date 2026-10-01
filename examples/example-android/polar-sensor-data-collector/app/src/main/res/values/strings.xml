@@ -14,17 +14,28 @@
     <string name="submit">Submit</string>
     <string name="settings">Settings</string>
     <string name="sdk_mode_header">SDK mode</string>
+    <string name="sdk_mode_enable">Enable SDK mode</string>
+    <string name="sdk_mode_disable">Disable SDK mode</string>
     <string name="sdk_mode_led_header">SDK mode LED animation</string>
+    <string name="sdk_mode_led_enable">Enable SDK mode led animation</string>
+    <string name="sdk_mode_led_disable">Disable SDK mode led animation</string>
     <string name="ppi_mode_led_header">PPI mode LED animation</string>
+    <string name="ppi_mode_led_enable">Enable PPI mode led animation</string>
+    <string name="ppi_mode_led_disable">Disable PPI mode led animation</string>
     <string name="device_to_host_notifications_header">Device to host notifications</string>
+    <string name="device_to_host_notifications_start">Start observing device notifications</string>
+    <string name="device_to_host_notifications_stop">Stop observing device notifications</string>
     <string name="stream_settings_header">Data selection and settings</string>
     <string name="menu_settings">Settings</string>
     <string name="menu_about">About</string>
     <string name="title_activity_settings">Settings</string>
     <string name="do_physical_config_header">Do physical config</string>
+    <string name="do_physical_config_button">Do physical data config</string>
     <string name="do_restart_header">Do restart</string>
     <string name="get_ftu_header">Get FTU status</string>
-    <string name="do_file_delete_header">Delete files</string>
+    <string name="get_physical_config_button">Get physical data config</string>
+    <string name="get_ftu_status_button">Get FTU status</string>
+    <string name="do_file_delete_button">Delete data</string>
     <string name="do_date_folder_delete_header">Delete date folders</string>
     <string name="do_date_folder_delete_button">Select dates to delete folders</string>
     <string name="do_telemetry_delete_header">Delete telemetry data</string>
@@ -54,6 +65,10 @@
     <string name="fetch_errorlog">Fetch errorlog</string>
     <string name="errorlog_exported_mail_subject">Errorlog exported with PSDC</string>
     <string name="errorlog_exported_mail_text">Hello,\n Errorlog exported as an attachment</string>
+    <string name="wait_for_connection">Wait for connection</string>
+    <string name="hr_sensor_text">Enter HR sensor type and device id</string>
+    <string name="hr_sensor_title">Set HR sensor log device</string>
+    <string name="hr_sensor_log_updated">HR sensor log config updated</string>
     <string name="choose_email_app">Choose email app</string>
     <string name="device_id">Device Id: %1$s</string>
     <string name="activity_rec_picker_header">Choose measurement type</string>
@@ -76,6 +91,7 @@
     <string name="title_activity_exercise_activity">Exercise activity</string>
     <string name="set_exercise_button_header">Start Exercise</string>
     <string name="set_exercise_header">Exercise</string>
+    <string name="set_exercise_button">Set up exercise</string>
 
     <string name="exercise_title">Exercise</string>
     <string name="exercise_title_running">Exercise: %1$s</string>
@@ -181,6 +197,9 @@
     <string name="sleep_recording_state_unavailable">Sleep recording</string>
     <string name="sleep_recording_state_on">Sleep recording on</string>
     <string name="sleep_recording_state_off">Sleep recording off</string>
+    <string name="sleep_recording_state_unknown">Sleep recording unknown</string>
+    <string name="sleep_recording_status_info">Sleep recording status: %1$s</string>
+    <string name="sleep_recording_status_fetch_failed">Failed to get sleep recording status.</string>
 
     <!-- Firmware update -->
     <string name="do_firmware_update">Do firmware update</string>
@@ -246,9 +265,14 @@
     
     <!-- BLE multi connection -->
     <string name="ble_enable_disable">Set BLE multi connection mode</string>
+    <string name="ble_multi_connection_enable">Enable multi BLE mode</string>
+    <string name="ble_multi_connection_disable">Disable multi BLE mode</string>
 
-    <!-- BLE multi connection -->
+
+    <!-- Sensor initiated security mode -->
     <string name="sensor_initiated_security_mode_enable_disable">Set sensor initiated security mode</string>
+    <string name="sensor_initiated_security_mode_enable">Enable sensor initiated security mode</string>
+    <string name="sensor_initiated_security_mode_disable">Disable sensor initiated security mode</string>
 
     <!-- Activity Recording -->
     <string name="active_time_result_text">"Active time result"</string>
@@ -295,6 +319,7 @@
 
     <!-- User device settings -->
     <string name="do_device_user_location_settings">Set user device settings</string>
+    <string name="do_user_device_settings_button">Do user device settings config</string>
     <string name="set_device_user_settings_header">User Device Settings</string>
     <string name="set_device_user_location">Set user device location</string>
     <string name="user_device_settings_not_saved">User device settings not saved</string>
@@ -363,8 +388,11 @@
     <string name="setup_triggers">Set up triggers</string>
     <string name="get_lowercase">Get</string>
     <string name="time_settings">Time settings</string>
+    <string name="get_time">Get time</string>
+    <string name="set_time">Set time</string>
     <string name="read">Read</string>
-    <string name="offline_recording_enable_encryption">Offline recording enable encryption</string>
+    <string name="offline_recording_enable_encryption">Enable offline recording encryption</string>
+    <string name="offline_recording_disable_encryption">Disable offline recording encryption</string>
     <string name="do_firmware_update_short">Do FWU</string>
     <string name="firmware_update_status">Firmware update status:</string>
     <string name="status_not_started_lowercase">Not started</string>
@@ -386,7 +414,6 @@
     <string name="generic_api_do_write_file_data">File data to write</string>
     <string name="generic_api_do_list_files">List files from path</string>
     <string name="generic_api_do_delete_file">Delete file or directory</string>
-    <string name="generic_api_open_view">Open</string>
     <string name="generic_api_title">Experimental Low Level Api</string>
     <string name="generic_api_button_read">Read</string>
     <string name="generic_api_button_write">Write</string>
@@ -400,7 +427,7 @@
     <string name="charge_state_header">Read charge state</string>
 
     <!-- BLE connection API texts -->
-    <string name="ble_check_conn_api_title">Ble disconnected due to error?</string>
+    <string name="ble_check_conn_api_title">BLE disconnected due to error?</string>
     
     <!-- BLE RSSI API texts -->
     <string name="ble_signal_strength_header">Get BLE signal strength</string>

@@ -26,7 +26,11 @@ struct ContentView: View {
     @State private var presenting: Bool = false
     @State private var presentedMessageText: String = ""
     @State private var shownMessageIds: Set<UUID> = []
-    
+
+    @State private var isShareSheetPresented = false
+    @State private var appLogFileURL: URL?
+    @State private var showBuildInfoActions = false
+
     var body: some View {
         
         Spacer()
@@ -44,6 +48,25 @@ struct ContentView: View {
                 .onTapGesture {
                     toggleBuildInformation()
                 }
+            if showBuildInfoActions {
+                Button("Export PSDC app logs") {
+                    if appLogFileURL == nil {
+                        appLogFileURL = AppLogger.ensureLogFile()
+                    }
+                    isShareSheetPresented = true
+                }
+                .buttonStyle(SecondaryButtonStyle(buttonState: .released))
+                .padding(.top, 4)
+                .sheet(isPresented: $isShareSheetPresented) {
+                    if let url = appLogFileURL {
+                        ExportLogsView(text: "Export PSDC app logs", fileURL: url)
+                    } else {
+                        Text("No Application logs available.")
+                            .padding()
+                    }
+                }
+                Spacer()
+            }
             VStack(spacing: 10) {
                 if !bleSdkManager.isBluetoothOn {
                     Text("Bluetooth OFF")
@@ -205,9 +228,11 @@ struct ContentView: View {
     }
     
     func toggleBuildInformation() {
+        appLogFileURL = AppLogger.ensureLogFile()
         if appHeader == NSLocalizedString("APP_NAME", comment: "") {
             
             appHeader = NSLocalizedString("APP_NAME", comment: "") + "\n" + getBuildInfo()
+            showBuildInfoActions = true
             
             let appLocalModifications =
                 Bundle.main.object(forInfoDictionaryKey: "GIT_APP_LOCALLY_MODIFIED") as? String ?? ""
@@ -225,6 +250,7 @@ struct ContentView: View {
         } else {
             appHeader = NSLocalizedString("APP_NAME", comment: "")
             localModifications = ""
+            showBuildInfoActions = false
         }
     }
     

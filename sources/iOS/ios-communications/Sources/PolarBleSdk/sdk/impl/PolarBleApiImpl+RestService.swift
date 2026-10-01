@@ -185,15 +185,23 @@ extension PolarBleApiImpl: PolarRestServiceApi {
 
     func receiveRestApiEvents<T: Decodable>(identifier: String) -> AsyncThrowingStream<[T], Error> {
         logApiCall("receiveRestApiEvents", ("identifier", identifier))
+        // Resolve the client and create the upstream synchronously so the underlying
+        // waitNotification() subscriber is registered as soon as this stream is created,
+        // before any subscribe command is sent by the caller.
+        let upstream: AsyncThrowingStream<[T], Error>
+        do {
+            let session = try self.serviceClientUtils.sessionFtpClientReady(identifier)
+            guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
+                return AsyncThrowingStream { $0.finish(throwing: PolarErrors.serviceNotFound) }
+            }
+            upstream = client.receiveRestApiEvents(identifier: identifier)
+        } catch {
+            return AsyncThrowingStream { $0.finish(throwing: error) }
+        }
         return AsyncThrowingStream { continuation in
             let task = Task {
                 do {
-                    let session = try self.serviceClientUtils.sessionFtpClientReady(identifier)
-                    guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
-                        continuation.finish(throwing: PolarErrors.serviceNotFound)
-                        return
-                    }
-                    for try await items in client.receiveRestApiEvents(identifier: identifier) as AsyncThrowingStream<[T], Error> {
+                    for try await items in upstream {
                         continuation.yield(items)
                     }
                     continuation.finish()

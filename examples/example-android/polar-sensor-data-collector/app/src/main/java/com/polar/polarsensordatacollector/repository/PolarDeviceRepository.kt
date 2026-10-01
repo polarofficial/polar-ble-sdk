@@ -1,6 +1,8 @@
 package com.polar.polarsensordatacollector.repository
 
+import android.app.Activity
 import android.content.Context
+import android.content.IntentSender
 import android.net.Uri
 import android.util.Log
 import com.polar.polarsensordatacollector.R
@@ -26,6 +28,7 @@ import com.polar.sdk.api.PolarDeviceTelemetryType
 import com.polar.sdk.api.model.*
 import com.polar.sdk.api.model.activity.PolarStepsData
 import com.polar.sdk.api.model.sleep.PolarSleepData
+import com.polar.sdk.api.model.sleep.PolarSleepRecordingStatus
 import com.polar.sdk.impl.BDBleApiImpl
 import com.polar.sdk.api.model.PolarUserDeviceSettings
 import com.polar.sdk.api.model.activity.PolarCaloriesData
@@ -548,6 +551,18 @@ class PolarDeviceRepository @Inject constructor(
         _deviceSupportsSettings.update { polarDeviceInfo.hasSAGRFCFileSystem }
         perDeviceSupportsSettings[polarDeviceInfo.deviceId] = polarDeviceInfo.hasSAGRFCFileSystem
         _deviceConnectionStatus.update { DeviceConnectionState.DeviceConnecting(identifier = polarDeviceInfo.deviceId) }
+    }
+
+    // The SDK observes companion device presence automatically for every connected device when
+    // FEATURE_COMPANION_DEVICE_MANAGEMENT is enabled (see PolarBleSdkModule). These are diagnostic
+    // hints only; the SDK never reconnects on its own based on them, so the app is free to ignore
+    // them entirely, or use them to prioritize a reconnection attempt for `identifier`.
+    override fun polarCompanionDeviceAppeared(identifier: String) {
+        Log.d(TAG, "Companion device appeared (in BLE range): $identifier")
+    }
+
+    override fun polarCompanionDeviceDisappeared(identifier: String) {
+        Log.d(TAG, "Companion device disappeared (out of BLE range): $identifier")
     }
 
     override fun deviceConnecting(polarDeviceInfo: PolarDeviceInfo) {
@@ -1198,11 +1213,11 @@ class PolarDeviceRepository @Inject constructor(
         enabled
     }
 
-    suspend fun getMultiBleModeEnabled(identifier: String): Boolean = withContext(Dispatchers.IO) {
+    suspend fun getMultiBleModeEnabled(identifier: String): Boolean? = withContext(Dispatchers.IO) {
         getBleMultiConnectionMode(identifier)
     }
 
-    suspend fun getSensorInitiatedSecurityModeEnabled(identifier: String): Boolean = withContext(Dispatchers.IO) {
+    suspend fun getSensorInitiatedSecurityModeEnabled(identifier: String): Boolean? = withContext(Dispatchers.IO) {
         getSensorInitiatedSecurityMode(identifier)
     }
 
@@ -1214,6 +1229,7 @@ class PolarDeviceRepository @Inject constructor(
         } else {
             security.removeKey(identifier)
         }
+        _isOfflineRecordingSecurityEnabled.update { enable }
     }
 
     suspend fun getLogConfig(identifier: String): ResultOfRequest<LogConfig> = withContext(Dispatchers.IO) {
@@ -1241,27 +1257,27 @@ class PolarDeviceRepository @Inject constructor(
         }
     }
 
-    fun observeSleepRecordingState(identifier: String): Flow<Boolean> {
-        return api.observeSleepRecordingState(identifier).map { it.last() }
+    fun observeSleepRecordingStatus(identifier: String): Flow<PolarSleepRecordingStatus> {
+        return api.observeSleepRecordingStatus(identifier).map { it.last() }
     }
 
     suspend fun forceStopSleep(identifier: String): ResultOfRequest<Boolean?> = withContext(Dispatchers.IO) {
         return@withContext try {
             api.stopSleepRecording(identifier)
-            val state = api.getSleepRecordingState(identifier)
-            if (state) {
+            val stillRecording = api.getSleepRecordingStatus(identifier) == PolarSleepRecordingStatus.ENABLED
+            if (stillRecording) {
                 ResultOfRequest.Failure("Stopping sleep failed for $identifier", throwable = null)
             } else {
-                ResultOfRequest.Success(state)
+                ResultOfRequest.Success(false)
             }
         } catch (e: Exception) {
             ResultOfRequest.Failure(e.message.toString(), e)
         }
     }
 
-    suspend fun getSleepRecordingState(identifier: String): ResultOfRequest<Boolean> = withContext(Dispatchers.IO) {
+    suspend fun getSleepRecordingStatus(identifier: String): ResultOfRequest<PolarSleepRecordingStatus> = withContext(Dispatchers.IO) {
         return@withContext try {
-            ResultOfRequest.Success(api.getSleepRecordingState(identifier, 5000))
+            ResultOfRequest.Success(api.getSleepRecordingStatus(identifier, 5000))
         } catch (e: Exception) {
             ResultOfRequest.Failure(e.message.toString(), e)
         }
@@ -1446,25 +1462,25 @@ class PolarDeviceRepository @Inject constructor(
         }
     }
 
-    private suspend fun getBleMultiConnectionMode(identifier: String): Boolean {
+    private suspend fun getBleMultiConnectionMode(identifier: String): Boolean? {
         return try {
             val result = api.getMultiBLEConnectionMode(identifier)
             _isMultiBleModeEnabled.update { result }
             result
         } catch (e: Exception) {
             Log.e(TAG, "getBleMultiConnectionMode failed. Error $e")
-            false
+            null
         }
     }
 
-    private suspend fun getSensorInitiatedSecurityMode(identifier: String): Boolean {
+    private suspend fun getSensorInitiatedSecurityMode(identifier: String): Boolean? {
         return try {
             val result = api.getSensorInitiatedSecurityMode(identifier)
             _isSensorInitiatedSecurityModeEnabled.update { result }
             result
         } catch (e: Exception) {
             Log.e(TAG, "getSensorInitiatedSecurityMode failed. Error $e")
-            false
+            null
         }
     }
 

@@ -178,18 +178,16 @@ class CBDeviceSessionImpl: BleDeviceSession, CBPeripheralDelegate, BleAttributeT
         if( peripheral.state == CBPeripheralState.connected ) {
             if let service = fetchService(serviceUuid) {
                 if let characteristic = fetchCharacteristic(service, characteristicUuid: characteristicUuid) {
-                    if( withResponse && (characteristic.properties.rawValue) & CBCharacteristicProperties.write.rawValue != 0 ) {
-                        peripheral.writeValue(packet, for: characteristic, type: CBCharacteristicWriteType.withResponse)
-                    } else if( characteristic.properties.rawValue & CBCharacteristicProperties.writeWithoutResponse.rawValue != 0){
-                        if(peripheral.canSendWriteWithoutResponse) {
-                            peripheral.writeValue(packet, for: characteristic, type:CBCharacteristicWriteType.withoutResponse)
-                            parent.serviceDataWritten(characteristicUuid, err: 0)
-                        } else {
-                            // Store the pending write — peripheralIsReady will execute it when the peripheral is ready
-                            pendingWriteData = (packet, characteristic, parent, characteristicUuid)
-                        }
-                    } else {
-                        throw BleGattException.gattCharacteristicError
+                    let sent = try Self.transmitPacket(
+                        packet, for: characteristic, withResponse: withResponse,
+                        canSendWriteWithoutResponse: peripheral.canSendWriteWithoutResponse,
+                        maximumWriteWithResponseLength: peripheral.maximumWriteValueLength(for: .withResponse),
+                        writeValue: peripheral.writeValue,
+                        acknowledge: { parent.serviceDataWritten(characteristicUuid, err: 0) }
+                    )
+                    if !sent {
+                        // Only unsent packets may be replayed by peripheralIsReady.
+                        pendingWriteData = (packet, characteristic, parent, characteristicUuid)
                     }
                     return
                 }
@@ -199,7 +197,51 @@ class CBDeviceSessionImpl: BleDeviceSession, CBPeripheralDelegate, BleAttributeT
         }
         throw BleGattException.gattDisconnected
     }
-    
+
+    /// Returns false only when the packet must wait for peripheralIsReady.
+    /// Acknowledged writes (including fallback) complete exclusively via didWriteValueFor;
+    /// only write-without-response is acknowledged locally after submitting the packet.
+    /// Readiness and size limits are evaluated lazily, only when needed.
+    static func transmitPacket(
+        _ packet: Data,
+        for characteristic: CBCharacteristic,
+        withResponse: Bool,
+        canSendWriteWithoutResponse: @autoclosure () -> Bool,
+        maximumWriteWithResponseLength: @autoclosure () -> Int,
+        writeValue: (Data, CBCharacteristic, CBCharacteristicWriteType) -> Void,
+        acknowledge: () -> Void,
+        log: (String) -> Void = { BleLogger.trace($0) }
+    ) throws -> Bool {
+        if withResponse && characteristic.properties.contains(.write) {
+            writeValue(packet, characteristic, .withResponse)
+            return true
+        }
+        guard characteristic.properties.contains(.writeWithoutResponse) else {
+            throw BleGattException.gattCharacteristicError
+        }
+        if canSendWriteWithoutResponse() {
+            writeValue(packet, characteristic, .withoutResponse)
+            acknowledge()
+            return true
+        }
+
+        let context = "chr=\(characteristic.uuid.uuidString) bytes=\(packet.count)"
+        guard characteristic.properties.contains(.write) else {
+            log("BLE write parked: \(context), canSendWriteWithoutResponse=false; write-with-response unsupported; waiting for peripheralIsReady")
+            return false
+        }
+        let limit = maximumWriteWithResponseLength()
+        guard packet.count <= limit else {
+            log("BLE write parked: \(context), canSendWriteWithoutResponse=false; exceeds withResponseLimit=\(limit); waiting for peripheralIsReady")
+            return false
+        }
+        // CoreBluetooth may never send peripheralIsReady on some phones. Prefer the
+        // acknowledged path over forcing a write while its no-response buffer is full.
+        log("BLE write fallback: \(context), canSendWriteWithoutResponse=false, withResponseLimit=\(limit); using write-with-response, awaiting didWriteValueFor")
+        writeValue(packet, characteristic, .withResponse)
+        return true
+    }
+
     func doReadValue(_ parent: BleGattClientBase, serviceUuid: CBUUID , characteristicUuid: CBUUID ) throws{
         if( peripheral.state == CBPeripheralState.connected ) {
             if let service = fetchService(serviceUuid) {
@@ -321,6 +363,7 @@ class CBDeviceSessionImpl: BleDeviceSession, CBPeripheralDelegate, BleAttributeT
                 } else {
                     BleLogger.error("Service has no characteristics")
                 }
+                client.setCharacteristicsDiscovered(true)
             }
             serviceMonitors.yield(service.uuid)
             if serviceCount.get() >= (peripheral.services?.count)! {
@@ -350,7 +393,7 @@ class CBDeviceSessionImpl: BleDeviceSession, CBPeripheralDelegate, BleAttributeT
     }
     
     func peripheral(_ peripheral: CBPeripheral, didWriteValueFor characteristic: CBCharacteristic, error: Error?) {
-        BleLogger.trace_if_error("didWriteValueForCharacteristic: ", error: error)
+        BleLogger.trace_if_error("didWriteValueForCharacteristic \(characteristic.uuid.uuidString): ", error: error)
         handlePeripheralError(error)
         if let serviceUuid = characteristic.service?.uuid, let client = fetchGattClient(serviceUuid) {
             if client.containsCharacteristic(characteristic.uuid) {

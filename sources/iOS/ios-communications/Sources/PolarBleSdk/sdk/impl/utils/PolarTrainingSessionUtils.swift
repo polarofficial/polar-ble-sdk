@@ -19,7 +19,7 @@ internal class PolarTrainingSessionUtils {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyyMMddHHmmss"
         formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.timeZone = TimeZone(abbreviation: "UTC")
+        formatter.timeZone = TimeZone.current
         return formatter
     }()
     
@@ -28,8 +28,13 @@ internal class PolarTrainingSessionUtils {
         fromDate: Date? = nil,
         toDate: Date? = nil
     ) async throws -> [PolarTrainingSessionReference] {
-        if let from = fromDate, let to = toDate, to < from {
-            BleLogger.error("getTrainingSessions: Invalid date range: toDate \(to) is before fromDate \(from)")
+        // Allow callers to omit either bound: nil defaults to the widest possible
+        // range so callers can request "everything up to X" or "everything from X" onward.
+        let fromDate = fromDate ?? Date.distantPast
+        let toDate = toDate ?? Date.distantFuture
+
+        if toDate < fromDate {
+            BleLogger.error("getTrainingSessions: Invalid date range: toDate \(toDate) is before fromDate \(fromDate)")
             throw PolarErrors.invalidArgument(description: "toDate must be greater than or equal to fromDate")
         }
 
@@ -40,8 +45,17 @@ internal class PolarTrainingSessionUtils {
         let entries = try await fetchRecursive(ARABICA_USER_ROOT_FOLDER, client: client) { name in
             return name.range(of: #"^(\d{8}/|\d{6}/|.*\.BPB|.*\.GZB|E/|\d+/)$"#, options: .regularExpression) != nil
         }
-        
-        for (path, size) in entries {
+
+        // Process training session summary files before exercise files.
+        // An exercise is attached only if its summary reference already exists.
+        let sortedEntries = entries.sorted { lhs, rhs in
+            let lhsIsSummary = lhs.name.hasSuffix(PolarTrainingSessionDataTypes.trainingSessionSummary.rawValue)
+            let rhsIsSummary = rhs.name.hasSuffix(PolarTrainingSessionDataTypes.trainingSessionSummary.rawValue)
+            if lhsIsSummary == rhsIsSummary { return false }
+            return lhsIsSummary
+        }
+
+        for (path, size) in sortedEntries {
             let fileName = (path as NSString).lastPathComponent
             if let dataType = PolarTrainingSessionDataTypes(rawValue: fileName) {
                 let regex = try! NSRegularExpression(pattern: "/U/0/(\\d{8})/E/(\\d{6})/TSESS.BPB$")
@@ -51,10 +65,10 @@ internal class PolarTrainingSessionUtils {
                     let dateTimeStr = dateStr + timeStr
                     let dateTime = dateTimeFormatter.date(from: dateTimeStr) ?? Date()
                     let dateAtPath = Calendar.current.dateComponents([.year, .month, .day], from: dateFormatter.date(from: dateStr) ?? Date())
-                    let effectiveFrom = fromDate.map { Calendar.current.dateComponents([.year, .month, .day], from: $0) }
-                    let effectiveTo = toDate.map { Calendar.current.dateComponents([.year, .month, .day], from: $0) }
-                    let afterFrom = effectiveFrom.map { dateAtPath >= $0 } ?? true
-                    let beforeTo = effectiveTo.map { dateAtPath <= $0 } ?? true
+                    let effectiveFrom = Calendar.current.dateComponents([.year, .month, .day], from: fromDate.addingTimeInterval(TimeInterval(TimeZone.current.secondsFromGMT(for: fromDate))))
+                    let effectiveTo = Calendar.current.dateComponents([.year, .month, .day], from: toDate.addingTimeInterval(TimeInterval(TimeZone.current.secondsFromGMT(for: toDate))))
+                    let afterFrom = dateAtPath >= effectiveFrom
+                    let beforeTo = dateAtPath <= effectiveTo
                     let dateMatches = afterFrom && beforeTo
                     if dateMatches {
                         trainingSessionSummaryPaths.insert(path)
@@ -76,6 +90,7 @@ internal class PolarTrainingSessionUtils {
                     let dateStr = String(path[Range(match.range(at: 1), in: path)!])
                     let timeStr = String(path[Range(match.range(at: 2), in: path)!])
                     let exerciseFolder = String(path[Range(match.range(at: 3), in: path)!])
+                    let exerciseIndex = Int(exerciseFolder) ?? 0
                     let fullExercisePath = "/U/0/\(dateStr)/E/\(timeStr)/\(exerciseFolder)"
                     let summaryPrefix = "/U/0/\(dateStr)/E/\(timeStr)"
                     let possibleSummaries = trainingSessionSummaryPaths.filter { $0.hasPrefix(summaryPrefix) }
@@ -83,13 +98,31 @@ internal class PolarTrainingSessionUtils {
                        let index = updatedReferences.firstIndex(where: { $0.path == tseSsPath }) {
                         updatedReferences[index].fileSize += Int64(size)
                         if let existingIndex = updatedReferences[index].exercises.firstIndex(where: { $0.path == fullExercisePath }) {
-                            var existing = updatedReferences[index].exercises[existingIndex]
-                            if !existing.exerciseDataTypes.contains(exerciseDataType) {
-                                existing.exerciseDataTypes.append(exerciseDataType)
-                                updatedReferences[index].exercises[existingIndex] = existing
+                            let existing = updatedReferences[index].exercises[existingIndex]
+                            var dataTypes = existing.exerciseDataTypes
+                            if !dataTypes.contains(exerciseDataType) {
+                                dataTypes.append(exerciseDataType)
                             }
+                            var fileSizes = existing.fileSizes ?? [:]
+                            fileSizes[exerciseDataType.rawValue] = Int64(size)
+                            updatedReferences[index].exercises[existingIndex] = PolarExercise(
+                                index: existing.index,
+                                path: existing.path,
+                                exerciseDataTypes: dataTypes,
+                                exerciseSummary: existing.exerciseSummary,
+                                route: existing.route,
+                                routeAdvanced: existing.routeAdvanced,
+                                samples: existing.samples,
+                                samplesAdvanced: existing.samplesAdvanced,
+                                fileSizes: fileSizes
+                            )
                         } else {
-                            updatedReferences[index].exercises.append(PolarExercise(index: 0, path: fullExercisePath, exerciseDataTypes: [exerciseDataType]))
+                            updatedReferences[index].exercises.append(PolarExercise(
+                                index: exerciseIndex,
+                                path: fullExercisePath,
+                                exerciseDataTypes: [exerciseDataType],
+                                fileSizes: [exerciseDataType.rawValue: Int64(size)]
+                            ))
                         }
                     }
                 }
@@ -164,6 +197,10 @@ internal class PolarTrainingSessionUtils {
     
     static func deleteTrainingSession(client: BlePsFtpClient, reference: PolarTrainingSessionReference) async throws {
         let components = reference.path.split(separator: "/")
+        // Expected path format: /U/0/<date>/E/<time>/... → components[2]=<date>, components[4]=<time>
+        guard components.count >= 3 else {
+            throw PolarErrors.invalidArgument(description: "deleteTrainingSession: unexpected path format '\(reference.path)' (expected at least 3 components, got \(components.count))")
+        }
         var operation = Protocol_PbPFtpOperation()
         operation.command = .get
         operation.path = "/U/0/" + components[2] + "/E/"
@@ -174,6 +211,9 @@ internal class PolarTrainingSessionUtils {
         if dir.entries.count <= 1 {
             removeOperation.path = "/U/0/" + components[2] + "/E/"
         } else {
+            guard components.count >= 5 else {
+                throw PolarErrors.invalidArgument(description: "deleteTrainingSession: path '\(reference.path)' too short to resolve exercise sub-path (need at least 5 components, got \(components.count))")
+            }
             removeOperation.path = "/U/0/" + components[2] + "/E/" + components[4] + "/"
         }
         _ = try await client.request(try removeOperation.serializedBytes())
@@ -214,7 +254,8 @@ internal class PolarTrainingSessionUtils {
             }
         }
         return PolarExercise(index: exercise.index, path: basePath, exerciseDataTypes: exercise.exerciseDataTypes,
-                             exerciseSummary: summary, route: route, routeAdvanced: route2, samples: samples, samplesAdvanced: samples2)
+                             exerciseSummary: summary, route: route, routeAdvanced: route2, samples: samples, samplesAdvanced: samples2,
+                             fileSizes: exercise.fileSizes)
     }
     
     private static func unzipGzip(_ data: Data) throws -> Data {

@@ -30,7 +30,7 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
 ///
 ///The usage of Sync Points gives possibility and flexibility to reconfigure the stream during
 ///the packing if the conditions change.
-struct Data_PbExerciseSamplesSyncPoint {
+public struct Data_PbExerciseSamplesSyncPoint {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -40,7 +40,7 @@ struct Data_PbExerciseSamplesSyncPoint {
   /// this sync info is valid.
   /// For example index = 0 is the starting sync point.
   /// index [n] refers to [n]:th index in the delta data
-  var index: UInt32 {
+  public var index: UInt32 {
     get {return _index ?? 0}
     set {_index = newValue}
   }
@@ -51,7 +51,7 @@ struct Data_PbExerciseSamplesSyncPoint {
 
   /// If exists, this sync point also synchronizes heart rate.
   /// Granularity 1 bps.
-  var heartRateSample: UInt32 {
+  public var heartRateSample: UInt32 {
     get {return _heartRateSample ?? 0}
     set {_heartRateSample = newValue}
   }
@@ -62,7 +62,7 @@ struct Data_PbExerciseSamplesSyncPoint {
 
   /// If exists, this sync point also synchronizes cadence.
   /// Granularity 1 rounds per minute
-  var cadenceSample: UInt32 {
+  public var cadenceSample: UInt32 {
     get {return _cadenceSample ?? 0}
     set {_cadenceSample = newValue}
   }
@@ -72,7 +72,7 @@ struct Data_PbExerciseSamplesSyncPoint {
   mutating func clearCadenceSample() {self._cadenceSample = nil}
 
   /// If exists, this sync point also synchronizes speed
-  var speedSample: Float {
+  public var speedSample: Float {
     get {return _speedSample ?? 0}
     set {_speedSample = newValue}
   }
@@ -82,7 +82,7 @@ struct Data_PbExerciseSamplesSyncPoint {
   mutating func clearSpeedSample() {self._speedSample = nil}
 
   /// If exists, this sync point also synchronizes distance
-  var distanceSample: Float {
+  public var distanceSample: Float {
     get {return _distanceSample ?? 0}
     set {_distanceSample = newValue}
   }
@@ -92,7 +92,7 @@ struct Data_PbExerciseSamplesSyncPoint {
   mutating func clearDistanceSample() {self._distanceSample = nil}
 
   /// If exists, this sync point also synchronizes forward acceleration
-  var forwardAccelerationSample: Float {
+  public var forwardAccelerationSample: Float {
     get {return _forwardAccelerationSample ?? 0}
     set {_forwardAccelerationSample = newValue}
   }
@@ -103,7 +103,7 @@ struct Data_PbExerciseSamplesSyncPoint {
 
   /// If exists, this sync point also synchronizes acceleration based
   /// Mean Amplitude Deviation (MAD)
-  var accelerationMadSample: Float {
+  public var accelerationMadSample: Float {
     get {return _accelerationMadSample ?? 0}
     set {_accelerationMadSample = newValue}
   }
@@ -114,7 +114,7 @@ struct Data_PbExerciseSamplesSyncPoint {
 
   /// Granularity of speed deltas starting from
   /// this Sync Point. Default [0.001 km/h].
-  var speedSampleGranularity: UInt32 {
+  public var speedSampleGranularity: UInt32 {
     get {return _speedSampleGranularity ?? 1000}
     set {_speedSampleGranularity = newValue}
   }
@@ -125,7 +125,7 @@ struct Data_PbExerciseSamplesSyncPoint {
 
   /// Granularity of distance deltas starting from
   /// this Sync Point. Default [0.1 m].
-  var distanceSampleGranularity: UInt32 {
+  public var distanceSampleGranularity: UInt32 {
     get {return _distanceSampleGranularity ?? 10}
     set {_distanceSampleGranularity = newValue}
   }
@@ -136,7 +136,7 @@ struct Data_PbExerciseSamplesSyncPoint {
 
   /// Granularity of forward acceleration deltas starting from
   /// this Sync Point. Default [0.01 m/s^2].
-  var forwardAccelerationSampleGranularity: UInt32 {
+  public var forwardAccelerationSampleGranularity: UInt32 {
     get {return _forwardAccelerationSampleGranularity ?? 100}
     set {_forwardAccelerationSampleGranularity = newValue}
   }
@@ -147,7 +147,7 @@ struct Data_PbExerciseSamplesSyncPoint {
 
   /// Granularity of acceleration MAD deltas starting from
   /// this Sync Point. Default [0.01 mg].
-  var accelerationMadSampleGranularity: UInt32 {
+  public var accelerationMadSampleGranularity: UInt32 {
     get {return _accelerationMadSampleGranularity ?? 100}
     set {_accelerationMadSampleGranularity = newValue}
   }
@@ -156,9 +156,9 @@ struct Data_PbExerciseSamplesSyncPoint {
   /// Clears the value of `accelerationMadSampleGranularity`. Subsequent reads from it will return its default value.
   mutating func clearAccelerationMadSampleGranularity() {self._accelerationMadSampleGranularity = nil}
 
-  var unknownFields = SwiftProtobuf.UnknownStorage()
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  init() {}
+  public init() {}
 
   fileprivate var _index: UInt32? = nil
   fileprivate var _heartRateSample: UInt32? = nil
@@ -173,13 +173,13 @@ struct Data_PbExerciseSamplesSyncPoint {
   fileprivate var _accelerationMadSampleGranularity: UInt32? = nil
 }
 
-struct Data_PbExerciseIntervalledSample2List {
+public struct Data_PbExerciseIntervalledSample2List {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
   /// Sample Type, SPEED, DISTANCE etc.
-  var sampleType: PbSampleType {
+  public var sampleType: PbSampleType {
     get {return _sampleType ?? .sampleTypeUndefined}
     set {_sampleType = newValue}
   }
@@ -189,7 +189,7 @@ struct Data_PbExerciseIntervalledSample2List {
   mutating func clearSampleType() {self._sampleType = nil}
 
   /// Recording interval of samples in milliseconds
-  var recordingIntervalMs: UInt32 {
+  public var recordingIntervalMs: UInt32 {
     get {return _recordingIntervalMs ?? 0}
     set {_recordingIntervalMs = newValue}
   }
@@ -199,37 +199,37 @@ struct Data_PbExerciseIntervalledSample2List {
   mutating func clearRecordingIntervalMs() {self._recordingIntervalMs = nil}
 
   /// Points to which incrementally the deltas are accumulated
-  var syncPoint: [Data_PbExerciseSamplesSyncPoint] = []
+  public var syncPoint: [Data_PbExerciseSamplesSyncPoint] = []
 
   /// Indicates the source of certain sample: source and start / stop indexes for the given source
-  var sampleSource: [PbSampleSource] = []
+  public var sampleSource: [PbSampleSource] = []
 
   /// Delta coded heart rate samples
-  var heartRateSamples: [Int32] = []
+  public var heartRateSamples: [Int32] = []
 
   /// Delta coded cadence samples
-  var cadenceSamples: [Int32] = []
+  public var cadenceSamples: [Int32] = []
 
   /// Delta coded speed samples
   /// Note: Samples are already calibrated samples
-  var speedSamples: [Int32] = []
+  public var speedSamples: [Int32] = []
 
   /// Delta coded distance samples: total distance from the beginning of the exercise
   /// Note: Samples are already calibrated samples
-  var distanceSamples: [UInt32] = []
+  public var distanceSamples: [UInt32] = []
 
   /// User 1d delta coded acceleration samples as m/s2
-  var forwardAccelerationSamples: [Int32] = []
+  public var forwardAccelerationSamples: [Int32] = []
 
   /// Delta coded acceleration based Mean Amplitude Deviation (MAD) samples as mg
-  var accelerationMadSamples: [Int32] = []
+  public var accelerationMadSamples: [Int32] = []
 
   /// User walking/running/standing status samples
-  var movingTypeSamples: [PbMovingType] = []
+  public var movingTypeSamples: [PbMovingType] = []
 
-  var unknownFields = SwiftProtobuf.UnknownStorage()
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  init() {}
+  public init() {}
 
   fileprivate var _sampleType: PbSampleType? = nil
   fileprivate var _recordingIntervalMs: UInt32? = nil
@@ -244,7 +244,7 @@ public struct Data_PbExerciseSamples2 {
   // methods supported on all messages.
 
   /// Exercise samples with sample type specific recording intervals
-  var exerciseIntervalledSample2List: [Data_PbExerciseIntervalledSample2List] = []
+  public var exerciseIntervalledSample2List: [Data_PbExerciseIntervalledSample2List] = []
 
     public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -262,8 +262,8 @@ extension Data_PbExerciseSamples2: @unchecked Sendable {}
 fileprivate let _protobuf_package = "data"
 
 extension Data_PbExerciseSamplesSyncPoint: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = _protobuf_package + ".PbExerciseSamplesSyncPoint"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = _protobuf_package + ".PbExerciseSamplesSyncPoint"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "index"),
     2: .standard(proto: "heart_rate_sample"),
     3: .standard(proto: "cadence_sample"),
@@ -282,7 +282,7 @@ extension Data_PbExerciseSamplesSyncPoint: SwiftProtobuf.Message, SwiftProtobuf.
     return true
   }
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -304,7 +304,7 @@ extension Data_PbExerciseSamplesSyncPoint: SwiftProtobuf.Message, SwiftProtobuf.
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     // The use of inline closures is to circumvent an issue where the compiler
     // allocates stack space for every if/case branch local when no optimizations
     // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
@@ -345,7 +345,7 @@ extension Data_PbExerciseSamplesSyncPoint: SwiftProtobuf.Message, SwiftProtobuf.
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: Data_PbExerciseSamplesSyncPoint, rhs: Data_PbExerciseSamplesSyncPoint) -> Bool {
+  public static func ==(lhs: Data_PbExerciseSamplesSyncPoint, rhs: Data_PbExerciseSamplesSyncPoint) -> Bool {
     if lhs._index != rhs._index {return false}
     if lhs._heartRateSample != rhs._heartRateSample {return false}
     if lhs._cadenceSample != rhs._cadenceSample {return false}
@@ -363,8 +363,8 @@ extension Data_PbExerciseSamplesSyncPoint: SwiftProtobuf.Message, SwiftProtobuf.
 }
 
 extension Data_PbExerciseIntervalledSample2List: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = _protobuf_package + ".PbExerciseIntervalledSample2List"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = _protobuf_package + ".PbExerciseIntervalledSample2List"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .standard(proto: "sample_type"),
     2: .standard(proto: "recording_interval_ms"),
     3: .standard(proto: "sync_point"),
@@ -386,7 +386,7 @@ extension Data_PbExerciseIntervalledSample2List: SwiftProtobuf.Message, SwiftPro
     return true
   }
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -408,7 +408,7 @@ extension Data_PbExerciseIntervalledSample2List: SwiftProtobuf.Message, SwiftPro
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     // The use of inline closures is to circumvent an issue where the compiler
     // allocates stack space for every if/case branch local when no optimizations
     // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
@@ -449,7 +449,7 @@ extension Data_PbExerciseIntervalledSample2List: SwiftProtobuf.Message, SwiftPro
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: Data_PbExerciseIntervalledSample2List, rhs: Data_PbExerciseIntervalledSample2List) -> Bool {
+  public static func ==(lhs: Data_PbExerciseIntervalledSample2List, rhs: Data_PbExerciseIntervalledSample2List) -> Bool {
     if lhs._sampleType != rhs._sampleType {return false}
     if lhs._recordingIntervalMs != rhs._recordingIntervalMs {return false}
     if lhs.syncPoint != rhs.syncPoint {return false}

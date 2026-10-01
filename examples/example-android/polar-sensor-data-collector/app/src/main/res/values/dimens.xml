@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Shared width for single-button settings rows, sized to fit the widest button's text
+         ("Enable sensor initiated security mode") so all such buttons are visually aligned. -->
+    <dimen name="settings_single_button_width">301dp</dimen>
+
+    <!-- Standard vertical gap between rows on the device settings screen. -->
+    <dimen name="settings_row_spacing">10dp</dimen>
+</resources>

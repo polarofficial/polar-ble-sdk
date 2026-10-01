@@ -539,7 +539,7 @@ class DataCollector(private val context: Context) {
         latestTimeStamp = timeStamp
         logStreams[StreamType.SKIN_TEMPERATURE]?.let { stream ->
             if (!stream.isStarted()) {
-                val headerLine = "$DEVICE_TIMESTAMP_LABEL SKIN TEMPERATURE(Celsius)\n"
+                val headerLine = "$DEVICE_TIMESTAMP_LABEL SKIN_TEMPERATURE(Celsius)\n"
                 stream.write(headerLine)
             }
             val logLine = "$timeStamp $temperature\n"

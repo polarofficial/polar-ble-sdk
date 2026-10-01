@@ -1,0 +1,711 @@
+<!DOCTYPE HTML>
+<!-- NewPage -->
+<html lang="en"><head>
+    <title>PolarCompanionDeviceApi </title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="dc.created" content="2020-03-25">
+    <link rel="stylesheet" type="text/css" href="../../../../stylesheet.css" title="Style">
+    <link rel="stylesheet" type="text/css" href="../../../../dokka-javadoc-stylesheet.css" title="Style">
+    <link rel="stylesheet" type="text/css" href="../../../../jquery/jquery-ui.css" title="Style">
+    <script type="text/javascript" src="../../../../jquery/jquery-3.6.0.min.js"></script>
+    <script type="text/javascript" src="../../../../jquery/jquery-migrate-3.4.0.min.js"></script>
+    <script type="text/javascript" src="../../../../jquery/jquery-ui.js"></script>
+
+    <script type="text/javascript" src="../../../../search.js"></script>
+    <script async type="text/javascript" src="../../../../module-search-index.js"></script>
+    <script async type="text/javascript" src="../../../../package-search-index.js"></script>
+    <script async type="text/javascript" src="../../../../type-search-index.js"></script>
+    <script async type="text/javascript" src="../../../../member-search-index.js"></script>
+    <script async type="text/javascript" src="../../../../tag-search-index.js"></script>
+</head><body>
+<script type="text/javascript">
+var pathtoroot = "../../../../";
+</script>
+<noscript>
+    <div>JavaScript is disabled on your browser.</div>
+</noscript><header role="banner">
+    <nav role="navigation">
+        <div class="fixedNav">
+            <!-- ========= START OF TOP NAVBAR ======= -->
+            <div class="topNav"><a id="navbar.top">
+                <!--   -->
+            </a>
+                <div class="skipNav"><a href="#skip.navbar.top" title="Skip navigation links">Skip navigation links</a>
+                </div>
+                <a id="navbar.top.firstrow">
+                    <!--   -->
+                </a>
+                <ul class="navList" title="Navigation">
+    <li><a href="../../../../index.html">Overview</a></li>
+    
+    <li><a href="package-summary.html">Package</a></li>
+    
+    <li>Class</li>
+    
+    <li><a href="package-tree.html">Tree</a></li>
+    
+    <li><a href="../../../../deprecated.html">Deprecated</a></li>
+    <li><a href="../../../../index-files/index-1.html">Index</a></li>
+    <li>Help</li>
+</ul></div>
+            <div class="subNav">
+<ul class="navList" id="allclasses_navbar_top" style="display: block;">
+    <li><a href="../../../../allclasses.html">All&nbsp;Classes</a></li>
+</ul>
+
+<ul class="navListSearch">
+<li><label for="search">SEARCH:</label>
+<input type="text" id="search" value="search" class="ui-autocomplete-input" autocomplete="off" placeholder="Search">
+<input type="reset" id="reset" value="reset">
+</li>
+</ul>
+<div>
+<script type="text/javascript"><!--
+  allClassesLink = document.getElementById("allclasses_navbar_top");
+  if(window==top) {
+    allClassesLink.style.display = "block";
+  }
+  else {
+    allClassesLink.style.display = "none";
+  }
+  //-->
+</script>
+<noscript>
+<div>JavaScript is disabled on your browser.</div>
+</noscript>
+</div>
+<a id="skip.navbar.top">
+<!--   -->
+</a></div><!-- ========= END OF TOP NAVBAR ========= -->
+        </div>
+        <div class="navPadding">&nbsp;</div>
+        <script type="text/javascript"><!--
+        $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
+        //-->
+        </script>
+    </nav>
+</header>
+
+<main role="main">
+    <div class="header">
+        <div class="subTitle"><span class="packageLabelInType">Package</span>&nbsp;<a href="package-summary.html">com.polar.sdk.api</a></div>
+        <h2 title="Interface PolarCompanionDeviceApi" class="title">Interface PolarCompanionDeviceApi</h2>
+    </div>
+    <div class="contentContainer">
+        <!-- <ul class="inheritance">
+            <li>java.lang.Object</li>
+            <li>
+                <ul class="inheritance">
+                    <li>adaptation.Adaptation</li>
+                </ul>
+            </li>
+        </ul> TODO inheritance tree -->
+        <div class="description">
+            <ul class="blockList">
+                <li class="blockList">
+                    
+                    <dl>
+                        <dt>All Implemented Interfaces:</dt>
+                        <dd>
+                            
+                        </dd>
+                    </dl>
+                    
+                    <hr>
+                    <pre class="wrap-overflow">
+
+public interface <span class="typeNameLabel"><a href=PolarCompanionDeviceApi.html>PolarCompanionDeviceApi</a></span>
+
+                    </pre>
+                    <div class="block"><p>API for integrating Android's Companion Device Manager (CDM) with a Polar device connection.</p><p>Once a device is associated through this API, the app can request relaxed background execution privileges and receive device presence notifications (device entering/leaving BLE range) via a declared <code>CompanionDeviceService</code>, without needing a continuous BLE scan.</p><p>This API complements, and does not replace, <a href=PolarBleApi.html#searchForDevice()>PolarBleApi.searchForDevice</a> / <a href=PolarBleApi.html#connectToDevice(java.lang.String)>PolarBleApi.connectToDevice</a>. Typical flow:</p><ul><li><p>Call <a href=PolarCompanionDeviceApi.html#createAssociationRequest(java.lang.String,java.lang.Boolean)>createAssociationRequest</a> and <a href=PolarCompanionDeviceApi.html#associate(android.companion.AssociationRequest,kotlin.jvm.functions.Function1,com.polar.sdk.api.PolarCompanionDeviceApi.PolarCompanionDeviceCallback)>associate</a> to have the user pick/approve a Polar device.</p></li><li><p>On success, call <a href=PolarCompanionDeviceApi.html#startObservingDevicePresence(java.lang.String,com.polar.sdk.api.PolarCompanionDeviceApi.PolarCompanionDeviceCallback)>startObservingDevicePresence</a> with the returned MAC address.</p></li><li><p>When <a href=PolarCompanionDeviceApi.PolarCompanionDeviceCallback.html#onDeviceAppeared(java.lang.String)>PolarCompanionDeviceCallback.onDeviceAppeared</a> fires, call <a href=PolarBleApi.html#connectToDevice(java.lang.String)>PolarBleApi.connectToDevice</a>.</p></li></ul></div>
+
+                    <dl>
+
+                    
+
+                    
+
+                    </dl>
+                </li>
+            </ul>
+        </div>
+        <div class="summary">
+            <ul class="blockList">
+                <li class="blockList">
+                <!-- ======== NESTED CLASS SUMMARY ======== -->
+                    
+                    <section role="region">
+                        <ul class="blockList">
+                            <li class="blockList"><a id="nested.class.summary">
+                                <!--   -->
+                            </a>
+                                <h3>Nested Class Summary</h3>
+                                <div class="memberSummary">
+                                    <table>
+                                        <caption><span>Nested Classes</span><span class="tabEnd">&nbsp;</span></caption>
+                                        <tr>
+                                            <th class="colFirst" scope="col">Modifier and Type</th>
+                                            <th class="colSecond" scope="col">Class</th>
+                                            <th class="colLast" scope="col">Description</th>
+                                        </tr>
+                                        
+                                        <tr class="altColor">
+                                            <td class="colFirst"><code>public interface</code></td>
+                                            <th class="colSecond" scope="row"><code><a href="PolarCompanionDeviceApi.PolarCompanionDeviceCallback.html">PolarCompanionDeviceApi.PolarCompanionDeviceCallback</a></span></code>
+                                            </th>
+                                            <td class="colLast"><p>Callback describing device presence / association events surfaced through the wrapped Companion Device Manager APIs.</p></td>
+                                        </tr>
+                                        
+                                    </table>
+                                </div>
+                            </li>
+                        </ul>
+                    </section>
+                    
+                    <!-- =========== FIELD SUMMARY =========== -->
+                    
+                    <section role="region">
+                        <ul class="blockList">
+                            <li class="blockList"><a id="field.summary">
+                                <!--   -->
+                            </a>
+                                <h3>Field Summary</h3>
+                                <div class="memberSummary">
+                                    <table>
+                                        <caption><span>Fields</span><span class="tabEnd">&nbsp;</span></caption>
+                                        <tr>
+                                            <th class="colFirst" scope="col">Modifier and Type</th>
+                                            <th class="colSecond" scope="col">Field</th>
+                                            <th class="colLast" scope="col">Description</th>
+                                        </tr>
+                                        
+                                    </table>
+                                </div>
+                            </li>
+                        </ul>
+                    </section>
+                    
+                    <!-- ======== CONSTRUCTOR SUMMARY ======== -->
+                    
+                    <section role="region">
+                        <ul class="blockList">
+                            <li class="blockList"><a id="constructor.summary">
+                                <!--   -->
+                            </a>
+                                <h3>Constructor Summary</h3>
+                                <div class="memberSummary">
+                                    <table>
+                                        <caption><span>Constructors</span><span class="tabEnd">&nbsp;</span></caption>
+                                        <tbody>
+                                        <tr>
+                                            <th class="colFirst" scope="col">Constructor</th>
+                                            <th class="colLast" scope="col">Description</th>
+                                        </tr>
+
+                                        
+
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </li>
+                        </ul>
+                    </section>
+                    
+                    <!-- =========== ENUM CONSTANT SUMMARY =========== -->
+                    
+                    <section role="region">
+                        <ul class="blockList">
+                            <li class="blockList"><a id="enum.constant.summary">
+                                <!--   -->
+                            </a>
+                                <h3>Enum Constant Summary</h3>
+                                <table class="memberSummary">
+                                    <caption><span>Enum Constants</span><span class="tabEnd">&nbsp;</span></caption>
+                                    <tr>
+                                        <th class="colFirst" scope="col">Enum Constant</th>
+                                        <th class="colLast" scope="col">Description</th>
+                                    </tr>
+                                    
+                                </table>
+                            </li>
+                        </ul>
+                    </section>
+                    
+                    <!-- ========== METHOD SUMMARY =========== -->
+                    
+                    <section role="region">
+                        <ul class="blockList">
+                            <li class="blockList"><a id="method.summary">
+                                <!--   -->
+                            </a>
+                                <h3>Method Summary</h3>
+                                <div class="memberSummary">
+                                    <div role="tablist" aria-orientation="horizontal">
+                                        <button role="tab" aria-selected="true" aria-controls="memberSummary_tabpanel" tabindex="0" onkeydown="switchTab(event)" id="t0" class="activeTableTab">All Methods</button>
+                                        <!-- TODO: Instance and Concrete Methods #1118 -->
+                                    </div>
+                                    <div id="memberSummary_tabpanel" role="tabpanel">
+                                    <table aria-labelledby="t0">
+                                        <tr>
+                                            <th class="colFirst" scope="col">Modifier and Type</th>
+                                            <th class="colSecond" scope="col">Method</th>
+                                            <th class="colLast" scope="col">Description</th>
+                                        </tr>
+                                        
+                                        <tr id="i0" class="altColor">
+                                            <td class="colFirst"><code>abstract <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a></code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=PolarCompanionDeviceApi.html#isCompanionDeviceManagerAvailable()>isCompanionDeviceManagerAvailable</a>() </code>
+                                            </th>
+                                            <td class="colLast"></td>
+                                        </tr>
+                                        
+                                        <tr id="i1" class="rowColor">
+                                            <td class="colFirst"><code>abstract <a href=https://developer.android.com/reference/kotlin/android/companion/AssociationRequest.html>AssociationRequest</a></code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=PolarCompanionDeviceApi.html#createAssociationRequest(java.lang.String,java.lang.Boolean)>createAssociationRequest</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> namePrefix, <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> singleDevice) </code>
+                                            </th>
+                                            <td class="colLast">Builds an association request that will match nearby Polar devices.</td>
+                                        </tr>
+                                        
+                                        <tr id="i2" class="altColor">
+                                            <td class="colFirst"><code>abstract <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=PolarCompanionDeviceApi.html#associate(android.companion.AssociationRequest,kotlin.jvm.functions.Function1,com.polar.sdk.api.PolarCompanionDeviceApi.PolarCompanionDeviceCallback)>associate</a>(<a href=https://developer.android.com/reference/kotlin/android/companion/AssociationRequest.html>AssociationRequest</a> request, Function1&lt;<a href=https://developer.android.com/reference/kotlin/android/content/IntentSender.html>IntentSender</a>, <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a>&gt; onIntentSender, <a href=PolarCompanionDeviceApi.PolarCompanionDeviceCallback.html>PolarCompanionDeviceApi.PolarCompanionDeviceCallback</a> callback) </code>
+                                            </th>
+                                            <td class="colLast">Starts the association flow for <a href=PolarCompanionDeviceApi.html#associate(android.companion.AssociationRequest,kotlin.jvm.functions.Function1,com.polar.sdk.api.PolarCompanionDeviceApi.PolarCompanionDeviceCallback)>request</a>.</td>
+                                        </tr>
+                                        
+                                        <tr id="i3" class="rowColor">
+                                            <td class="colFirst"><code>abstract <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=PolarCompanionDeviceApi.html#launchAssociation(android.app.Activity,android.content.IntentSender,java.lang.Integer)>launchAssociation</a>(<a href=https://developer.android.com/reference/kotlin/android/app/Activity.html>Activity</a> activity, <a href=https://developer.android.com/reference/kotlin/android/content/IntentSender.html>IntentSender</a> intentSender, <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> requestCode) </code>
+                                            </th>
+                                            <td class="colLast">Convenience helper to launch an association <a href=https://developer.android.com/reference/kotlin/android/content/IntentSender.html>IntentSender</a> using the legacy <code>startIntentSenderForResult</code> Activity API.</td>
+                                        </tr>
+                                        
+                                        <tr id="i4" class="altColor">
+                                            <td class="colFirst"><code>abstract <a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a>&gt;</code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=PolarCompanionDeviceApi.html#getAssociatedDeviceAddresses()>getAssociatedDeviceAddresses</a>() </code>
+                                            </th>
+                                            <td class="colLast"></td>
+                                        </tr>
+                                        
+                                        <tr id="i5" class="rowColor">
+                                            <td class="colFirst"><code>abstract <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a></code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=PolarCompanionDeviceApi.html#isAssociated(java.lang.String)>isAssociated</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
+                                            </th>
+                                            <td class="colLast"></td>
+                                        </tr>
+                                        
+                                        <tr id="i6" class="altColor">
+                                            <td class="colFirst"><code>abstract <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=PolarCompanionDeviceApi.html#removeAssociation(java.lang.String)>removeAssociation</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
+                                            </th>
+                                            <td class="colLast">Removes the CDM association for the device behind <a href=PolarCompanionDeviceApi.html#removeAssociation(java.lang.String)>identifier</a>.</td>
+                                        </tr>
+                                        
+                                        <tr id="i7" class="rowColor">
+                                            <td class="colFirst"><code>abstract <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a></code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=PolarCompanionDeviceApi.html#startObservingDevicePresence(java.lang.String,com.polar.sdk.api.PolarCompanionDeviceApi.PolarCompanionDeviceCallback)>startObservingDevicePresence</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=PolarCompanionDeviceApi.PolarCompanionDeviceCallback.html>PolarCompanionDeviceApi.PolarCompanionDeviceCallback</a> callback) </code>
+                                            </th>
+                                            <td class="colLast">Starts observing device presence for the device behind <a href=PolarCompanionDeviceApi.html#startObservingDevicePresence(java.lang.String,com.polar.sdk.api.PolarCompanionDeviceApi.PolarCompanionDeviceCallback)>identifier</a> (must already be associated).</td>
+                                        </tr>
+                                        
+                                        <tr id="i8" class="altColor">
+                                            <td class="colFirst"><code>abstract <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a></code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=PolarCompanionDeviceApi.html#stopObservingDevicePresence(java.lang.String)>stopObservingDevicePresence</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
+                                            </th>
+                                            <td class="colLast">Stops observing device presence previously started with <a href=PolarCompanionDeviceApi.html#startObservingDevicePresence(java.lang.String,com.polar.sdk.api.PolarCompanionDeviceApi.PolarCompanionDeviceCallback)>startObservingDevicePresence</a>.</td>
+                                        </tr>
+                                        
+                                        <tr id="i9" class="rowColor">
+                                            <td class="colFirst"><code>abstract <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a></code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=PolarCompanionDeviceApi.html#requestBackgroundExecutionPrivilege(android.app.Activity,java.lang.Integer)>requestBackgroundExecutionPrivilege</a>(<a href=https://developer.android.com/reference/kotlin/android/app/Activity.html>Activity</a> activity, <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> requestCode) </code>
+                                            </th>
+                                            <td class="colLast">Requests the &quot;run in background&quot; companion privilege (API 33+), which relaxes background execution / BLE scan throttling limits for companion apps.</td>
+                                        </tr>
+                                        
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <ul class="blockList">
+                                
+                                    <li class="blockList"><a id="methods.inherited.from.class.java.lang.Object">
+                                        <!--   -->
+                                    </a>
+                                        <h3>Methods inherited from class&nbsp;java.lang.Object</h3>
+                                        <code>clone, equals, finalize, getClass, hashCode, notify, notifyAll, toString,
+                                            wait, wait, wait</code></li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </section>
+                    
+                </li>
+            </ul>
+        </div>
+        <div class="details">
+            <ul class="blockList">
+                <li class="blockList">
+                    <!-- ========= CONSTRUCTOR DETAIL ======== -->
+                    
+                    <section role="region">
+                        <ul class="blockList">
+                            <li class="blockList"><a id="constructor.detail">
+                                <!--   -->
+                            </a>
+                                <h3>Constructor Detail</h3>
+                                
+                            </li>
+                        </ul>
+                    </section>
+                    
+                    <!-- ============ METHOD DETAIL ========== -->
+                    
+                    <section role="region">
+                        <ul class="blockList">
+                            <li class="blockList"><a id="method.detail">
+                                <!--   -->
+                            </a>
+                                <h3>Method Detail</h3>
+                                
+                                <a id="isCompanionDeviceManagerAvailable()">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockList"
+                                          >
+                                    <li class="blockList">
+                                        <h4>isCompanionDeviceManagerAvailable</h4>
+                                        <pre class="methodSignature"> abstract <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> <a href=PolarCompanionDeviceApi.html#isCompanionDeviceManagerAvailable()>isCompanionDeviceManagerAvailable</a>()</pre>
+                                        <div class="block"></div>
+
+                                        <dl>
+
+                                        
+
+                                        
+                                            <dt><span class="returnLabel">Returns:</span></dt>
+                                            <dd><p>true if the Companion Device Manager feature is available on this OS version/device.</p></dd>
+                                        
+
+                                        
+
+                                        </dl>
+                                    </li>
+                                </ul>
+                                
+                                <a id="createAssociationRequest(java.lang.String,java.lang.Boolean)">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockList"
+                                          >
+                                    <li class="blockList">
+                                        <h4>createAssociationRequest</h4>
+                                        <pre class="methodSignature"> abstract <a href=https://developer.android.com/reference/kotlin/android/companion/AssociationRequest.html>AssociationRequest</a> <a href=PolarCompanionDeviceApi.html#createAssociationRequest(java.lang.String,java.lang.Boolean)>createAssociationRequest</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> namePrefix, <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> singleDevice)</pre>
+                                        <div class="block"><p>Builds an association request that will match nearby Polar devices.</p></div>
+
+                                        <dl>
+
+                                        
+                                            <dt><span class="paramLabel">Parameters:</span></dt>
+                                            
+                                            
+                                            <dd><code>namePrefix</code> - required BLE advertised name prefix, default &quot;Polar&quot;</dd>
+                                            
+                                            
+                                            
+                                            <dd><code>singleDevice</code> - restrict user selection to a single device</dd>
+                                            
+                                            
+                                        
+
+                                        
+
+                                        
+
+                                        </dl>
+                                    </li>
+                                </ul>
+                                
+                                <a id="associate(android.companion.AssociationRequest,kotlin.jvm.functions.Function1,com.polar.sdk.api.PolarCompanionDeviceApi.PolarCompanionDeviceCallback)">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockList"
+                                          >
+                                    <li class="blockList">
+                                        <h4>associate</h4>
+                                        <pre class="methodSignature"> abstract <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a> <a href=PolarCompanionDeviceApi.html#associate(android.companion.AssociationRequest,kotlin.jvm.functions.Function1,com.polar.sdk.api.PolarCompanionDeviceApi.PolarCompanionDeviceCallback)>associate</a>(<a href=https://developer.android.com/reference/kotlin/android/companion/AssociationRequest.html>AssociationRequest</a> request, Function1&lt;<a href=https://developer.android.com/reference/kotlin/android/content/IntentSender.html>IntentSender</a>, <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a>&gt; onIntentSender, <a href=PolarCompanionDeviceApi.PolarCompanionDeviceCallback.html>PolarCompanionDeviceApi.PolarCompanionDeviceCallback</a> callback)</pre>
+                                        <div class="block"><p>Starts the association flow for <a href=PolarCompanionDeviceApi.html#associate(android.companion.AssociationRequest,kotlin.jvm.functions.Function1,com.polar.sdk.api.PolarCompanionDeviceApi.PolarCompanionDeviceCallback)>request</a>. If user confirmation is required, the resulting <a href=https://developer.android.com/reference/kotlin/android/content/IntentSender.html>IntentSender</a> is delivered through <a href=PolarCompanionDeviceApi.html#associate(android.companion.AssociationRequest,kotlin.jvm.functions.Function1,com.polar.sdk.api.PolarCompanionDeviceApi.PolarCompanionDeviceCallback)>onIntentSender</a> and the caller (Activity) must launch it, e.g. with <code>ActivityResultContracts.StartIntentSenderForResult</code>.</p></div>
+
+                                        <dl>
+
+                                        
+                                            <dt><span class="paramLabel">Parameters:</span></dt>
+                                            
+                                            
+                                            
+                                            
+                                            <dd><code>onIntentSender</code> - invoked with the <a href=https://developer.android.com/reference/kotlin/android/content/IntentSender.html>IntentSender</a> to launch for user consent</dd>
+                                            
+                                            
+                                            
+                                            <dd><code>callback</code> - invoked with the outcome of the association</dd>
+                                            
+                                            
+                                        
+
+                                        
+
+                                        
+
+                                        </dl>
+                                    </li>
+                                </ul>
+                                
+                                <a id="launchAssociation(android.app.Activity,android.content.IntentSender,java.lang.Integer)">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockList"
+                                          >
+                                    <li class="blockList">
+                                        <h4>launchAssociation</h4>
+                                        <pre class="methodSignature"> abstract <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a> <a href=PolarCompanionDeviceApi.html#launchAssociation(android.app.Activity,android.content.IntentSender,java.lang.Integer)>launchAssociation</a>(<a href=https://developer.android.com/reference/kotlin/android/app/Activity.html>Activity</a> activity, <a href=https://developer.android.com/reference/kotlin/android/content/IntentSender.html>IntentSender</a> intentSender, <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> requestCode)</pre>
+                                        <div class="block"><p>Convenience helper to launch an association <a href=https://developer.android.com/reference/kotlin/android/content/IntentSender.html>IntentSender</a> using the legacy <code>startIntentSenderForResult</code> Activity API.</p></div>
+
+                                        <dl>
+
+                                        
+
+                                        
+
+                                        
+
+                                        </dl>
+                                    </li>
+                                </ul>
+                                
+                                <a id="getAssociatedDeviceAddresses()">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockList"
+                                          >
+                                    <li class="blockList">
+                                        <h4>getAssociatedDeviceAddresses</h4>
+                                        <pre class="methodSignature"> abstract <a href=https://developer.android.com/reference/kotlin/java/util/List.html>List</a>&lt;<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a>&gt; <a href=PolarCompanionDeviceApi.html#getAssociatedDeviceAddresses()>getAssociatedDeviceAddresses</a>()</pre>
+                                        <div class="block"></div>
+
+                                        <dl>
+
+                                        
+
+                                        
+                                            <dt><span class="returnLabel">Returns:</span></dt>
+                                            <dd><p>BT MAC addresses of devices already CDM-associated with this app.</p></dd>
+                                        
+
+                                        
+
+                                        </dl>
+                                    </li>
+                                </ul>
+                                
+                                <a id="isAssociated(java.lang.String)">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockList"
+                                          >
+                                    <li class="blockList">
+                                        <h4>isAssociated</h4>
+                                        <pre class="methodSignature"> abstract <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> <a href=PolarCompanionDeviceApi.html#isAssociated(java.lang.String)>isAssociated</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
+                                        <div class="block"></div>
+
+                                        <dl>
+
+                                        
+
+                                        
+                                            <dt><span class="returnLabel">Returns:</span></dt>
+                                            <dd><p>true if the device behind <a href=PolarCompanionDeviceApi.html#isAssociated(java.lang.String)>identifier</a> (Polar device id or BT address) is currently CDM-associated.</p></dd>
+                                        
+
+                                        
+
+                                        </dl>
+                                    </li>
+                                </ul>
+                                
+                                <a id="removeAssociation(java.lang.String)">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockList"
+                                          >
+                                    <li class="blockList">
+                                        <h4>removeAssociation</h4>
+                                        <pre class="methodSignature"> abstract <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a> <a href=PolarCompanionDeviceApi.html#removeAssociation(java.lang.String)>removeAssociation</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
+                                        <div class="block"><p>Removes the CDM association for the device behind <a href=PolarCompanionDeviceApi.html#removeAssociation(java.lang.String)>identifier</a>.</p></div>
+
+                                        <dl>
+
+                                        
+
+                                        
+
+                                        
+
+                                        </dl>
+                                    </li>
+                                </ul>
+                                
+                                <a id="startObservingDevicePresence(java.lang.String,com.polar.sdk.api.PolarCompanionDeviceApi.PolarCompanionDeviceCallback)">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockList"
+                                          >
+                                    <li class="blockList">
+                                        <h4>startObservingDevicePresence</h4>
+                                        <pre class="methodSignature"> abstract <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> <a href=PolarCompanionDeviceApi.html#startObservingDevicePresence(java.lang.String,com.polar.sdk.api.PolarCompanionDeviceApi.PolarCompanionDeviceCallback)>startObservingDevicePresence</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier, <a href=PolarCompanionDeviceApi.PolarCompanionDeviceCallback.html>PolarCompanionDeviceApi.PolarCompanionDeviceCallback</a> callback)</pre>
+                                        <div class="block"><p>Starts observing device presence for the device behind <a href=PolarCompanionDeviceApi.html#startObservingDevicePresence(java.lang.String,com.polar.sdk.api.PolarCompanionDeviceApi.PolarCompanionDeviceCallback)>identifier</a> (must already be associated). Presence changes are reported via <a href=PolarCompanionDeviceApi.html#startObservingDevicePresence(java.lang.String,com.polar.sdk.api.PolarCompanionDeviceApi.PolarCompanionDeviceCallback)>callback</a>.</p></div>
+
+                                        <dl>
+
+                                        
+
+                                        
+                                            <dt><span class="returnLabel">Returns:</span></dt>
+                                            <dd><p>true if observation was started successfully</p></dd>
+                                        
+
+                                        
+
+                                        </dl>
+                                    </li>
+                                </ul>
+                                
+                                <a id="stopObservingDevicePresence(java.lang.String)">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockList"
+                                          >
+                                    <li class="blockList">
+                                        <h4>stopObservingDevicePresence</h4>
+                                        <pre class="methodSignature"> abstract <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> <a href=PolarCompanionDeviceApi.html#stopObservingDevicePresence(java.lang.String)>stopObservingDevicePresence</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
+                                        <div class="block"><p>Stops observing device presence previously started with <a href=PolarCompanionDeviceApi.html#startObservingDevicePresence(java.lang.String,com.polar.sdk.api.PolarCompanionDeviceApi.PolarCompanionDeviceCallback)>startObservingDevicePresence</a>.</p></div>
+
+                                        <dl>
+
+                                        
+
+                                        
+
+                                        
+
+                                        </dl>
+                                    </li>
+                                </ul>
+                                
+                                <a id="requestBackgroundExecutionPrivilege(android.app.Activity,java.lang.Integer)">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockListLast"
+                                          >
+                                    <li class="blockList">
+                                        <h4>requestBackgroundExecutionPrivilege</h4>
+                                        <pre class="methodSignature"> abstract <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> <a href=PolarCompanionDeviceApi.html#requestBackgroundExecutionPrivilege(android.app.Activity,java.lang.Integer)>requestBackgroundExecutionPrivilege</a>(<a href=https://developer.android.com/reference/kotlin/android/app/Activity.html>Activity</a> activity, <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> requestCode)</pre>
+                                        <div class="block"><p>Requests the &quot;run in background&quot; companion privilege (API 33+), which relaxes background execution / BLE scan throttling limits for companion apps. Must be called from an <a href=https://developer.android.com/reference/kotlin/android/app/Activity.html>Activity</a>; result is delivered to that activity's <code>onActivityResult</code>.</p></div>
+
+                                        <dl>
+
+                                        
+
+                                        
+                                            <dt><span class="returnLabel">Returns:</span></dt>
+                                            <dd><p>true if the request was launched</p></dd>
+                                        
+
+                                        
+
+                                        </dl>
+                                    </li>
+                                </ul>
+                                
+                            </li>
+                        </ul>
+                    </section>
+                    
+                </li>
+            </ul>
+        </div>
+    </div>
+</main>
+<footer role="contentinfo">
+    <nav role="navigation">
+        <!-- ======= START OF BOTTOM NAVBAR ====== -->
+        <div class="bottomNav"><a id="navbar.bottom">
+            <!--   -->
+        </a>
+            <div class="skipNav"><a href="#skip.navbar.bottom" title="Skip navigation links">Skip navigation links</a>
+            </div>
+            <a id="navbar.bottom.firstrow">
+                <!--   -->
+            </a>
+            <ul class="navList" title="Navigation">
+    <li><a href="../../../../index.html">Overview</a></li>
+    
+    <li><a href="package-summary.html">Package</a></li>
+    
+    <li>Class</li>
+    
+    <li><a href="package-tree.html">Tree</a></li>
+    
+    <li><a href="../../../../deprecated.html">Deprecated</a></li>
+    <li><a href="../../../../index-files/index-1.html">Index</a></li>
+    <li>Help</li>
+</ul></div>
+        <a id="skip.navbar.bottom">
+            <!--   -->
+        </a>
+        <div class="subNav">
+<ul class="navList" id="allclasses_navbar_top" style="display: block;">
+    <li><a href="../../../../allclasses.html">All&nbsp;Classes</a></li>
+</ul>
+<div>
+<script type="text/javascript"><!--
+  allClassesLink = document.getElementById("allclasses_navbar_top");
+  if(window==top) {
+    allClassesLink.style.display = "block";
+  }
+  else {
+    allClassesLink.style.display = "none";
+  }
+  //-->
+</script>
+<noscript>
+<div>JavaScript is disabled on your browser.</div>
+</noscript>
+</div>
+<a id="skip.navbar.top">
+<!--   -->
+</a></div><!-- ======== END OF BOTTOM NAVBAR ======= -->
+    </nav>
+</footer><ul class="ui-autocomplete ui-front ui-menu ui-widget ui-widget-content" id="ui-id-1" tabindex="0"
+    style="display: none;"></ul>
+<span role="status" aria-live="assertive" aria-relevant="additions" class="ui-helper-hidden-accessible"></span>
+</body>
+</html>

@@ -151,6 +151,7 @@ class OnlineRecordingViewModel @Inject constructor(
         private const val TAG = "OnlineRecordingViewModel"
         private val POLAR_EPOCH_INSTANT: Instant = Instant.parse("2000-01-01T00:00:00Z")
         private const val NANOS_PER_SECOND = 1_000_000_000L
+        private const val KEY_VALIDATED_FILE_URIS = "validatedFileUris"
     }
 
     private fun phoneCalendarTimeAsPolarEpochNs(): Long {
@@ -236,12 +237,30 @@ class OnlineRecordingViewModel @Inject constructor(
     val shareFiles: StateFlow<ArrayList<Uri>> = _shareFiles.asStateFlow()
 
     // Accumulates all validated (non-empty) file URIs produced by this device's recording sessions.
-    // Lives in the ViewModel so it survives Fragment view recreation (e.g. ViewPager2 off-screen destroy).
-    private val _validatedFileUris: MutableStateFlow<List<Uri>> = MutableStateFlow(emptyList())
+    // Persisted in SavedStateHandle (not just an in-memory StateFlow) so the View/Share icons stay
+    // visible even if the Fragment/ViewModel is recreated (for example, after the OS reclaims the
+    // hosting Activity while the user is viewing data in a separate Activity and navigates back).
+    private val _validatedFileUris: MutableStateFlow<List<Uri>> = MutableStateFlow(
+        state.get<List<String>>(KEY_VALIDATED_FILE_URIS)?.map { Uri.parse(it) } ?: emptyList()
+    )
     val validatedFileUris: StateFlow<List<Uri>> = _validatedFileUris.asStateFlow()
 
     fun addValidatedFileUri(uri: Uri) {
         _validatedFileUris.update { current -> if (current.contains(uri)) current else current + uri }
+        persistValidatedFileUris()
+    }
+
+    // Removes stale file URIs (for example, when the user starts a new recording for a data
+    // type that already has a viewable/shareable file from a previous session). This makes the
+    // View/Share icons hide again until the new session produces its own validated file.
+    fun clearValidatedFileUris(uris: Collection<Uri>) {
+        if (uris.isEmpty()) return
+        _validatedFileUris.update { current -> current.filterNot { uris.contains(it) } }
+        persistValidatedFileUris()
+    }
+
+    private fun persistValidatedFileUris() {
+        state[KEY_VALIDATED_FILE_URIS] = _validatedFileUris.value.map { it.toString() }
     }
 
     private var recordingTimerJob: Job? = null
@@ -280,6 +299,16 @@ class OnlineRecordingViewModel @Inject constructor(
                                             showError(disconnectGuidance(feature))
                                         }
                                     }
+                                }
+                            }
+                        }
+                        is DeviceConnectionState.DeviceNotConnected -> {
+                            // Device fully disconnected (not just a transient reconnect-capable
+                            // "disconnecting" state). The View/Share icons for this device's
+                            // recordings are no longer relevant, so clear them.
+                            _validatedFileUris.value.let { uris ->
+                                if (uris.isNotEmpty()) {
+                                    clearValidatedFileUris(uris)
                                 }
                             }
                         }

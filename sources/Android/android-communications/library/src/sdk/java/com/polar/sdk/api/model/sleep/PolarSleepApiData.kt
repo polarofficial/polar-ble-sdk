@@ -3,7 +3,7 @@ package com.polar.sdk.api.model.sleep
 import com.polar.sdk.api.RestApiEventPayload
 
 data class PolarSleepRecordingState(
-    val enabled: Int
+    val enabled: Int?
 ): RestApiEventPayload()
 
 data class PolarSleepApiServiceEventPayload(

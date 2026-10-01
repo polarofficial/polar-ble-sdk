@@ -36,9 +36,7 @@ import com.polar.androidcommunications.api.ble.model.gatt.client.psftp.BlePsFtpC
 import com.polar.androidcommunications.api.ble.model.gatt.client.psftp.BlePsFtpUtils
 import com.polar.androidcommunications.api.ble.model.gatt.client.psftp.BlePsFtpUtils.PFTP_SERVICE_16BIT_UUID
 import com.polar.androidcommunications.api.ble.model.gatt.client.psftp.BlePsFtpUtils.PftpResponseError
-import com.polar.androidcommunications.api.ble.model.offlinerecording.OfflineRecordingData
 import com.polar.androidcommunications.api.ble.model.offlinerecording.OfflineRecordingError
-import com.polar.androidcommunications.api.ble.model.offlinerecording.OfflineRecordingUtility.mapOfflineRecordingFileNameToMeasurementType
 import com.polar.androidcommunications.api.ble.model.polar.BlePolarDeviceCapabilitiesUtility
 import com.polar.androidcommunications.api.ble.model.polar.BlePolarDeviceCapabilitiesUtility.Companion.getFileSystemType
 import com.polar.androidcommunications.api.ble.model.polar.BlePolarDeviceCapabilitiesUtility.Companion.isRecordingSupported
@@ -60,15 +58,16 @@ import com.polar.sdk.api.PolarBleDisconnectReason
 import com.polar.sdk.api.PolarBleDeviceCommand
 import com.polar.sdk.api.PolarBleRecoveryAction
 import com.polar.sdk.api.PolarBleApiDefaultImpl
+import com.polar.sdk.api.PolarCompanionDeviceApi
 import com.polar.sdk.api.PolarDerivedMeasurementApi
 import com.polar.sdk.api.PolarBleLowLevelApi
 import com.polar.sdk.api.PolarBleTelemetryApi
 import com.polar.sdk.api.PolarD2HNotificationData
+import com.polar.sdk.api.PolarH10OfflineExerciseApi
 import com.polar.sdk.api.PolarOfflineExerciseV2Api
 import com.polar.sdk.api.PolarTestApi
 import com.polar.sdk.api.model.PolarSpo2TestData
-import com.polar.sdk.impl.utils.PolarTestUtils
-import com.polar.sdk.api.PolarH10OfflineExerciseApi
+import com.polar.sdk.api.PolarH10OfflineExerciseApi.*
 import com.polar.sdk.api.RestApiEventPayload
 import com.polar.sdk.api.errors.*
 import com.polar.sdk.api.model.*
@@ -79,26 +78,17 @@ import com.polar.sdk.api.PolarTrainingSessionApi
 import com.polar.sdk.impl.utils.PolarBackupManager
 import com.polar.sdk.impl.utils.PolarDataUtils
 import com.polar.sdk.impl.utils.PolarDataUtils.mapPMDClientLocationDataToPolarLocationData
-import com.polar.sdk.impl.utils.PolarDataUtils.mapPMDClientOfflineHrDataToPolarHrData
-import com.polar.sdk.impl.utils.PolarDataUtils.mapPMDClientOfflineTemperatureDataToPolarTemperatureData
 import com.polar.sdk.impl.utils.PolarDataUtils.mapPMDClientPpgDataToPolarPpg
 import com.polar.sdk.impl.utils.PolarDataUtils.mapPMDClientPpiDataToPolarPpiData
 import com.polar.sdk.impl.utils.PolarDataUtils.mapPmdClientAccDataToPolarAcc
-import com.polar.sdk.impl.utils.PolarDataUtils.mapPmdClientDerivedAccDataToPolarDerivedAcc
-import com.polar.sdk.impl.utils.PolarDataUtils.mapPmdClientFeatureToPolarFeature
 import com.polar.sdk.impl.utils.PolarDataUtils.mapPmdClientGyroDataToPolarGyro
 import com.polar.sdk.impl.utils.PolarDataUtils.mapPmdClientMagDataToPolarMagnetometer
 import com.polar.sdk.impl.utils.PolarDataUtils.mapPmdClientPressureDataToPolarPressure
 import com.polar.sdk.impl.utils.PolarDataUtils.mapPmdClientSkinTemperatureDataToPolarTemperatureData
 import com.polar.sdk.impl.utils.PolarDataUtils.mapPmdClientTemperatureDataToPolarTemperature
 import com.polar.sdk.impl.utils.PolarDataUtils.mapPmdSettingsToPolarSettings
-import com.polar.sdk.impl.utils.PolarDataUtils.mapPmdTriggerToPolarTrigger
-import com.polar.sdk.impl.utils.PolarDataUtils.mapPolarFeatureToPmdClientMeasurementType
-import com.polar.sdk.impl.utils.PolarDataUtils.mapPolarOfflineTriggerToPmdOfflineTrigger
-import com.polar.sdk.impl.utils.PolarDataUtils.mapPolarSecretToPmdSecret
 import com.polar.sdk.impl.utils.PolarDataUtils.mapPolarSettingsToPmdSettings
 import com.polar.sdk.impl.utils.PolarFirmwareUpdateUtils
-import com.polar.sdk.impl.utils.PolarOfflineRecordingUtils
 import com.polar.sdk.impl.utils.receiveRestApiEvents
 import com.polar.sdk.impl.utils.observeDeviceToHostNotifications
 import fi.polar.remote.representation.protobuf.AutomaticSamples.PbAutomaticSampleSessions
@@ -111,11 +101,7 @@ import protocol.PftpError.PbPFtpError
 import protocol.PftpNotification
 import protocol.PftpRequest
 import protocol.PftpResponse
-import protocol.PftpResponse.PbPFtpDirectory
 import protocol.PftpResponse.PbRequestRecordingStatusResult
-import com.polar.sdk.impl.utils.PolarAutomaticSamplesUtils
-import com.polar.sdk.impl.utils.PolarNightlyRechargeUtils
-import com.polar.sdk.impl.utils.PolarSkinTemperatureUtils
 import com.polar.sdk.api.model.activity.Polar247HrSamplesData
 import com.polar.sdk.api.model.activity.Polar247PPiSamplesData
 import com.polar.sdk.api.model.activity.PolarActivitySamplesDayData
@@ -123,15 +109,13 @@ import com.polar.sdk.api.model.activity.PolarDailySummaryData
 import com.polar.sdk.api.model.activity.PolarDistanceData
 import com.polar.sdk.api.model.activity.PolarStepsData
 import com.polar.sdk.api.model.sleep.PolarNightlyRechargeData
-import com.polar.sdk.api.model.sleep.PolarSleepApiServiceEventPayload
 import com.polar.sdk.api.model.activity.PolarActiveTimeData
 import com.polar.sdk.api.model.activity.PolarCaloriesData
 import com.polar.sdk.api.model.sleep.PolarSleepData
+import com.polar.sdk.api.model.sleep.PolarSleepRecordingStatus
 import com.polar.sdk.impl.utils.CaloriesType
 import com.polar.sdk.api.model.trainingsession.PolarTrainingSession
 import com.polar.sdk.api.model.trainingsession.PolarTrainingSessionFetchResult
-import com.polar.sdk.api.model.trainingsession.PolarTrainingSessionProgress
-import com.polar.sdk.impl.utils.PolarActivityUtils
 import fi.polar.remote.representation.protobuf.UserDeviceSettings
 import fi.polar.remote.representation.protobuf.UserDeviceSettings.PbUserDeviceSettings
 import fi.polar.remote.representation.protobuf.UserDeviceSettings.PbUserDeviceTelemetrySettings
@@ -149,17 +133,13 @@ import java.time.LocalDateTime
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
-import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.TimeUnit
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
-import fi.polar.remote.representation.protobuf.Structures
 import com.polar.sdk.impl.utils.PolarFileUtils
 import com.polar.sdk.impl.utils.PolarFileUtils.pFtpWriteOperation
 import com.polar.sdk.impl.utils.PolarServiceClientUtils
 import com.polar.sdk.impl.utils.PolarServiceClientUtils.fetchSession
-import com.polar.sdk.impl.utils.PolarSleepUtils
-import com.polar.sdk.impl.utils.PolarTrainingSessionUtils
 import com.polar.sdk.impl.utils.PolarWatchFaceUtils
 import com.polar.sdk.api.model.PolarWatchFaceComplication
 import com.polar.sdk.api.model.PolarWatchFaceConfig
@@ -172,8 +152,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.channelFlow
-import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.filter
@@ -181,14 +159,35 @@ import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.coroutines.withTimeoutOrNull
 
 /**
  * The default implementation of the Polar API
  * @Suppress
  */
 class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleSdkFeature>) : PolarBleApi(features), BlePowerStateChangedCallback, PolarTrainingSessionApi,
-    PolarBleLowLevelApi, PolarOfflineExerciseV2Api, PolarTestApi, PolarDerivedMeasurementApi, PolarBleTelemetryApi{
+    PolarBleLowLevelApi, PolarOfflineExerciseV2Api, PolarTestApi, PolarDerivedMeasurementApi, PolarBleTelemetryApi {
+
+    // Created lazily because it needs `listener`, not yet set while this class initializes.
+    private val companionDeviceApi: PolarCompanionDeviceApiImpl by lazy {
+        PolarCompanionDeviceApiImpl(context.applicationContext) { listener }
+    }
+
+    // Forwards companion device presence hints to the app callback.
+    private val companionDeviceEventForwarder = object : PolarCompanionDeviceApi.PolarCompanionDeviceCallback {
+        override fun onDeviceAppeared(macAddress: String) {
+            BleLogger.d(TAG, "Companion device appeared: $macAddress")
+            callback?.polarCompanionDeviceAppeared(macAddress)
+        }
+
+        override fun onDeviceDisappeared(macAddress: String) {
+            BleLogger.d(TAG, "Companion device disappeared: $macAddress")
+            callback?.polarCompanionDeviceDisappeared(macAddress)
+        }
+
+        override fun onError(message: String?) {
+            BleLogger.w(TAG, "Companion device handling error: $message")
+        }
+    }
 
     private val connectSubscriptions: MutableMap<String, Job> = mutableMapOf()
     private val apiScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -256,6 +255,9 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                 PolarBleSdkFeature.FEATURE_POLAR_SPO2_TEST_DATA -> clients.add(BlePsFtpClient::class.java)
                 PolarBleSdkFeature.FEATURE_WATCH_FACES_CONFIGURATION -> clients.add(BlePsFtpClient::class.java)
                 PolarBleSdkFeature.FEATURE_TELEMETRY -> clients.add(BleMdsClient::class.java)
+                PolarBleSdkFeature.FEATURE_COMPANION_DEVICE_MANAGEMENT -> {
+                    // No BLE GATT client required.
+                }
             }
         }
 
@@ -307,6 +309,10 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
             telemetryApi = PolarTelemetryApiImpl(it)
         }
 
+        if (PolarBleSdkFeature.FEATURE_COMPANION_DEVICE_MANAGEMENT in features) {
+            companionDeviceApi.resumeAllAssociatedDevicesPresenceObservation(companionDeviceEventForwarder)
+        }
+
         logSdkInitialization()
     }
 
@@ -348,6 +354,39 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
             listener?.setScanPreFilter(null)
         }
     }
+
+    override fun isCompanionDeviceManagerAvailable(): Boolean =
+        companionDeviceApi.isCompanionDeviceManagerAvailable().also { logApiCall("isCompanionDeviceManagerAvailable") }
+
+    override fun createAssociationRequest(namePrefix: String?, singleDevice: Boolean) =
+        companionDeviceApi.createAssociationRequest(namePrefix, singleDevice)
+
+    override fun associate(
+        request: android.companion.AssociationRequest,
+        onIntentSender: (android.content.IntentSender) -> Unit,
+        callback: PolarCompanionDeviceApi.PolarCompanionDeviceCallback
+    ) = companionDeviceApi.associate(request, onIntentSender, callback).also { logApiCall("associate") }
+
+    override fun launchAssociation(activity: android.app.Activity, intentSender: android.content.IntentSender, requestCode: Int) =
+        companionDeviceApi.launchAssociation(activity, intentSender, requestCode)
+
+    override fun getAssociatedDeviceAddresses(): List<String> =
+        companionDeviceApi.getAssociatedDeviceAddresses().also { logApiCall("getAssociatedDeviceAddresses") }
+
+    override fun isAssociated(identifier: String): Boolean =
+        companionDeviceApi.isAssociated(identifier).also { logApiCall("isAssociated", "identifier" to identifier) }
+
+    override fun removeAssociation(identifier: String) =
+        companionDeviceApi.removeAssociation(identifier).also { logApiCall("removeAssociation", "identifier" to identifier) }
+
+    override fun startObservingDevicePresence(identifier: String, callback: PolarCompanionDeviceApi.PolarCompanionDeviceCallback): Boolean =
+        companionDeviceApi.startObservingDevicePresence(identifier, callback).also { logApiCall("startObservingDevicePresence", "identifier" to identifier) }
+
+    override fun stopObservingDevicePresence(identifier: String): Boolean =
+        companionDeviceApi.stopObservingDevicePresence(identifier).also { logApiCall("stopObservingDevicePresence", "identifier" to identifier) }
+
+    override fun requestBackgroundExecutionPrivilege(activity: android.app.Activity, requestCode: Int): Boolean =
+        companionDeviceApi.requestBackgroundExecutionPrivilege(activity, requestCode).also { logApiCall("requestBackgroundExecutionPrivilege") }
 
     override fun isFeatureReady(identifier: String, feature: PolarBleSdkFeature): Boolean {
         logApiCall("isFeatureReady")
@@ -472,6 +511,8 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                         ?.add(PolarDeviceTelemetryType.memfault_mds)
                     true
                 }
+
+                PolarBleSdkFeature.FEATURE_COMPANION_DEVICE_MANAGEMENT -> companionDeviceApi.isCompanionDeviceManagerAvailable()
             }
         } catch (ignored: Throwable) {
             false
@@ -752,36 +793,39 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
     override fun connectToDevice(identifier: String) {
         logApiCall("connectToDevice", "identifier" to identifier)
         val session = fetchSession(identifier, listener)
-        if (session == null || session.sessionState == DeviceSessionState.SESSION_CLOSED || 
+        val pendingAddress = session?.address
+        if (pendingAddress != null && companionDeferredConnects.containsKey(pendingAddress)) {
+            BleLogger.d(TAG, "connectToDevice($identifier) already pending companion association")
+            return
+        }
+        if (session == null || session.sessionState == DeviceSessionState.SESSION_CLOSED ||
             session.sessionState == DeviceSessionState.SESSION_OPEN_PARK) {
             if (connectSubscriptions.containsKey(identifier)) {
                 connectSubscriptions[identifier]?.cancel()
                 connectSubscriptions.remove(identifier)
             }
             if (session != null) {
-                // For SESSION_OPEN_PARK (parked) devices, use openSessionDirect to trigger reconnection
-                // This calls connectionHandler.connectDevice() which sends CONNECT_DEVICE action
-                listener?.openSessionDirect(session)
                 openConnection(session)
             } else {
-                    listener?.let {
-                        connectSubscriptions[identifier]?.cancel()
-                        connectSubscriptions[identifier] = apiScope.launch {
-                            try {
-                                it.search(false)
-                                    .filter { bleDeviceSession: BleDeviceSession ->
-                                        if (identifier.contains(":")) bleDeviceSession.address == identifier
-                                        else bleDeviceSession.polarDeviceId == identifier
-                                    }
-                                    .take(1)
-                                    .collect { session: BleDeviceSession -> openConnection(session) }
-                                log("connect search completed for $identifier")
-                            } catch (error: Throwable) {
-                                logError("connect search error with device: $identifier error: ${error.message}")
-                            }
+                listener?.let {
+                    connectSubscriptions[identifier] = apiScope.launch {
+                        try {
+                            // After process restart a bonded/system-connected device may not
+                            // advertise, but Android's cached identity can still resolve it.
+                            it.search(true)
+                                .filter { bleDeviceSession: BleDeviceSession ->
+                                    if (identifier.contains(":")) bleDeviceSession.address == identifier
+                                    else bleDeviceSession.polarDeviceId == identifier
+                                }
+                                .take(1)
+                                .collect { session: BleDeviceSession -> openConnection(session) }
+                            log("connect search completed for $identifier")
+                        } catch (error: Throwable) {
+                            logError("connect search error with device: $identifier error: ${error.message}")
                         }
                     }
                 }
+            }
         }
     }
 
@@ -791,6 +835,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         BleLogger.w(TAG, "disconnectFromDevice requested for $identifier")
         val session = fetchSession(identifier, listener)
         session?.let {
+            cancelCompanionDeferredConnect(session.address)
             BleLogger.w(TAG, "disconnectFromDevice session state for $identifier is ${session.sessionState}")
             if (session.sessionState == DeviceSessionState.SESSION_OPEN ||
                 session.sessionState == DeviceSessionState.SESSION_OPENING ||
@@ -858,7 +903,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         }
     }
 
-    override suspend fun requestRecordingStatus(identifier: String): androidx.core.util.Pair<Boolean, String> {
+    override suspend fun requestRecordingStatus(identifier: String): PolarRecordingStatus {
         logApiCall("requestRecordingStatus", "identifier" to identifier)
         val session = PolarServiceClientUtils.sessionPsFtpClientReady(identifier, listener)
         if (!isRecordingSupported(session.polarDeviceType)) throw PolarOperationNotSupported()
@@ -869,14 +914,19 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
             val bytes = byteArrayOutputStream.toByteArray()
             if (bytes.isEmpty()) {
                 log("request recording status for $identifier returned empty data, defaulting to not recording")
-                return androidx.core.util.Pair(false, "")
+                return PolarRecordingStatus(false, "", true)
             }
             val result = PbRequestRecordingStatusResult.parseFrom(bytes)
-            androidx.core.util.Pair(
+            PolarRecordingStatus(
                 result.recordingOn,
-                if (result.hasSampleDataIdentifier()) result.sampleDataIdentifier else ""
+                if (result.hasSampleDataIdentifier()) result.sampleDataIdentifier else "",
+                true
             )
         } catch (throwable: Throwable) {
+            if (throwable.message?.contains("NOT_IMPLEMENTED") ?: true) {
+                log("request recording status for $identifier returned NOT_IMPLEMENTED, device does not support this feature, defaulting to not recording")
+                return PolarRecordingStatus(false, "", false)
+            }
             throw handleError(throwable)
         }
     }
@@ -1511,9 +1561,25 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         listener?.let { bleListener ->
             if (devicesStateMonitorJob == null || devicesStateMonitorJob?.isActive == false) {
                 devicesStateMonitorJob = apiScope.launch {
+                    var firstEmission = true
                     bleListener.monitorDeviceSessionState().collect { pair ->
                         val bleSession = pair.first
                         val state = pair.second
+                        val isFirstEmission = firstEmission
+                        firstEmission = false
+                        // The session state flow replays its latest value. When the monitor is
+                        // relaunched for a new connection, that replay is typically the stale
+                        // SESSION_CLOSED of the previously disconnected device, which was already
+                        // handled by the previous monitor. Processing it again would re-emit
+                        // deviceDisconnected and, as no session is active yet, cancel this
+                        // monitor before the new device's SESSION_OPEN is observed.
+                        if (isFirstEmission &&
+                            state == DeviceSessionState.SESSION_CLOSED &&
+                            bleSession.address != session.address
+                        ) {
+                            BleLogger.d(TAG, "Ignoring replayed SESSION_CLOSED of previous session")
+                            return@collect
+                        }
                         deviceSessionState = state
                         val hasSAGRFCFileSystem = getFileSystemType(bleSession.polarDeviceType) == FileSystemType.POLAR_FILE_SYSTEM_V2
                         val deviceAddress = bleSession.address ?: ""
@@ -1535,6 +1601,11 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                                     }
                                 }
                                 setupDevice(bleSession)
+                                if (PolarBleSdkFeature.FEATURE_COMPANION_DEVICE_MANAGEMENT in features && deviceId.isNotEmpty()) {
+                                    // Association (if needed) is requested in openConnection() while the
+                                    // device is still advertising; here only resume presence observation.
+                                    companionDeviceApi.observePresenceIfAssociated(deviceId, companionDeviceEventForwarder)
+                                }
                             }
                             DeviceSessionState.SESSION_CLOSED -> {
                                 if (bleSession.previousState == DeviceSessionState.SESSION_OPEN ||
@@ -1581,7 +1652,59 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                     }
                 }
             }
-            bleListener.openSessionDirect(session)
+            if (!requestCompanionAssociationBeforeConnect(session) { bleListener.openSessionDirect(session) }) {
+                bleListener.openSessionDirect(session)
+            }
+        }
+    }
+
+    /** Pending GATT connects deferred until the CDM association flow has finished, by address. */
+    private val companionDeferredConnects = java.util.concurrent.ConcurrentHashMap<String, Job>()
+
+    /**
+     * Requests CDM association before the GATT connection is opened and defers [connect] until the
+     * association flow ends. CDM discovers the device by scanning its advertisements, and a device
+     * stops advertising once connected, so connecting in parallel (or requesting association after
+     * SESSION_OPEN) makes the system chooser spin until its discovery times out, especially with
+     * slowly advertising devices. Only done when the device was recently seen advertising;
+     * otherwise the chooser could not find it either and is not shown at all.
+     *
+     * @return true if [connect] was deferred and will be invoked by this function later.
+     */
+    private fun requestCompanionAssociationBeforeConnect(session: BleDeviceSession, connect: () -> Unit): Boolean {
+        if (PolarBleSdkFeature.FEATURE_COMPANION_DEVICE_MANAGEMENT !in features) return false
+        val deviceId = session.polarDeviceId.ifEmpty { session.address ?: "" }
+        val address = session.address ?: return false
+        if (deviceId.isEmpty() || companionDeviceApi.isAssociated(deviceId)) return false
+        if (!session.isAdvertising(COMPANION_ASSOCIATION_ADVERTISING_WINDOW_SECONDS, java.util.concurrent.TimeUnit.SECONDS)) {
+            BleLogger.d(TAG, "Companion association skipped for $deviceId, device is not advertising")
+            return false
+        }
+        val proceed = {
+            // remove() returns the job only for the first caller, so connect runs at most once
+            companionDeferredConnects.remove(address)?.let { job ->
+                job.cancel()
+                connect()
+            }
+        }
+        // Safety net: never block the connection indefinitely if the association flow stalls.
+        companionDeferredConnects[address] = apiScope.launch {
+            delay(COMPANION_ASSOCIATION_MAX_CONNECT_DELAY_MS)
+            BleLogger.w(TAG, "Companion association still pending for $deviceId, connecting anyway")
+            companionDeferredConnects.remove(address)
+            connect()
+        }
+        BleLogger.d(TAG, "Deferring connect to $deviceId until companion association flow finishes")
+        companionDeviceApi.ensureCompanionHandling(deviceId, companionDeviceEventForwarder) { proceed() }
+        return true
+    }
+
+    /** Cancels a connect deferred by [requestCompanionAssociationBeforeConnect], if any. */
+    private fun cancelCompanionDeferredConnect(address: String?) {
+        address ?: return
+        companionDeferredConnects.remove(address)?.let {
+            it.cancel()
+            BleLogger.d(TAG, "Cancelled connect deferred for companion association: $address")
         }
     }
 
@@ -2636,14 +2759,34 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
     }
 
 
+    @Deprecated(
+        message = "Use getSleepRecordingStatus, which reports unknown state instead of off",
+        replaceWith = ReplaceWith("getSleepRecordingStatus(identifier, timeoutMs)")
+    )
     override suspend fun getSleepRecordingState(identifier: String, timeoutMs: Long): Boolean {
         logApiCall("getSleepRecordingState", "identifier" to identifier)
+        @Suppress("DEPRECATION")
         return sleepApiImpl.getSleepRecordingState(identifier, timeoutMs)
     }
 
+    @Deprecated(
+        message = "Use observeSleepRecordingStatus, which reports unknown state instead of off",
+        replaceWith = ReplaceWith("observeSleepRecordingStatus(identifier)")
+    )
     override fun observeSleepRecordingState(identifier: String): Flow<Array<Boolean>> {
         logApiCall("observeSleepRecordingState", "identifier" to identifier)
+        @Suppress("DEPRECATION")
         return sleepApiImpl.observeSleepRecordingState(identifier)
+    }
+
+    override suspend fun getSleepRecordingStatus(identifier: String, timeoutMs: Long): PolarSleepRecordingStatus {
+        logApiCall("getSleepRecordingStatus", "identifier" to identifier)
+        return sleepApiImpl.getSleepRecordingStatus(identifier, timeoutMs)
+    }
+
+    override fun observeSleepRecordingStatus(identifier: String): Flow<Array<PolarSleepRecordingStatus>> {
+        logApiCall("observeSleepRecordingStatus", "identifier" to identifier)
+        return sleepApiImpl.observeSleepRecordingStatus(identifier)
     }
 
     override suspend fun stopSleepRecording(identifier: String) {
@@ -3123,6 +3266,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
             PolarBleSdkFeature.FEATURE_POLAR_SPO2_TEST_DATA -> isPsftpServiceAvailable(discoveredServices, session)
             PolarBleSdkFeature.FEATURE_WATCH_FACES_CONFIGURATION -> deviceIsWatchAndPsftpIsEnabled(discoveredServices, session)
             PolarBleSdkFeature.FEATURE_TELEMETRY -> isMdsServiceAvailable(discoveredServices, session)
+            PolarBleSdkFeature.FEATURE_COMPANION_DEVICE_MANAGEMENT -> companionDeviceApi.isCompanionDeviceManagerAvailable()
         }
         if (available && deviceId != null) {
             withContext(Dispatchers.Main) {
@@ -3302,6 +3446,10 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
 
     companion object {
         private const val TAG = "BDBleApiImpl"
+        /** Max age of the last advertisement for which a CDM association is attempted on connect. */
+        private const val COMPANION_ASSOCIATION_ADVERTISING_WINDOW_SECONDS = 30L
+        /** Upper bound for delaying a connect while the CDM association flow is pending. */
+        private const val COMPANION_ASSOCIATION_MAX_CONNECT_DELAY_MS = 60_000L
         private var instance: BDBleApiImpl? = null
 
         @Throws(PolarBleSdkInstanceException::class, BleNotAvailableInDevice::class)

@@ -35,8 +35,8 @@ class H10ExerciseViewModel @Inject constructor(
         _statusText.value = ""
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val (enabled, _) = repository.requestRecordingStatus(identifier)
-                repository.updateStatus(isSupported = true, isEnabled = enabled)
+                val (ongoing, _, _) = repository.requestRecordingStatus(identifier)
+                repository.updateStatus(isSupported = true, isOngoing = ongoing)
             } catch (e: Exception) {
                 Log.e(TAG, "requestRecordingStatus() failed", e)
             }
@@ -87,13 +87,13 @@ class H10ExerciseViewModel @Inject constructor(
         val feature = featureState.value
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                if (feature.isEnabled) {
+                if (feature.isOngoing) {
                     repository.stopRecording(identifier)
                 } else {
                     val exerciseId = "H10_EX_${System.currentTimeMillis()}"
                     repository.startRecording(identifier, exerciseId)
                 }
-                repository.updateRecordingEnabled(!feature.isEnabled)
+                repository.updateRecordingEnabled(!feature.isOngoing)
             } catch (e: Exception) {
                 Log.e(TAG, "toggleRecording() failed", e)
             }

@@ -6,6 +6,7 @@ apply plugin: 'dagger.hilt.android.plugin'
 apply plugin: 'androidx.navigation.safeargs.kotlin'
 apply plugin: 'com.google.firebase.appdistribution'
 apply plugin: 'com.google.firebase.crashlytics'
+apply plugin: 'jacoco'
 
 def requireEnv = { name ->
     def v = System.getenv(name)
@@ -54,7 +55,7 @@ def getVersion = { ->
 
 // Version of the Polar BLE SDK declared as the JitPack dependency (see dependencies block below).
 // Set this to select SDK version to use with PSDC app
-def POLAR_SDK_VERSION = '8.3.0' // e.g. '6.15.0'
+def POLAR_SDK_VERSION = '8.4.0' // e.g. '6.15.0'
 
 // Returns the SDK version string to embed in BuildConfig.SDK_VERSION:
 //   - JitPack mode  → the declared POLAR_SDK_VERSION constant (always reliable)
@@ -103,9 +104,9 @@ android {
         applicationId "com.polar.polarsensordatacollector"
         minSdkVersion 26
         targetSdkVersion 34
-    	versionCode 77800
+    	versionCode 78100
         // version code from semantic version in format [2 digits of major][2 digits of minor][2 digits of batch]
-    	versionName "7.78.0"
+    	versionName "7.81.0"
         multiDexEnabled true
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
 
@@ -173,7 +174,62 @@ android {
     testOptions {
         unitTests {
             includeAndroidResources = true
+            all {
+                jacoco {
+                    includeNoLocationClasses = true
+                    excludes = ['jdk.internal.*']
+                }
+            }
         }
+    }
+}
+
+jacoco {
+    toolVersion = "0.8.11"
+}
+
+def jacocoExcludes = [
+    '**/R.class',
+    '**/R$*.class',
+    '**/BuildConfig.*',
+    '**/Manifest*.*',
+    '**/*Test*.*',
+    'android/**/*.*',
+    '**/*Proto.*',
+    '**/*OuterClass.*',
+    '**/Pb*.class',
+]
+
+afterEvaluate {
+    tasks.register('jacocoDebugCoverageReport', JacocoReport) {
+        group = 'Reporting'
+        description = "Generate JaCoCo coverage report for debug variant"
+
+        dependsOn tasks.named('testDebugUnitTest')
+
+        reports {
+            xml.required = true
+            html.required = true
+            csv.required = false
+            xml.outputLocation = file("${buildDir}/reports/jacoco/jacocoDebugCoverageReport/jacocoDebugCoverageReport.xml")
+            html.outputLocation = file("${buildDir}/reports/jacoco/jacocoDebugCoverageReport/html")
+        }
+
+        executionData.setFrom(files(
+            "${buildDir}/jacoco/testDebugUnitTest.exec"
+        ))
+
+        classDirectories.setFrom(fileTree(dir: "${buildDir}/intermediates/javac/debug",
+                                           excludes: jacocoExcludes) +
+                                  fileTree(dir: "${buildDir}/tmp/kotlin-classes/debug",
+                                           excludes: jacocoExcludes))
+
+        sourceDirectories.setFrom(files([
+            "src/main/java",
+            "src/main/kotlin",
+            "src/debug/java",
+            "src/debug/kotlin",
+        ]))
     }
 }
 

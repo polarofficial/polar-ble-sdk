@@ -368,7 +368,7 @@ struct TriggerSetupView: View {
                 ForEach(currentDataTypes) { selection in
                     HStack {
                         Text(selection.datatype.displayName)
-                        if ( settingsOptions!.contains(where: { $0.selectedDataType == selection.datatype })) {
+                        if ( hasSettingsOptions(for: selection.datatype)) {
                             Button(action: {
                                 currentlySelectedDataType = mapStringToDeviceDataType(selection.datatype.displayName)
                                 showSettingsDialog.toggle()
@@ -388,7 +388,7 @@ struct TriggerSetupView: View {
                                 }
                                 enabledTriggers[getShortNameForDataType(selection.datatype)] = $0
 
-                                if ($0 && settingsOptions!.contains(where: { $0.selectedDataType == selection.datatype }) ) {
+                                if ($0 && hasSettingsOptions(for: selection.datatype) ) {
                                     if let dataType = mapStringToDeviceDataType(selection.datatype.displayName) {
                                         currentlySelectedDataType = dataType
                                         showSettingsDialog.toggle()
@@ -442,6 +442,16 @@ struct TriggerSetupView: View {
         }
     }
 
+    private func hasSettingsOptions(for dataType: PolarDeviceDataType) -> Bool {
+        guard let options = settingsOptions?.first(where: { $0.selectedDataType == dataType }) else {
+            return false
+        }
+        return !options.sampleRateOptions.isEmpty
+            || !options.resolutionOptions.isEmpty
+            || !options.rangeOptions.isEmpty
+            || !options.channelOptions.isEmpty
+    }
+
     private func fetchSettings(generation: Int) async {
 
         self.isLoading = true
@@ -489,37 +499,37 @@ struct TriggerSetupView: View {
             var sampleRateOptions: [UInt32] = []
             var channelOptions: [UInt32] = []
             var rangeOptions: [UInt32] = []
-            guard let settings = bleSdkManager.offlineRecordingSettings(for: dataType.key) else {
-                BleLogger.error("Failed to retrieve settings for \(dataType)")
-                continue
-            }
 
-            if let sampleRateSetting = settings.settings.first(where: { $0.type == .sampleRate }) {
-                sampleRateOptions = sampleRateSetting.sortedValues.compactMap { UInt32($0) }
-                if let firstSampleRate = sampleRateOptions.first {
-                    sampleRate = firstSampleRate
+            if let settings = bleSdkManager.offlineRecordingSettings(for: dataType.key) {
+                if let sampleRateSetting = settings.settings.first(where: { $0.type == .sampleRate }) {
+                    sampleRateOptions = sampleRateSetting.sortedValues.compactMap { UInt32($0) }
+                    if let firstSampleRate = sampleRateOptions.first {
+                        sampleRate = firstSampleRate
+                    }
                 }
-            }
 
-            if let resolutionSetting = settings.settings.first(where: { $0.type == .resolution }) {
-                resolutionOptions = resolutionSetting.sortedValues.compactMap { UInt32($0) }
-                if let firstResolution = resolutionOptions.first {
-                    resolution = firstResolution
+                if let resolutionSetting = settings.settings.first(where: { $0.type == .resolution }) {
+                    resolutionOptions = resolutionSetting.sortedValues.compactMap { UInt32($0) }
+                    if let firstResolution = resolutionOptions.first {
+                        resolution = firstResolution
+                    }
                 }
-            }
 
-            if let rangeSetting = settings.settings.first(where: { $0.type == .range }) {
-                rangeOptions = rangeSetting.sortedValues.compactMap { UInt32($0) }
-                if let firstRange = rangeOptions.first {
-                    range = firstRange
+                if let rangeSetting = settings.settings.first(where: { $0.type == .range }) {
+                    rangeOptions = rangeSetting.sortedValues.compactMap { UInt32($0) }
+                    if let firstRange = rangeOptions.first {
+                        range = firstRange
+                    }
                 }
-            }
 
-            if let channelSetting = settings.settings.first(where: { $0.type == .channels }) {
-                channelOptions = channelSetting.sortedValues.compactMap { UInt32($0) }
-                if let firstChannel = channelOptions.first {
-                    channels = firstChannel
+                if let channelSetting = settings.settings.first(where: { $0.type == .channels }) {
+                    channelOptions = channelSetting.sortedValues.compactMap { UInt32($0) }
+                    if let firstChannel = channelOptions.first {
+                        channels = firstChannel
+                    }
                 }
+            } else {
+                BleLogger.error("No settings available for \(dataType)")
             }
 
             if let appliedSetting = triggerSetupFeatures[dataType.key] ?? nil {

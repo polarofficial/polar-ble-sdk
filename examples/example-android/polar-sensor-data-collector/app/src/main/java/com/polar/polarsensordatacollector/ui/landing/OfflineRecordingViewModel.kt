@@ -314,7 +314,7 @@ class OfflineRecordingViewModel @Inject constructor(
                     continue
                 }
 
-                val settings = if (feature == PolarBleApi.PolarDeviceDataType.PPI || feature == PolarBleApi.PolarDeviceDataType.HR) {
+                val settings = if (feature == PolarBleApi.PolarDeviceDataType.PPI || feature == PolarBleApi.PolarDeviceDataType.HR || feature == PolarBleApi.PolarDeviceDataType.DERIVED_MEASUREMENT) {
                     null
                 } else {
                     try {

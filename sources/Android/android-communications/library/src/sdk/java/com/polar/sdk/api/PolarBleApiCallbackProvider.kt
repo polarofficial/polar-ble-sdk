@@ -164,4 +164,21 @@ interface PolarBleApiCallbackProvider {
      * @param data       @see polar.com.sdk.api.model.PolarHealthThermometerData.kt
      */
     fun htsNotificationReceived(identifier: String, data: PolarHealthThermometerData)
+
+    /**
+     * The device came back into BLE range. Requires feature
+     * [PolarBleApi.PolarBleSdkFeature.FEATURE_COMPANION_DEVICE_MANAGEMENT]. This is a presence
+     * hint, not a connection event; call [PolarBleApi.connectToDevice] here if desired.
+     *
+     * @param identifier Polar device id or bt address
+     */
+    fun polarCompanionDeviceAppeared(identifier: String) {}
+
+    /**
+     * The device is no longer in BLE range. Requires feature
+     * [PolarBleApi.PolarBleSdkFeature.FEATURE_COMPANION_DEVICE_MANAGEMENT].
+     *
+     * @param identifier Polar device id or bt address
+     */
+    fun polarCompanionDeviceDisappeared(identifier: String) {}
 }

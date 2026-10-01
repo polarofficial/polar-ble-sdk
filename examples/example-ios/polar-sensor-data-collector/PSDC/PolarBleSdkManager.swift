@@ -127,7 +127,7 @@ class PolarBleSdkManager : ObservableObject {
     
     @Published var offlineExerciseV2Supported: Bool = false
     @Published var offlineExerciseV2Entries: [PolarExerciseEntry] = []
-    @Published var offlineExerciseV2Status: Bool = false
+    @Published var isOfflineExcerciseV2Ongoing: Bool = false
     
     @Published var fileTransferFeature = FeatureSupported()
     @Published var activityDataFeature = FeatureSupported()
@@ -1576,7 +1576,7 @@ extension PolarBleSdkManager {
         return fallback
     }
     
-    func getOfflineExerciseV2Status() async {
+    func getIsOfflineExerciseV2Ongoing() async {
         guard case .connected(let device) = deviceConnectionState else { return }
 
         let isReady = api.isFeatureReady(device.deviceId, feature: .feature_polar_offline_exercise_v2)
@@ -1692,10 +1692,15 @@ extension PolarBleSdkManager {
         Task { @MainActor [weak self] in
             guard let self else { return }
             do {
-                let pair = try await api.requestRecordingStatus(device.deviceId)
-                var recordingStatus = "Recording on: \(pair.ongoing)."
-                if pair.ongoing {
-                    recordingStatus.append(" Recording started with id: \(pair.entryId)")
+                let triple = try await api.requestRecordingStatus(device.deviceId)
+                var recordingStatus = "Recording on: \(triple.ongoing)."
+                // If device does not support H10 recording silently forget that we ever bothered to quest the status.
+                if !(triple.supported ?? false) {
+                    AppLogger.log("H10 recording not supported by device \(device.deviceId)")
+                    return
+                }
+                if triple.ongoing {
+                    recordingStatus.append(" Recording started with id: \(triple.entryId)")
                     h10RecordingFeature.isEnabled = true
                 } else {
                     h10RecordingFeature.isEnabled = false
@@ -2163,7 +2168,8 @@ extension PolarBleSdkManager {
                     compassLogEnabled: config.compassLogEnabled,
                     speed3DLogEnabled: config.speed3DLogEnabled,
                     logTrigger: config.logTrigger,
-                    magnetometerFrequency: config.magnetometerFrequency
+                    magnetometerFrequency: config.magnetometerFrequency,
+                    hrSensorConfig: config.hrSensorConfig
                 )
             }
         } catch {
@@ -2489,16 +2495,15 @@ extension PolarBleSdkManager {
         }
     }
        
-    func getSleepRecordingState() async {
+    func getSleepRecordingStatus() async {
         if case .connected(let device) = deviceConnectionState {
             do {
-                let enabled = try await api.getSleepRecordingState(identifier: device.deviceId)
+                let status = try await api.getSleepRecordingStatus(identifier: device.deviceId)
                 Task {@MainActor in
-                    self.sleepRecordingFeature.sleepRecordingEnabledAvailable = true
-                    self.sleepRecordingFeature.sleepRecordingEnabled = enabled
+                    self.sleepRecordingFeature.status = status
                 }
             } catch let err {
-                AppLogger.log("Failed to get device sleep recording state, \(err)")
+                AppLogger.log("Failed to get device sleep recording status, \(err)")
             }
         }
     }
@@ -2528,23 +2533,22 @@ extension PolarBleSdkManager {
         }
     }
     
-    func observeSleepRecordingState() {
+    func observeSleepRecordingStatus() {
         guard case .connected(let device) = deviceConnectionState else { return }
         sleepObserverTask?.cancel()
         sleepObserverTask = Task { [weak self] in
             guard let self else { return }
             do {
-                for try await enableds in api.observeSleepRecordingState(identifier: device.deviceId) {
-                    if let enabled = enableds.last {
+                for try await statuses in api.observeSleepRecordingStatus(identifier: device.deviceId) {
+                    if let status = statuses.last {
                         await MainActor.run {
-                            self.sleepRecordingFeature.sleepRecordingEnabled = enabled
-                            self.sleepRecordingFeature.sleepRecordingEnabledAvailable = true
+                            self.sleepRecordingFeature.status = status
                         }
                     }
                 }
-                AppLogger.log("observeSleepRecordingSettings completed")
+                AppLogger.log("observeSleepRecordingStatus completed")
             } catch {
-                AppLogger.log("Error in observing sleep recording state: \(error)")
+                AppLogger.log("Error in observing sleep recording status: \(error)")
             }
         }
     }
@@ -2635,6 +2639,40 @@ extension PolarBleSdkManager {
                         let sessionSummaryData = try trainingSession.sessionSummary.jsonUTF8Data()
                         let sessionSummaryString = String(data: sessionSummaryData, encoding: .utf8) ?? "{}"
 
+                        func jsonExerciseTypeName(_ type: PolarExerciseDataTypes) -> String {
+                            switch type {
+                            case .exerciseSummary: return "EXERCISE_SUMMARY"
+                            case .route: return "ROUTE"
+                            case .routeGzip: return "ROUTE_GZIP"
+                            case .routeAdvancedFormat: return "ROUTE_ADVANCED_FORMAT"
+                            case .routeAdvancedFormatGzip: return "ROUTE_ADVANCED_FORMAT_GZIP"
+                            case .samples: return "SAMPLES"
+                            case .samplesGzip: return "SAMPLES_GZIP"
+                            case .samplesAdvancedFormatGzip: return "SAMPLES_ADVANCED_FORMAT_GZIP"
+                            }
+                        }
+                        func jsonTrainingTypeName(_ type: PolarTrainingSessionDataTypes) -> String {
+                            switch type {
+                            case .trainingSessionSummary: return "TRAINING_SESSION_SUMMARY"
+                            }
+                        }
+                        func jsonStringArray(_ items: [String]) -> String {
+                            guard let data = try? JSONSerialization.data(withJSONObject: items),
+                                  let str = String(data: data, encoding: .utf8) else { return "[]" }
+                            return str
+                        }
+                        func jsonFileSizes(_ fileSizes: [String: Int64]?) -> String {
+                            guard let fileSizes, !fileSizes.isEmpty else { return "{}" }
+                            let object = fileSizes.mapValues { NSNumber(value: $0) }
+                            guard let data = try? JSONSerialization.data(withJSONObject: object),
+                                  let str = String(data: data, encoding: .utf8) else { return "{}" }
+                            return str
+                        }
+                        let referenceDateFormatter = DateFormatter()
+                        referenceDateFormatter.dateFormat = "yyyy-MM-dd"
+                        referenceDateFormatter.locale = Locale(identifier: "en_US_POSIX")
+                        referenceDateFormatter.timeZone = TimeZone(identifier: "UTC")
+
                         var exerciseJsonObjects: [String] = []
                         for exercise in trainingSession.exercises {
                             let summaryString: String
@@ -2650,9 +2688,15 @@ extension PolarBleSdkManager {
                                    let data = try? route.jsonUTF8Data(),
                                    let str = String(data: data, encoding: .utf8) {
                                     return str
-                                } else if let routeAdv = exercise.routeAdvanced,
-                                          let data = try? routeAdv.jsonUTF8Data(),
-                                          let str = String(data: data, encoding: .utf8) {
+                                } else {
+                                    return "{}"
+                                }
+                            }()
+
+                            let routeAdvancedString: String = {
+                                if let routeAdv = exercise.routeAdvanced,
+                                   let data = try? routeAdv.jsonUTF8Data(),
+                                   let str = String(data: data, encoding: .utf8) {
                                     return str
                                 } else {
                                     return "{}"
@@ -2664,20 +2708,34 @@ extension PolarBleSdkManager {
                                    let data = try? samples.jsonUTF8Data(),
                                    let str = String(data: data, encoding: .utf8) {
                                     return str
-                                } else if let samplesAdv = exercise.samplesAdvanced,
-                                          let data = try? samplesAdv.jsonUTF8Data(),
-                                          let str = String(data: data, encoding: .utf8) {
+                                } else {
+                                    return "{}"
+                                }
+                            }()
+
+                            let samplesAdvancedString: String = {
+                                if let samplesAdv = exercise.samplesAdvanced,
+                                   let data = try? samplesAdv.jsonUTF8Data(),
+                                   let str = String(data: data, encoding: .utf8) {
                                     return str
                                 } else {
                                     return "{}"
                                 }
                             }()
 
+                            let dataTypesString = jsonStringArray(exercise.exerciseDataTypes.map { jsonExerciseTypeName($0) })
+                            let fileSizesString = jsonFileSizes(exercise.fileSizes)
+
                             let exerciseJson = """
                             {
+                              "index": \(exercise.index),
+                              "exerciseDataTypes": \(dataTypesString),
+                              "fileSizes": \(fileSizesString),
                               "exerciseSummary": \(summaryString),
                               "route": \(routeString),
-                              "samples": \(samplesString)
+                              "routeAdvanced": \(routeAdvancedString),
+                              "samples": \(samplesString),
+                              "samplesAdvanced": \(samplesAdvancedString)
                             }
                             """
                             exerciseJsonObjects.append(exerciseJson)
@@ -2685,9 +2743,31 @@ extension PolarBleSdkManager {
 
                         let exercisesArrayString = "[\(exerciseJsonObjects.joined(separator: ","))]"
 
+                        let reference = trainingSession.reference
+                        let referenceExerciseObjects = reference.exercises.map { exercise -> String in
+                            """
+                            {
+                              "index": \(exercise.index),
+                              "exerciseDataTypes": \(jsonStringArray(exercise.exerciseDataTypes.map { jsonExerciseTypeName($0) })),
+                              "fileSizes": \(jsonFileSizes(exercise.fileSizes))
+                            }
+                            """
+                        }
+                        let referenceExercisesString = "[\(referenceExerciseObjects.joined(separator: ","))]"
+                        let referenceString = """
+                        {
+                          "date": "\(referenceDateFormatter.string(from: reference.date))",
+                          "path": "\(reference.path)",
+                          "fileSize": \(reference.fileSize),
+                          "trainingDataTypes": \(jsonStringArray(reference.trainingDataTypes.map { jsonTrainingTypeName($0) })),
+                          "exercises": \(referenceExercisesString)
+                        }
+                        """
+
                         let jsonString = """
                         {
                           "sessionSummary": \(sessionSummaryString),
+                          "reference": \(referenceString),
                           "exercises": \(exercisesArrayString)
                         }
                         """
@@ -2932,7 +3012,7 @@ extension PolarBleSdkManager {
         case .pressure:
             result = "TIMESTAMP PRESSURE(mBar)\n"
         case .skinTemperature:
-            result = "TIMESTAMP SKIN TEMPERATURE(Celcius)\n"
+            result = "TIMESTAMP SKIN_TEMPERATURE(Celcius)\n"
         }
         return result
     }
@@ -3459,10 +3539,10 @@ extension PolarBleSdkManager {
         guard case .connected(let device) = deviceConnectionState else {
             throw NSError(domain: "Device not connected", code: -1)
         }
-        offlineExerciseV2Status = false
+        isOfflineExcerciseV2Ongoing = false
         do {
             let result = try await api.startOfflineExerciseV2(identifier: device.deviceId)
-            offlineExerciseV2Status = (result.result == .success)
+            isOfflineExcerciseV2Ongoing = (result.result == .success)
             return result
         } catch {
             AppLogger.log("Start Offline Exercise V2 failed: \(error)")
@@ -3476,30 +3556,27 @@ extension PolarBleSdkManager {
         }
         do {
             try await api.stopOfflineExerciseV2(identifier: device.deviceId)
-            offlineExerciseV2Status = false
+            isOfflineExcerciseV2Ongoing = false
         } catch {
             AppLogger.log("Stop Offline Exercise V2 failed: \(error)")
             throw error
         }
     }
 
-    func listOfflineExercisesV2() {
+    func listOfflineExercisesV2() async {
         guard case .connected(let device) = deviceConnectionState else { return }
         genericApiFileList.removeAll()
         offlineExerciseV2Entries.removeAll()
-        Task { @MainActor [weak self] in
-            guard let self else { return }
-            do {
-                for try await entry in api.listOfflineExercisesV2(identifier: device.deviceId, directoryPath: "/") {
-                    genericApiFileList.append(entry.path)
-                    offlineExerciseV2Entries.append(entry)
-                }
-            } catch {
-                if isSystemBusy(error: error) {
-                    AppLogger.log("listOfflineExercisesV2(), device busy (exercise running)")
-                } else {
-                    AppLogger.log("listOfflineExercisesV2 failed: \(error)")
-                }
+        do {
+            for try await entry in api.listOfflineExercisesV2(identifier: device.deviceId, directoryPath: "/") {
+                genericApiFileList.append(entry.path)
+                offlineExerciseV2Entries.append(entry)
+            }
+        } catch {
+            if isSystemBusy(error: error) {
+                AppLogger.log("listOfflineExercisesV2(), device busy (exercise running)")
+            } else {
+                AppLogger.log("listOfflineExercisesV2 failed: \(error)")
             }
         }
     }
@@ -3538,22 +3615,19 @@ extension PolarBleSdkManager {
         }
     }
 
-    func getOfflineExerciseStatusV2() {
+    func getOfflineExerciseStatusV2() async {
         guard case .connected(let device) = deviceConnectionState else {
             AppLogger.log("getOfflineExerciseStatusV2 failed – device not connected")
             return
         }
-        Task { @MainActor [weak self] in
-            guard let self else { return }
-            do {
-                let isRunning = try await api.getOfflineExerciseStatusV2(identifier: device.deviceId)
-                offlineExerciseV2Status = isRunning
-            } catch {
-                if isSystemBusy(error: error) {
-                    offlineExerciseV2Status = true
-                } else {
-                    AppLogger.log("getOfflineExerciseStatusV2 failed: \(error)")
-                }
+        do {
+            let isRunning = try await api.getOfflineExerciseStatusV2(identifier: device.deviceId)
+            isOfflineExcerciseV2Ongoing = isRunning
+        } catch {
+            if isSystemBusy(error: error) {
+                isOfflineExcerciseV2Ongoing = true
+            } else {
+                AppLogger.log("getOfflineExerciseStatusV2 failed: \(error)")
             }
         }
     }
@@ -3570,14 +3644,14 @@ extension PolarBleSdkManager {
             date: Date(),
             entryId: URL(fileURLWithPath: entryPath).lastPathComponent
         )
-        offlineExerciseV2Status = false
+        isOfflineExcerciseV2Ongoing = false
         do {
             try await api.removeOfflineExerciseV2(identifier: device.deviceId, entry: entry)
             genericApiFileList.removeAll()
             offlineExerciseV2Entries.removeAll()
         } catch {
             if isSystemBusy(error: error) {
-                offlineExerciseV2Status = true
+                isOfflineExcerciseV2Ongoing = true
             } else {
                 AppLogger.log("removeOfflineExerciseV2 failed: \(error)")
             }
@@ -3605,6 +3679,12 @@ extension PolarBleSdkManager {
     }
 
     func fetchAndExportOfflineExerciseV2() async throws -> URL {
+
+        await getOfflineExerciseStatusV2()
+
+        if (isOfflineExcerciseV2Ongoing) {
+            throw NSError(domain: "Cannot fetch exercise while exercise is running", code: -1)
+        }
 
         guard let entryPath = offlineExerciseV2Entries.first?.path,
               case .connected(let device) = deviceConnectionState else {
@@ -3870,7 +3950,7 @@ extension PolarBleSdkManager : PolarBleApiDeviceFeaturesObserver {
                 self.offlineExerciseV2Feature.isSupported = true
             }
             Task { @MainActor in
-                await self.getOfflineExerciseV2Status()
+                await self.getIsOfflineExerciseV2Ongoing()
             }
         }
 
@@ -3908,7 +3988,7 @@ extension PolarBleSdkManager : PolarBleApiDeviceFeaturesObserver {
                 self.sleepRecordingFeature.isSupported = true
             }
             Task { @MainActor in
-                await self.getSleepRecordingState()
+                await self.getSleepRecordingStatus()
             }
         }
     

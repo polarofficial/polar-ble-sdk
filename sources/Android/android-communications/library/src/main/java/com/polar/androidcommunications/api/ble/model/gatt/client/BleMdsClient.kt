@@ -1,5 +1,6 @@
 package com.polar.androidcommunications.api.ble.model.gatt.client
 
+import androidx.annotation.VisibleForTesting
 import com.polar.androidcommunications.api.ble.BleLogger
 import com.polar.androidcommunications.api.ble.exceptions.BleAttributeError
 import com.polar.androidcommunications.api.ble.exceptions.BleDisconnected
@@ -15,6 +16,7 @@ import kotlinx.coroutines.flow.flow
 import java.util.UUID
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * The `BleMdsClient` class implements BLE MDS (Memfault Diagnostic Service) client for receiving
@@ -23,6 +25,9 @@ import java.util.concurrent.TimeUnit
  * Service flow:
  * 1. After connection [MDS_SUPPORTED_FEATURES], [MDS_DEVICE_IDENTIFIER], [MDS_DATA_URI] and
  *    [MDS_AUTHORIZATION] are auto-read, and [MDS_DATA_EXPORT] notifications are auto-enabled.
+ *    If [MDS_SUPPORTED_FEATURES] fails to read, the failure is not cached forever: the next
+ *    [clientReady] call triggers one fresh retry read instead of replaying the stale failure,
+ *    so recovery works once consent is resolved without an app restart or BLE reconnect.
  * 2. Call [startMdsNotifications] to register an observer and enable streaming via
  *    [MDS_DATA_EXPORT].
  * 3. Observe [TelemetryConfiguration] for continuous streaming; each
@@ -97,7 +102,15 @@ class BleMdsClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, M
     private val mdsObserverAtomicList = AtomicSet<Channel<TelemetryConfiguration>>()
     private val supportedFeaturesReadLock = Any()
     @Volatile private var supportedFeaturesRead = CompletableDeferred<Int>()
+    private var supportedFeaturesError: Throwable? = null
+    private var supportedFeaturesRetryAttempted = false
     val mdsResponseQueue = LinkedBlockingQueue<Pair<ByteArray, Int>>()
+
+    // Bumped every time clientReady() has evaluated the cached supported-features error/retry
+    // state. Tests use this to deterministically wait past the real Dispatchers.IO hop in
+    // waitNotificationEnabled() before simulating the next GATT callback, without sleeping.
+    @VisibleForTesting
+    internal val supportedFeaturesCheckCountForTest = AtomicInteger(0)
 
     init {
         // Auto-read readable characteristics after service discovery.
@@ -115,9 +128,14 @@ class BleMdsClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, M
         dataUri = null
         authorization = null
         supportedFeatures = null
+        // A disconnect must release any clientReady() caller awaiting the supported-features
+        // read, and must not let a stale error/result leak into the next connection's
+        // clientReady() call, so a fresh CompletableDeferred and retry budget are installed.
         synchronized(supportedFeaturesReadLock) {
             supportedFeaturesRead.completeExceptionally(BleDisconnected())
             supportedFeaturesRead = CompletableDeferred()
+            supportedFeaturesError = null
+            supportedFeaturesRetryAttempted = false
         }
         lastSeqCounter = -1
         mdsResponseQueue.clear()
@@ -125,11 +143,35 @@ class BleMdsClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, M
     }
 
     override suspend fun clientReady(checkConnection: Boolean) {
-        val currentSupportedFeaturesRead = synchronized(supportedFeaturesReadLock) {
+        waitNotificationEnabled(MDS_DATA_EXPORT, checkConnection)
+
+        var shouldRetryRead = false
+        val readToAwait = synchronized(supportedFeaturesReadLock) {
+            if (supportedFeaturesError != null && !supportedFeaturesRetryAttempted) {
+                supportedFeaturesRetryAttempted = true
+                supportedFeaturesError = null
+                supportedFeaturesRead = CompletableDeferred()
+                shouldRetryRead = true
+            }
             supportedFeaturesRead
         }
-        waitNotificationEnabled(MDS_DATA_EXPORT, checkConnection)
-        currentSupportedFeaturesRead.await()
+        supportedFeaturesCheckCountForTest.incrementAndGet()
+
+        if (shouldRetryRead) {
+            try {
+                BleLogger.d(TAG, "MDS Supported Features: retrying read on new clientReady() call")
+                txInterface.readValue(MDS_SERVICE, MDS_SUPPORTED_FEATURES)
+            } catch (throwable: Throwable) {
+                BleLogger.e(TAG, "MDS Supported Features retry read failed to start: $throwable")
+                synchronized(supportedFeaturesReadLock) {
+                    if (supportedFeaturesRead === readToAwait) {
+                        supportedFeaturesError = throwable
+                        supportedFeaturesRead.completeExceptionally(throwable)
+                    }
+                }
+            }
+        }
+        readToAwait.await()
     }
 
     override fun processServiceData(
@@ -149,10 +191,10 @@ class BleMdsClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, M
                     BleLogger.d(TAG, "MDS Supported Features received (${data.size} bytes): ${data.map { it }}")
                 } else {
                     BleLogger.e(TAG, "MDS Supported Features read error: $status")
+                    val error = BleAttributeError("MDS Supported Features attribute ", status)
                     synchronized(supportedFeaturesReadLock) {
-                        supportedFeaturesRead.completeExceptionally(
-                            BleAttributeError("MDS Supported Features attribute ", status)
-                        )
+                        supportedFeaturesError = error
+                        supportedFeaturesRead.completeExceptionally(error)
                     }
                 }
             }

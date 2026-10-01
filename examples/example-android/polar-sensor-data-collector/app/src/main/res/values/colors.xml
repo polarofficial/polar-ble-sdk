@@ -21,4 +21,8 @@
 
     <color name="color_gray">#808080</color>
 
+    <color name="color_toggle_button_red">#d41029</color>
+    <color name="color_toggle_button_blue">#287AA9</color>
+
 </resources>
+

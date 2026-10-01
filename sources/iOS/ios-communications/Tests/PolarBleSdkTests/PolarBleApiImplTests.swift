@@ -442,6 +442,27 @@ final class PolarBleApiImplTests: XCTestCase {
         if case PolarErrors.operationNotSupported = error! { } else { XCTFail("Expected operationNotSupported") }
     }
 
+    func test_requestRecordingStatus_deviceRespondsWithErrorCode201_returnsUnsupportedFallbackStatus() throws {
+        // Arrange – device responds to the status query with PFTP error 201. The current
+        // implementation treats this as a soft signal (not a hard failure): it does not throw,
+        // it returns a fallback status with `supported == false`.
+        h10MockClient.queryReturnValue = .failure(BlePsFtpException.responseError(errorCode: 201))
+
+        // Act
+        let status = try awaitSingleAsync { [self] in
+            try await h10Api.requestRecordingStatus(deviceId)
+        }
+
+        // Assert – fallback status values, no thrown error.
+        XCTAssertFalse(status.ongoing)
+        XCTAssertEqual(status.entryId, "")
+        XCTAssertEqual(status.supported, false)
+
+        // The request must still have been issued to the device.
+        XCTAssertEqual(h10MockClient.queryCalls.count, 1)
+        XCTAssertEqual(h10MockClient.queryCalls[0].id, Protocol_PbPFtpQuery.requestRecordingStatus.rawValue)
+    }
+
     // MARK: - searchForDevice helpers
 
     private var searchApi: MockSearchBleApiImpl!

@@ -34,6 +34,8 @@ import io.mockk.unmockkObject
 import io.mockk.unmockkStatic
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
@@ -66,13 +68,16 @@ import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.BlePMDClien
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdControlPointResponse.PmdControlPointResponseCode
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdSdkMode
 import com.polar.sdk.api.PolarBleApi.PolarDeviceDataType
+import com.polar.sdk.api.PolarH10OfflineExerciseApi
 import fi.polar.remote.representation.protobuf.Types.PbDate
 import fi.polar.remote.representation.protobuf.Types.PbTime
 import fi.polar.remote.representation.protobuf.Types.PbSystemDateTime
+import fi.polar.remote.representation.protobuf.ExerciseSamples.PbExerciseSamples
 import fi.polar.remote.representation.protobuf.UserDeviceSettings
 import fi.polar.remote.representation.protobuf.UserDeviceSettings.PbUserDeviceSettings
 import fi.polar.remote.representation.protobuf.UserIds
 import io.mockk.verify
+import io.mockk.coVerify
 import com.polar.sdk.impl.utils.PolarFileUtils
 import com.polar.sdk.impl.utils.PolarActivityUtils
 import com.polar.sdk.api.model.LedConfig
@@ -128,6 +133,89 @@ class BDBleApiImplTest {
         unmockkConstructor(BDScanCallback::class)
     }
 
+    @Test
+    fun `connectToDevice resolves known device by ID without waiting for advertisements`() = runTest {
+        val (api, listener) = mockConnectionListener()
+        api.javaClass.getDeclaredField("apiScope").also { it.isAccessible = true }.set(api, this)
+        val target = mockConnectionSession("12345678", "AA:BB:CC:00:00:01")
+        val other = mockConnectionSession("87654321", "AA:BB:CC:00:00:02")
+        every { listener.deviceSessions() } returns emptySet()
+        every { listener.search(true) } returns flowOf(other, target)
+
+        api.connectToDevice("12345678")
+        testScheduler.advanceUntilIdle()
+
+        verify(exactly = 1) { listener.search(true) }
+        verify(exactly = 0) { listener.search(false) }
+        verify(exactly = 1) { listener.openSessionDirect(target) }
+        verify(exactly = 0) { listener.openSessionDirect(other) }
+    }
+
+    @Test
+    fun `connectToDevice resolves known device by MAC without advertisements`() = runTest {
+        val (api, listener) = mockConnectionListener()
+        api.javaClass.getDeclaredField("apiScope").also { it.isAccessible = true }.set(api, this)
+        val target = mockConnectionSession("12345678", "AA:BB:CC:00:00:01")
+        every { listener.deviceSessions() } returns emptySet()
+        every { listener.search(true) } returns flowOf(target)
+
+        api.connectToDevice("AA:BB:CC:00:00:01")
+        testScheduler.advanceUntilIdle()
+
+        verify(exactly = 1) { listener.openSessionDirect(target) }
+    }
+
+    @Test
+    fun `connectToDevice still waits for scan result when target is not known`() = runTest {
+        val (api, listener) = mockConnectionListener()
+        api.javaClass.getDeclaredField("apiScope").also { it.isAccessible = true }.set(api, this)
+        val results = MutableSharedFlow<BleDeviceSession>()
+        val target = mockConnectionSession("12345678", "AA:BB:CC:00:00:01")
+        every { listener.deviceSessions() } returns emptySet()
+        every { listener.search(true) } returns results
+
+        api.connectToDevice("12345678")
+        testScheduler.advanceUntilIdle()
+        verify(exactly = 0) { listener.openSessionDirect(any()) }
+        results.emit(target)
+        testScheduler.advanceUntilIdle()
+
+        verify(exactly = 1) { listener.openSessionDirect(target) }
+    }
+
+    @Test
+    fun `connectToDevice opens existing parked session only once`() = runTest {
+        val (api, listener) = mockConnectionListener()
+        api.javaClass.getDeclaredField("apiScope").also { it.isAccessible = true }.set(api, this)
+        val target = mockConnectionSession("12345678", "AA:BB:CC:00:00:01")
+        every { target.sessionState } returns BleDeviceSession.DeviceSessionState.SESSION_OPEN_PARK
+        every { listener.deviceSessions() } returns setOf(target)
+
+        api.connectToDevice("12345678")
+        testScheduler.advanceUntilIdle()
+
+        verify(exactly = 1) { listener.openSessionDirect(target) }
+        verify(exactly = 0) { listener.search(any()) }
+    }
+
+    private fun mockConnectionListener(): Pair<BDBleApiImpl, BleDeviceListener> {
+        val api = BDBleApiImpl.getInstance(context, emptySet())
+        val listener = mockk<BleDeviceListener>(relaxed = true)
+        every { listener.monitorDeviceSessionState() } returns emptyFlow()
+        api.javaClass.getDeclaredField("listener").also { it.isAccessible = true }.set(api, listener)
+        return Pair(api, listener)
+    }
+
+    private fun mockConnectionSession(deviceId: String, address: String): BleDeviceSession {
+        val session = mockk<BleDeviceSession>(relaxed = true)
+        val content = BleAdvertisementContent().apply { processName("Polar 360 $deviceId") }
+        every { session.advertisementContent } returns content
+        every { session.polarDeviceId } returns deviceId
+        every { session.address } returns address
+        every { session.sessionState } returns BleDeviceSession.DeviceSessionState.SESSION_CLOSED
+        return session
+    }
+
     private fun mockPfcConnection(deviceId: String): Pair<BlePfcClient, BleDeviceSession> {
         val pfcClient = mockk<BlePfcClient>()
         val session = mockk<BleDeviceSession>()
@@ -151,6 +239,7 @@ class BDBleApiImplTest {
 
         every { session.advertisementContent } returns advContent
         every { session.advertisementContent.polarDeviceId } returns deviceId
+        every { session.polarDeviceType } returns "H10"
         every { session.sessionState } returns BleDeviceSession.DeviceSessionState.SESSION_OPEN
         every { session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) } returns client
         every { client.isServiceDiscovered } returns true
@@ -213,11 +302,13 @@ class BDBleApiImplTest {
             version = "test",
             devices = mapOf(
                 deviceType.lowercase() to BlePolarDeviceCapabilitiesUtility.DeviceCapabilities(
+                    recordingSupported = fileSystemType == BlePolarDeviceCapabilitiesUtility.FileSystemType.H10_FILE_SYSTEM,
                     fileSystemType = fsTypeStr,
                     isDeviceSensor = isDeviceSensor
                 )
             ),
             defaults = BlePolarDeviceCapabilitiesUtility.DefaultsSection(
+                recordingSupported = false,
                 fileSystemType = "POLAR_FILE_SYSTEM_V2",
                 isDeviceSensor = false
             )
@@ -1420,6 +1511,110 @@ class BDBleApiImplTest {
 
         // Act & Assert — should not throw
         api.setMtu(-1)
+    }
+
+    @Test
+    fun `startRecording delegates to psftp client`() = runTest {
+        val deviceId = "E123456F"
+        val deviceType = "H10"
+        initCapabilityForFirmwareTest(deviceType, BlePolarDeviceCapabilitiesUtility.FileSystemType.H10_FILE_SYSTEM, true)
+        val api = BDBleApiImpl.getInstance(context, setOf(PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_H10_EXERCISE_RECORDING))
+        val (client, _) = mockPsFtpConnection(deviceId)
+        coEvery { client.query(any(), any()) } returns ByteArrayOutputStream()
+
+        try {
+            api.startRecording(deviceId, "exercise-1", PolarH10OfflineExerciseApi.RecordingInterval.INTERVAL_1S, PolarH10OfflineExerciseApi.SampleType.HR)
+        } finally {
+            unmockkObject(PolarServiceClientUtils)
+        }
+
+        coVerify { client.query(PftpRequest.PbPFtpQuery.REQUEST_START_RECORDING_VALUE, any()) }
+    }
+
+    @Test
+    fun `stopRecording delegates to psftp client`() = runTest {
+        val deviceId = "E123456F"
+        val deviceType = "H10"
+        initCapabilityForFirmwareTest(deviceType, BlePolarDeviceCapabilitiesUtility.FileSystemType.H10_FILE_SYSTEM, true)
+        val api = BDBleApiImpl.getInstance(context, setOf(PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_H10_EXERCISE_RECORDING))
+        val (client, _) = mockPsFtpConnection(deviceId)
+        coEvery { client.query(any(), any()) } returns ByteArrayOutputStream()
+
+        try {
+            api.stopRecording(deviceId)
+        } finally {
+            unmockkObject(PolarServiceClientUtils)
+        }
+
+        coVerify { client.query(PftpRequest.PbPFtpQuery.REQUEST_STOP_RECORDING_VALUE, any()) }
+    }
+
+    @Test
+    fun `requestRecordingStatus returns parsed status`() = runTest {
+        val deviceId = "E123456F"
+        val deviceType = "H10"
+        initCapabilityForFirmwareTest(deviceType, BlePolarDeviceCapabilitiesUtility.FileSystemType.H10_FILE_SYSTEM, true)
+        val api = BDBleApiImpl.getInstance(context, setOf(PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_H10_EXERCISE_RECORDING))
+        val (client, session) = mockPsFtpConnection(deviceId)
+        every { session.polarDeviceType } returns deviceType
+        val response = PftpResponse.PbRequestRecordingStatusResult.newBuilder()
+            .setRecordingOn(true)
+            .setSampleDataIdentifier("entry-1")
+            .build()
+        coEvery { client.query(any(), any()) } returns ByteArrayOutputStream().apply { response.writeTo(this) }
+
+        try {
+            val status = api.requestRecordingStatus(deviceId)
+            Assert.assertEquals(true, status.ongoing)
+            Assert.assertEquals("entry-1", status.entryId)
+            Assert.assertEquals(true, status.supported)
+        } finally {
+            unmockkObject(PolarServiceClientUtils)
+        }
+    }
+
+    @Test
+    fun `requestRecordingStatus returns unsupported when device reports NOT_IMPLEMENTED (201)`() = runTest {
+        val deviceId = "E123456F"
+        val deviceType = "H10"
+        initCapabilityForFirmwareTest(deviceType, BlePolarDeviceCapabilitiesUtility.FileSystemType.H10_FILE_SYSTEM, true)
+        val api = BDBleApiImpl.getInstance(context, setOf(PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_H10_EXERCISE_RECORDING))
+        val (client, session) = mockPsFtpConnection(deviceId)
+        every { session.polarDeviceType } returns deviceType
+        coEvery { client.query(any(), any()) } throws BlePsFtpUtils.PftpResponseError(
+            "Device does not support recording status",
+            PbPFtpError.NOT_IMPLEMENTED.number
+        )
+
+        try {
+            val status = api.requestRecordingStatus(deviceId)
+            Assert.assertFalse(status.ongoing)
+            Assert.assertEquals("", status.entryId)
+            Assert.assertFalse(status.supported)
+        } finally {
+            unmockkObject(PolarServiceClientUtils)
+        }
+    }
+
+    @Test
+    fun `fetchExercise returns parsed exercise data`() = runTest {
+        val deviceId = "E123456F"
+        val api = BDBleApiImpl.getInstance(context, setOf(PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_H10_EXERCISE_RECORDING))
+        val (client, _) = mockPsFtpConnection(deviceId)
+        val entry = PolarExerciseEntry("/exercise/session1/SAMPLES.BPB", LocalDateTime.now(), "SAMPLES.BPB")
+        val response = PbExerciseSamples.newBuilder()
+            .setRecordingInterval(fi.polar.remote.representation.protobuf.Types.PbDuration.newBuilder().setSeconds(5).build())
+            .addHeartRateSamples(61)
+            .build()
+        coEvery { client.request(any()) } returns ByteArrayOutputStream().apply { response.writeTo(this) }
+
+        try {
+            val data = api.fetchExercise(deviceId, entry)
+            Assert.assertEquals(5, data.recordingInterval)
+            Assert.assertEquals(listOf(61), data.hrSamples)
+        } finally {
+            unmockkObject(PolarServiceClientUtils)
+        }
     }
 
     @Test

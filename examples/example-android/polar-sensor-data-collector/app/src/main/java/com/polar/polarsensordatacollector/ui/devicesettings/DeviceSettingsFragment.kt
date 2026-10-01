@@ -3,6 +3,7 @@ package com.polar.polarsensordatacollector.ui.devicesettings
 import android.app.AlertDialog
 import android.content.DialogInterface
 import android.content.Intent
+import android.content.res.ColorStateList
 import android.os.Bundle
 import android.text.InputType
 import android.util.Log
@@ -33,6 +34,8 @@ import com.google.android.material.datepicker.CompositeDateValidator
 import com.google.android.material.datepicker.DateValidatorPointBackward
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.button.MaterialButton
+import com.google.android.material.progressindicator.CircularProgressIndicator
 import com.google.android.material.switchmaterial.SwitchMaterial
 import com.google.gson.GsonBuilder
 import com.polar.polarsensordatacollector.R
@@ -47,6 +50,7 @@ import com.polar.sdk.api.PolarDeviceTelemetryType
 import com.polar.sdk.api.model.CheckFirmwareUpdateStatus
 import com.polar.sdk.api.model.PolarDiskSpaceData
 import com.polar.sdk.api.model.PolarPhysicalConfiguration
+import com.polar.sdk.api.model.sleep.PolarSleepRecordingStatus
 import com.polar.sdk.api.model.PolarUserDeviceSettings
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -65,80 +69,52 @@ class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
     private lateinit var viewModel: DeviceSettingsViewModel
     private val mainViewModel: MainViewModel by activityViewModels()
 
-    private lateinit var sdkModeGroup: ConstraintLayout
-    private lateinit var sdkModeToggleButton: Button
-    private lateinit var sdkModeToggleHeader: TextView
+    private lateinit var sdkModeToggleButton: MaterialButton
+    private lateinit var sdkModeProgress: CircularProgressIndicator
 
-    private lateinit var sdkModeLedGroup: ConstraintLayout
     private lateinit var sdkModeLedButton: Button
-    private lateinit var sdkModeLedHeader: TextView
 
-    private lateinit var ppiModeLedGroup: ConstraintLayout
     private lateinit var ppiModeLedButton: Button
-    private lateinit var ppiModeLedHeader: TextView
 
-    private lateinit var deviceToHostNotificationsGroup: ConstraintLayout
     private lateinit var deviceToHostNotificationsButton: Button
-    private lateinit var deviceToHostNotificationsHeader: TextView
 
-    private lateinit var timeSettingsGroup: ConstraintLayout
     private lateinit var readTimeButton: Button
     private lateinit var writeTimeButton: Button
 
-    private lateinit var offlineRecSettingsGroup: ConstraintLayout
-    private lateinit var offlineRecSecuritySettingsHeader: TextView
-    private lateinit var offlineRecSecuritySettingsEnabled: SwitchMaterial
+    private lateinit var offlineRecSecuritySettingsEnabled: MaterialButton
+    private lateinit var offlineRecSecuritySettingsProgress: CircularProgressIndicator
 
-    private lateinit var doPhysicalConfigGroup: ConstraintLayout
     private lateinit var doPhysicalConfigButton: Button
-    private lateinit var doPhysicalConfigHeader: TextView
 
-    private lateinit var getFtuConfigGroup: ConstraintLayout
-    private lateinit var getFtuButton: Button
-    private lateinit var getFtuConfigHeader: TextView
+    private lateinit var getPhysicalConfigButton: Button
 
-    private lateinit var doRestartGroup: ConstraintLayout
     private lateinit var doRestartButton: Button
-    private lateinit var doRestartHeader: TextView
 
     private lateinit var dofactoryResetGroup: ConstraintLayout
     private lateinit var dofactoryResetButton: Button
-    private lateinit var dofactoryResetHeader: TextView
     private lateinit var doFactoryResetPreservePairingSwitch: SwitchMaterial
 
-    private lateinit var setExerciseGroup: ConstraintLayout
     private lateinit var setExerciseButton: Button
-    private lateinit var setExerciseHeader: TextView
 
-    private lateinit var setWareHouseSleepGroup: ConstraintLayout
     private lateinit var setWareHouseSleepButton: Button
     private lateinit var setHibernateModeButton: Button
-    private lateinit var setWareHouseSleepHeader: TextView
 
-    private lateinit var setTurnDeviceOffGroup: ConstraintLayout
     private lateinit var setTurnDeviceOffButton: Button
-    private lateinit var setTurnDeviceOffHeader: TextView
 
     private lateinit var doFirmwareUpdateGroup: ConstraintLayout
     private lateinit var doFirmwareUpdateButton: Button
-    private lateinit var doFirmwareUpdateHeader: TextView
     private lateinit var doFirmwareUpdateCustomUrlButton: Button
     private lateinit var firmwareUpdateStatusText: TextView
 
     private lateinit var userDataSelectionSpinner: Spinner
     private lateinit var userDataDeletionSelectButton: Button
-    private lateinit var userDataDeletionSelectText: TextView
     private lateinit var userDataDeletionSelectGroup: ConstraintLayout
     private lateinit var deviceDataType: PolarBleApi.PolarStoredDataType
 
     private lateinit var doUserDeviceSettingsButton: Button
-    private lateinit var doUserDeviceSettingsText: TextView
-    private lateinit var doUserDeviceSettingsGroup: ConstraintLayout
-    private lateinit var getUserPhysicalInfoButton: Button
+    private lateinit var getFtuStatusButton: Button
 
     private lateinit var deleteDateFoldersButton: Button
-    private lateinit var deleteDateFoldersText: TextView
-    private lateinit var deleteDateFoldersGroup: ConstraintLayout
 
     private lateinit var deleteTelemetryDataButton: Button
 
@@ -147,31 +123,23 @@ class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
     private lateinit var waitForConnectionStatusGroup: ConstraintLayout
 
     private lateinit var getDiskSpaceButton: Button
-    private lateinit var getDiskSpaceText: TextView
-    private lateinit var getDiskSpaceGroup: ConstraintLayout
 
-    private lateinit var bleMultiConnectionEnableGroup: ConstraintLayout
-    private lateinit var bleMultiConnectionEnableHeader: TextView
-    private lateinit var bleMultiConnectionEnableButton: Button
-    private lateinit var bleMultiConnectionEnabledSwitch: SwitchMaterial
+    private lateinit var bleMultiConnectionEnableButton: MaterialButton
+    private lateinit var bleMultiConnectionProgress: CircularProgressIndicator
 
-    private lateinit var sensorInitiatedSecurityModeEnableHeader: TextView
-    private lateinit var sensorInitiatedSecurityModeEnableButton: Button
-    private lateinit var sensorInitiatedSecurityModeEnableSwitch: SwitchMaterial
+    private lateinit var sensorInitiatedSecurityModeEnableButton: MaterialButton
+    private lateinit var sensorInitiatedSecurityModeProgress: CircularProgressIndicator
 
     private lateinit var sleepRecordingStateHeader: TextView
     private lateinit var forceStopSleepButton: Button
     private lateinit var forceStopSleepGroup: ConstraintLayout
     private lateinit var getSleepRecordingStateButton: Button
+    private lateinit var getSleepRecordingStatusProgress: CircularProgressIndicator
 
-    private lateinit var batteryLevelGroup: ConstraintLayout
-    private lateinit var getBatteryLevelHeader: TextView
     private lateinit var getChargeStateButton: Button
 
     private lateinit var bleErrorTestButton: Button
-    private lateinit var bleErrorTestText: TextView
 
-    private lateinit var getBLESignalStrengthHeader: TextView
     private lateinit var getBLESignalStrengthButton: Button
 
     private lateinit var telemetryType: PolarDeviceTelemetryType
@@ -182,7 +150,6 @@ class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
     private var telemetryStreamOngoing = false
 
     private lateinit var genericButton: Button
-    private lateinit var genericText: TextView
     private var genericButtonCounter: Int = 0
 
     private lateinit var watchFaceComplicationsGroup: ConstraintLayout
@@ -295,7 +262,7 @@ class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.uiDeviceToHostNotificationsState.collect { state ->
                     deviceToHostNotificationsButton.text =
-                        if (state.isObserving) "Stop" else "Start"
+                        if (state.isObserving) getString(R.string.device_to_host_notifications_stop) else getString(R.string.device_to_host_notifications_start)
                 }
             }
         }
@@ -336,8 +303,9 @@ class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
             ExerciseActivity.launch(requireContext())
         }
 
-        offlineRecSecuritySettingsEnabled.setOnCheckedChangeListener { _, isChecked ->
-            viewModel.toggleSecurity(isChecked)
+        offlineRecSecuritySettingsEnabled.setOnClickListener {
+            val currentlyEnabled = viewModel.uiSecurityState.value.isEnabled
+            viewModel.toggleSecurity(!currentlyEnabled)
         }
 
         doPhysicalConfigButton.setOnClickListener {
@@ -348,7 +316,7 @@ class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
             viewModel.openUserDeviceSettingsActivity(requireContext())
         }
 
-        getUserPhysicalInfoButton.setOnClickListener {
+        getPhysicalConfigButton.setOnClickListener {
             viewLifecycleOwner.lifecycleScope.launch {
                 viewModel.getUserPhysicalInfo().run {
                     val ftu = viewModel.physInfo
@@ -359,7 +327,7 @@ class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
             }
         }
 
-        getFtuButton.setOnClickListener {
+        getFtuStatusButton.setOnClickListener {
             viewModel.getFtuInfo()
         }
 
@@ -507,7 +475,7 @@ class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
 
         getSleepRecordingStateButton.setOnClickListener {
             try {
-                viewModel.getSleepRecordingState()
+                viewModel.getSleepRecordingStatus()
             } catch (e: Exception) {
                 Log.e(TAG, "An error occurred while getting sleep recording state: ", e)
                 Toast.makeText(
@@ -545,14 +513,13 @@ class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
         }
 
         genericButton.isEnabled = true
-        genericText.alpha = 0F
 
         genericButton.setOnClickListener {
             if (genericButtonCounter == 8) {
                 genericButton.alpha = 1F
-                genericText.alpha = 1F
             }
             if (genericButtonCounter >= 9) {
+                Log.d(TAG, "Launching GenericApiActivity")
                 GenericApiActivity.launch(requireContext())
             } else {
                 genericButtonCounter++
@@ -602,14 +569,13 @@ class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
         }
 
         bleMultiConnectionEnableButton.setOnClickListener {
-            val enableDisableBleMultiConnection = bleMultiConnectionEnabledSwitch.isChecked
-            viewModel.setBleMultiConnection(enabled = enableDisableBleMultiConnection)
+            val currentlyEnabled = viewModel.uiMultiBleModeState.value.isEnabled
+            viewModel.setBleMultiConnection(enabled = !currentlyEnabled)
         }
 
         sensorInitiatedSecurityModeEnableButton.setOnClickListener {
-            val enableSensorInitiatedSecurityMode =
-                sensorInitiatedSecurityModeEnableSwitch.isChecked
-            viewModel.setSensorInitiatedSecurityMode(enabled = enableSensorInitiatedSecurityMode)
+            val currentlyEnabled = viewModel.uiSensorInitiatedSecurityModeState.value.isEnabled
+            viewModel.setSensorInitiatedSecurityMode(enabled = !currentlyEnabled)
         }
 
         view.findViewById<Button>(R.id.watch_face_complications_button).setOnClickListener {
@@ -639,64 +605,40 @@ class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
     }
 
     private fun setupViews(view: View) {
-        sdkModeGroup = view.findViewById(R.id.sdk_mode_group)
-        sdkModeToggleHeader = view.findViewById(R.id.sdk_mode_header)
         sdkModeToggleButton = view.findViewById(R.id.sdk_mode_toggle_button)
+        sdkModeProgress = view.findViewById(R.id.sdk_mode_progress)
 
-        sdkModeLedGroup = view.findViewById(R.id.sdk_mode_led_group)
-        sdkModeLedHeader = view.findViewById(R.id.sdk_mode_led_header)
         sdkModeLedButton = view.findViewById(R.id.sdk_mode_toggle_led_button)
 
-        ppiModeLedGroup = view.findViewById(R.id.ppi_mode_led_group)
-        ppiModeLedHeader = view.findViewById(R.id.ppi_mode_led_header)
         ppiModeLedButton = view.findViewById(R.id.ppi_mode_toggle_led_button)
 
-        deviceToHostNotificationsGroup = view.findViewById(R.id.device_to_host_notifications_group)
-        deviceToHostNotificationsHeader = view.findViewById(R.id.device_to_host_notifications_header)
         deviceToHostNotificationsButton = view.findViewById(R.id.device_to_host_notifications_button)
 
-        timeSettingsGroup = view.findViewById(R.id.time_settings_group)
         readTimeButton = view.findViewById(R.id.time_settings_read_button)
         writeTimeButton = view.findViewById(R.id.time_settings_write_button)
 
-        offlineRecSettingsGroup = view.findViewById(R.id.offline_rec_settings_group)
-        offlineRecSecuritySettingsHeader =
-            view.findViewById(R.id.offline_rec_security_settings_header)
         offlineRecSecuritySettingsEnabled =
             view.findViewById(R.id.offline_rec_security_settings_enabled)
+        offlineRecSecuritySettingsProgress = view.findViewById(R.id.offline_rec_security_settings_progress)
 
-        doPhysicalConfigGroup = view.findViewById(R.id.do_physical_config_group)
-        doPhysicalConfigHeader = view.findViewById(R.id.do_physical_config_header)
         doPhysicalConfigButton = view.findViewById(R.id.do_physical_config_button)
 
-        getFtuConfigGroup = view.findViewById(R.id.get_ftu_group)
-        getFtuConfigHeader = view.findViewById(R.id.get_ftu_header)
-        getFtuButton = view.findViewById(R.id.get_ftu_button)
+        getPhysicalConfigButton = view.findViewById(R.id.get_physical_config_button)
 
-        doRestartGroup = view.findViewById(R.id.do_restart_group)
-        doRestartHeader = view.findViewById(R.id.do_restart_header)
         doRestartButton = view.findViewById(R.id.do_restart_button)
 
         dofactoryResetGroup = view.findViewById(R.id.do_factory_reset_group)
         dofactoryResetButton = view.findViewById(R.id.do_factory_reset_button)
-        dofactoryResetHeader = view.findViewById(R.id.do_factory_reset_header)
         doFactoryResetPreservePairingSwitch = view.findViewById(R.id.do_factory_reset_preserve_pairing_switch)
 
-        setExerciseGroup = view.findViewById(R.id.set_exercise_group)
         setExerciseButton = view.findViewById(R.id.set_exercise_button)
-        setExerciseHeader = view.findViewById(R.id.set_exercise_header)
 
-        setWareHouseSleepGroup = view.findViewById(R.id.set_warehouse_sleep_group)
         setWareHouseSleepButton = view.findViewById(R.id.set_warehouse_sleep_button)
-        setWareHouseSleepHeader = view.findViewById(R.id.set_warehouse_sleep_button_header)
         setHibernateModeButton = view.findViewById(R.id.set_hibernate_mode_button)
 
-        setTurnDeviceOffGroup = view.findViewById(R.id.set_warehouse_sleep_group)
         setTurnDeviceOffButton = view.findViewById(R.id.set_turn_device_off_button)
-        setTurnDeviceOffHeader = view.findViewById(R.id.set_turn_device_off_header)
 
         doFirmwareUpdateGroup = view.findViewById(R.id.do_firmware_update_group)
-        doFirmwareUpdateHeader = view.findViewById(R.id.do_firmware_update_header)
         doFirmwareUpdateButton = view.findViewById(R.id.do_firmware_update_button)
         doFirmwareUpdateCustomUrlButton = view.findViewById(R.id.do_firmware_update_custom_url_button)
         firmwareUpdateStatusText = view.findViewById(R.id.firmware_update_status)
@@ -705,11 +647,10 @@ class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
         sleepRecordingStateHeader = view.findViewById(R.id.force_stop_sleep_header)
         forceStopSleepButton = view.findViewById(R.id.force_stop_sleep_button)
         getSleepRecordingStateButton = view.findViewById(R.id.get_sleep_status_button)
+        getSleepRecordingStatusProgress = view.findViewById(R.id.get_sleep_status_progress)
 
         genericButton = view.findViewById(R.id.generic_api_button)
-        genericText = view.findViewById(R.id.generic_api_header)
         bleErrorTestButton = view.findViewById(R.id.ble_error_test_button)
-        bleErrorTestText = view.findViewById(R.id.ble_error_test_text)
 
         val adapter = ArrayAdapter(
             requireContext(),
@@ -729,15 +670,10 @@ class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
         userDataSelectionSpinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         userDataSelectionSpinner.adapter = userDataSelectionSpinnerAdapter
         userDataDeletionSelectButton = view.findViewById(R.id.do_file_delete_button)
-        userDataDeletionSelectText = view.findViewById(R.id.do_file_delete_header)
         userDataDeletionSelectGroup = view.findViewById(R.id.do_file_delete_group)
         doUserDeviceSettingsButton = view.findViewById(R.id.do_device_user_settings_button)
-        doUserDeviceSettingsText = view.findViewById(R.id.do_user_device_settings_header)
-        doUserDeviceSettingsGroup = view.findViewById(R.id.do_user_device_settings_group)
-        getUserPhysicalInfoButton = view.findViewById(R.id.get_user_physical_info_button)
+        getFtuStatusButton = view.findViewById(R.id.get_user_physical_info_button)
         deleteDateFoldersButton = view.findViewById(R.id.do_date_folder_delete_button)
-        deleteDateFoldersText = view.findViewById(R.id.do_date_folder_delete_header)
-        deleteDateFoldersGroup = view.findViewById(R.id.do_date_folder_delete_group)
 
         deleteTelemetryDataButton = view.findViewById(R.id.do_telemetry_delete_button)
 
@@ -746,30 +682,18 @@ class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
         waitForConnectionStatusGroup = view.findViewById(R.id.wait_for_connection_group)
 
         getDiskSpaceButton = view.findViewById(R.id.get_disk_space_button)
-        getDiskSpaceText = view.findViewById(R.id.get_disk_space_label)
-        getDiskSpaceGroup = view.findViewById(R.id.get_disk_space_group)
-        bleMultiConnectionEnableGroup = view.findViewById(R.id.multi_ble_settings_group)
         bleMultiConnectionEnableButton = view.findViewById(R.id.multi_ble_settings_button)
-        bleMultiConnectionEnableHeader =
-            view.findViewById(R.id.multi_ble_settings_header)
-        bleMultiConnectionEnabledSwitch =
-            view.findViewById(R.id.multi_ble_settings_enabled)
+        bleMultiConnectionProgress = view.findViewById(R.id.multi_ble_settings_progress)
 
         sensorInitiatedSecurityModeEnableButton = view.findViewById(R.id.sensor_initiated_security_mode_enable_button)
-        sensorInitiatedSecurityModeEnableHeader =
-            view.findViewById(R.id.sensor_initiated_security_mode_enable_header)
-        sensorInitiatedSecurityModeEnableSwitch =
-            view.findViewById(R.id.sensor_initiated_security_mode_enable_switch)
+        sensorInitiatedSecurityModeProgress = view.findViewById(R.id.sensor_initiated_security_mode_progress)
 
         forceStopSleepButton = view.findViewById(R.id.force_stop_sleep_button)
         forceStopSleepGroup = view.findViewById(R.id.force_stop_sleep_group)
 
-        batteryLevelGroup = view.findViewById(R.id.battery_status_group)
-        getBatteryLevelHeader = view.findViewById(R.id.get_charge_state_header)
         getChargeStateButton = view.findViewById(R.id.get_charge_state_button)
 
         getBLESignalStrengthButton = view.findViewById(R.id.ble_signal_strength_button)
-        getBLESignalStrengthHeader = view.findViewById(R.id.ble_signal_strength_header)
 
         watchFaceComplicationsGroup = view.findViewById(R.id.watch_face_complications_group)
 
@@ -790,79 +714,90 @@ class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
     private fun settingsSupportUiState(settingsSupportUiState: SettingsSupportUiState) {
         Log.d(TAG, "Update UI settings based on support state: settingsSupportUiState")
         if (settingsSupportUiState.support == false) {
-            setWareHouseSleepGroup.visibility = GONE
+            setWareHouseSleepButton.visibility = GONE
             readTimeButton.visibility = GONE
-            getFtuConfigGroup.visibility = GONE
-            doPhysicalConfigGroup.visibility = GONE
-            deleteDateFoldersGroup.visibility = GONE
+            getPhysicalConfigButton.visibility = GONE
+            doPhysicalConfigButton.visibility = GONE
+            getFtuStatusButton.visibility = GONE
+            deleteDateFoldersButton.visibility = GONE
             userDataDeletionSelectGroup.visibility = GONE
-            setExerciseGroup.visibility = GONE
+            setExerciseButton.visibility = GONE
             waitForConnectionStatusGroup.visibility = GONE
-            getDiskSpaceGroup.visibility = GONE
-            batteryLevelGroup.visibility = GONE
+            getDiskSpaceButton.visibility = GONE
+            getChargeStateButton.visibility = GONE
             forceStopSleepGroup.visibility = GONE
-            setTurnDeviceOffGroup.visibility = GONE
+            setTurnDeviceOffButton.visibility = GONE
         }
     }
 
     private fun sdkModeStateChange(sdkModeUiState: SdkModeUiState) {
         Log.d(TAG, "Update UI SDK Mode: $sdkModeUiState")
 
+        sdkModeProgress.visibility = if (sdkModeUiState.isAvailable && sdkModeUiState.isLoading) VISIBLE else GONE
+
         if (sdkModeUiState.isAvailable) {
-            sdkModeToggleHeader.visibility = VISIBLE
             sdkModeToggleButton.visibility = VISIBLE
-            sdkModeLedHeader.visibility = VISIBLE
             sdkModeLedButton.visibility = VISIBLE
-            ppiModeLedHeader.visibility = VISIBLE
             ppiModeLedButton.visibility = VISIBLE
-            when (sdkModeUiState.sdkModeState) {
-                SdkMode.STATE.ENABLED -> {
-                    sdkModeToggleButton.text = "Disable"
-                    sdkModeToggleButton.isEnabled = true
+
+            if (!sdkModeUiState.isSwitchEnabled) {
+                val grayColor = ContextCompat.getColor(requireContext(), R.color.color_gray)
+                sdkModeToggleButton.setTextColor(grayColor)
+                sdkModeToggleButton.strokeColor = ColorStateList.valueOf(grayColor)
+                sdkModeToggleButton.isEnabled = false
+            } else {
+                when (sdkModeUiState.sdkModeState) {
+                    SdkMode.STATE.ENABLED -> {
+                        sdkModeToggleButton.text = getString(R.string.sdk_mode_disable)
+                        sdkModeToggleButton.isEnabled = true
+                    }
+                    SdkMode.STATE.DISABLED -> {
+                        sdkModeToggleButton.text = getString(R.string.sdk_mode_enable)
+                        sdkModeToggleButton.isEnabled = true
+                    }
+                    SdkMode.STATE.STATE_CHANGE_IN_PROGRESS -> {
+                        //TODO, add animation
+                        sdkModeToggleButton.text = "Wait..."
+                        sdkModeToggleButton.isEnabled = false
+                    }
                 }
-                SdkMode.STATE.DISABLED -> {
-                    sdkModeToggleButton.text = "Enable"
-                    sdkModeToggleButton.isEnabled = true
-                }
-                SdkMode.STATE.STATE_CHANGE_IN_PROGRESS -> {
-                    //TODO, add animation
-                    sdkModeToggleButton.text = "Wait..."
-                    sdkModeToggleButton.isEnabled = false
-                }
+            }
+            if (sdkModeUiState.isLoading) {
+                sdkModeToggleButton.isEnabled = false
             }
             when (sdkModeUiState.sdkModeLedState) {
                 SdkMode.STATE.ENABLED -> {
-                    sdkModeLedButton.text = "Disable"
+                    sdkModeLedButton.text = getString(R.string.sdk_mode_led_disable)
                 }
                 else -> {
-                    sdkModeLedButton.text = "Enable"
+                    sdkModeLedButton.text = getString(R.string.sdk_mode_led_enable)
                 }
             }
             when (sdkModeUiState.ppiModeLedState) {
                 SdkMode.STATE.ENABLED -> {
-                    ppiModeLedButton.text = "Disable"
+                    ppiModeLedButton.text = getString(R.string.ppi_mode_led_disable)
                 }
                 else -> {
-                    ppiModeLedButton.text = "Enable"
+                    ppiModeLedButton.text = getString(R.string.ppi_mode_led_enable)
                 }
             }
         } else {
-            sdkModeToggleHeader.visibility = GONE
             sdkModeToggleButton.visibility = GONE
-            sdkModeLedHeader.visibility = GONE
             sdkModeLedButton.visibility = GONE
-            ppiModeLedHeader.visibility = GONE
             ppiModeLedButton.visibility = GONE
         }
     }
 
     private fun securityStateChange(securityUiState: SecurityUiState) {
-        if (securityUiState.isAvailable) {
-            offlineRecSecuritySettingsEnabled.isChecked = securityUiState.isEnabled
-            offlineRecSettingsGroup.visibility = VISIBLE
-        } else {
-            offlineRecSettingsGroup.visibility = GONE
-        }
+        val colorRes = if (securityUiState.isEnabled) R.color.color_toggle_button_red else R.color.color_toggle_button_blue
+        val color = ContextCompat.getColor(requireContext(), colorRes)
+        offlineRecSecuritySettingsEnabled.text =
+            getString(if (securityUiState.isEnabled) R.string.offline_recording_disable_encryption else R.string.offline_recording_enable_encryption)
+        offlineRecSecuritySettingsEnabled.setTextColor(color)
+        offlineRecSecuritySettingsEnabled.strokeColor = ColorStateList.valueOf(color)
+        offlineRecSecuritySettingsEnabled.isEnabled = securityUiState.isAvailable && !securityUiState.isLoading
+        offlineRecSecuritySettingsEnabled.visibility = if (securityUiState.isAvailable) VISIBLE else GONE
+        offlineRecSecuritySettingsProgress.visibility = if (securityUiState.isAvailable && securityUiState.isLoading) VISIBLE else GONE
     }
 
     private fun telemetryStateChange(telemetryUiState: TelemetryUiState) {
@@ -908,13 +843,39 @@ class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
     }
 
     private fun bleMultiConnectionStateChange(status: BleMultiConnectionUiState) {
-        bleMultiConnectionEnabledSwitch.isChecked = status.isEnabled
-        bleMultiConnectionEnabledSwitch.isEnabled = status.isSwitchEnabled
+        bleMultiConnectionProgress.visibility = if (status.isLoading) VISIBLE else GONE
+        if (!status.isSwitchEnabled) {
+            val grayColor = ContextCompat.getColor(requireContext(), R.color.color_gray)
+            bleMultiConnectionEnableButton.setTextColor(grayColor)
+            bleMultiConnectionEnableButton.strokeColor = ColorStateList.valueOf(grayColor)
+            bleMultiConnectionEnableButton.isEnabled = false
+            return
+        }
+        val colorRes = if (status.isEnabled) R.color.color_toggle_button_red else R.color.color_toggle_button_blue
+        val color = ContextCompat.getColor(requireContext(), colorRes)
+        bleMultiConnectionEnableButton.text =
+            getString(if (status.isEnabled) R.string.ble_multi_connection_disable else R.string.ble_multi_connection_enable)
+        bleMultiConnectionEnableButton.setTextColor(color)
+        bleMultiConnectionEnableButton.strokeColor = ColorStateList.valueOf(color)
+        bleMultiConnectionEnableButton.isEnabled = !status.isLoading
     }
 
     private fun sensorInitiatedSecurityModeStateChange(status: SensorInitiatedSecurityModeUiState) {
-        sensorInitiatedSecurityModeEnableSwitch.isChecked = status.isEnabled
-        sensorInitiatedSecurityModeEnableSwitch.isEnabled = status.isSwitchEnabled
+        sensorInitiatedSecurityModeProgress.visibility = if (status.isLoading) VISIBLE else GONE
+        if (!status.isSwitchEnabled) {
+            val grayColor = ContextCompat.getColor(requireContext(), R.color.color_gray)
+            sensorInitiatedSecurityModeEnableButton.setTextColor(grayColor)
+            sensorInitiatedSecurityModeEnableButton.strokeColor = ColorStateList.valueOf(grayColor)
+            sensorInitiatedSecurityModeEnableButton.isEnabled = false
+            return
+        }
+        val colorRes = if (status.isEnabled) R.color.color_toggle_button_red else R.color.color_toggle_button_blue
+        val color = ContextCompat.getColor(requireContext(), colorRes)
+        sensorInitiatedSecurityModeEnableButton.text =
+            getString(if (status.isEnabled) R.string.sensor_initiated_security_mode_disable else R.string.sensor_initiated_security_mode_enable)
+        sensorInitiatedSecurityModeEnableButton.setTextColor(color)
+        sensorInitiatedSecurityModeEnableButton.strokeColor = ColorStateList.valueOf(color)
+        sensorInitiatedSecurityModeEnableButton.isEnabled = !status.isLoading
     }
 
     private fun showDataDeleteDatePicker() {
@@ -986,13 +947,16 @@ class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
 
     private fun updateSleepRecordingStateUi(state: SleepRecordingState) {
         val stringKey =
-            when (state.enabled) {
-                true -> R.string.sleep_recording_state_on
-                false -> R.string.sleep_recording_state_off
+            when (state.status) {
+                PolarSleepRecordingStatus.ENABLED -> R.string.sleep_recording_state_on
+                PolarSleepRecordingStatus.DISABLED -> R.string.sleep_recording_state_off
+                PolarSleepRecordingStatus.UNKNOWN -> R.string.sleep_recording_state_unknown
                 null -> R.string.sleep_recording_state_unavailable
             }
         sleepRecordingStateHeader.text = getString(stringKey)
-        forceStopSleepButton.isEnabled = state.enabled != null && state.enabled == true
+        forceStopSleepButton.isEnabled = state.status == PolarSleepRecordingStatus.ENABLED
+        getSleepRecordingStatusProgress.visibility = if (state.isLoading) VISIBLE else GONE
+        getSleepRecordingStateButton.isEnabled = !state.isLoading
     }
 
     private fun showUserPhysicalInfoDialog(physInfo: PolarPhysicalConfiguration) {

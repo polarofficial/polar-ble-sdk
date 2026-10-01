@@ -393,7 +393,7 @@ extension PolarBleApiImpl {
                         dateFormatter.calendar = .init(identifier: .iso8601)
                         dateFormatter.locale = Locale(identifier: "en_US_POSIX")
                         dateFormatter.dateFormat = "yyyyMMddHHmmss"
-                        dateFormatter.timeZone = TimeZone(abbreviation: "UTC")
+                        dateFormatter.timeZone = TimeZone.current
                         guard components.count >= 6,
                               let date = dateFormatter.date(from: String(components[2] + components[4])) else { continue }
                         guard let pmdMeasurementType = try? OfflineRecordingUtils.mapOfflineRecordingFileNameToMeasurementType(fileName: String(components[5])),

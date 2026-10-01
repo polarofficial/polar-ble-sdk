@@ -4,6 +4,7 @@ syntax = "proto2";
 package data;
 
 import "types.proto";
+import "structures.proto";
 
 /*
  * Sensor data log settings
@@ -55,4 +56,14 @@ message PbSensorDataLog
     optional PbMagnetometerLogFrequency magnetometer_log_frequency = 50;
 
     optional bool retain_settings_over_boot = 100;
-}
+
+    // External BLE HR sensor configuration for data collection.
+    // When absent, no external BLE HR sensor is configured.
+    optional PbBleHrSensorConfig ble_hr_sensor_config = 29;
+};
+
+message PbBleHrSensorConfig
+{
+    optional PbBleDeviceName device_name = 1;
+    optional bool wait_for_connect = 2;
+};

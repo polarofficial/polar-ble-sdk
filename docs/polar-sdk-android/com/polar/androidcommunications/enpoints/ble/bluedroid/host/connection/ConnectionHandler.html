@@ -400,6 +400,70 @@ public final class <span class="typeNameLabel"><a href=ConnectionHandler.html>Co
                                             <td class="colLast"></td>
                                         </tr>
                                         
+                                        <tr id="i14" class="altColor">
+                                            <td class="colFirst"><code>final <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=ConnectionHandler.html#sessionsRemoved(java.util.Collection)>sessionsRemoved</a>(<a href=https://developer.android.com/reference/kotlin/java/util/Collection.html>Collection</a>&lt;<a href=../BDDeviceSessionImpl.html>BDDeviceSessionImpl</a>&gt; sessions) </code>
+                                            </th>
+                                            <td class="colLast">Bulk removal must not let one removed session's queued retry start midway through cleanup.</td>
+                                        </tr>
+                                        
+                                        <tr id="i15" class="rowColor">
+                                            <td class="colFirst"><code>final <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=ConnectionHandler.html#sessionRemoved(com.polar.androidcommunications.enpoints.ble.bluedroid.host.BDDeviceSessionImpl)>sessionRemoved</a>(<a href=../BDDeviceSessionImpl.html>BDDeviceSessionImpl</a> session) </code>
+                                            </th>
+                                            <td class="colLast">Called when a session object is dropped from the listener's tracking list.</td>
+                                        </tr>
+                                        
+                                        <tr id="i16" class="altColor">
+                                            <td class="colFirst"><code>final <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=ConnectionHandler.html#dispatchGattCallback(com.polar.androidcommunications.enpoints.ble.bluedroid.host.BDDeviceSessionImpl,android.bluetooth.BluetoothGatt,java.lang.Runnable)>dispatchGattCallback</a>(<a href=../BDDeviceSessionImpl.html>BDDeviceSessionImpl</a> session, <a href=https://developer.android.com/reference/kotlin/android/bluetooth/BluetoothGatt.html>BluetoothGatt</a> gatt, <a href=https://developer.android.com/reference/kotlin/java/lang/Runnable.html>Runnable</a> action) </code>
+                                            </th>
+                                            <td class="colLast">Validate a GATT callback against the session's <i>current</i> GATT before running it.</td>
+                                        </tr>
+                                        
+                                        <tr id="i17" class="rowColor">
+                                            <td class="colFirst"><code>final <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=ConnectionHandler.html#scheduleDirectReconnect(com.polar.androidcommunications.enpoints.ble.bluedroid.host.BDDeviceSessionImpl,java.lang.Long)>scheduleDirectReconnect</a>(<a href=../BDDeviceSessionImpl.html>BDDeviceSessionImpl</a> session, <a href=https://developer.android.com/reference/kotlin/java/lang/Long.html>Long</a> delayMs) </code>
+                                            </th>
+                                            <td class="colLast">Queue a direct reconnect for a parked session.</td>
+                                        </tr>
+                                        
+                                        <tr id="i18" class="altColor">
+                                            <td class="colFirst"><code>final <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=ConnectionHandler.html#blePoweredOff(java.util.Collection)>blePoweredOff</a>(<a href=https://developer.android.com/reference/kotlin/java/util/Collection.html>Collection</a>&lt;<a href=../BDDeviceSessionImpl.html>BDDeviceSessionImpl</a>&gt; trackedSessions) </code>
+                                            </th>
+                                            <td class="colLast">Escape hatch for a Bluetooth power-off.</td>
+                                        </tr>
+                                        
+                                        <tr id="i19" class="rowColor">
+                                            <td class="colFirst"><code>final <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=ConnectionHandler.html#blePoweredOff(java.util.Collection)>blePoweredOff</a>() </code>
+                                            </th>
+                                            <td class="colLast">Escape hatch for a Bluetooth power-off.</td>
+                                        </tr>
+                                        
+                                        <tr id="i20" class="altColor">
+                                            <td class="colFirst"><code>final <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=ConnectionHandler.html#blePoweredOn(java.util.Collection)>blePoweredOn</a>(<a href=https://developer.android.com/reference/kotlin/java/util/Collection.html>Collection</a>&lt;<a href=../BDDeviceSessionImpl.html>BDDeviceSessionImpl</a>&gt; trackedSessions) </code>
+                                            </th>
+                                            <td class="colLast"></td>
+                                        </tr>
+                                        
+                                        <tr id="i21" class="rowColor">
+                                            <td class="colFirst"><code>final <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=ConnectionHandler.html#blePoweredOn(java.util.Collection)>blePoweredOn</a>() </code>
+                                            </th>
+                                            <td class="colLast"></td>
+                                        </tr>
+                                        
                                         </tbody>
                                     </table>
                                 </div>
@@ -757,11 +821,195 @@ public final class <span class="typeNameLabel"><a href=ConnectionHandler.html>Co
                                     <!--   -->
                                 </a>
                                 <ul class=
-                                              "blockListLast"
+                                              "blockList"
                                           >
                                     <li class="blockList">
                                         <h4>deviceDisconnected</h4>
                                         <pre class="methodSignature"> final <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a> <a href=ConnectionHandler.html#deviceDisconnected(com.polar.androidcommunications.enpoints.ble.bluedroid.host.BDDeviceSessionImpl)>deviceDisconnected</a>(<a href=../BDDeviceSessionImpl.html>BDDeviceSessionImpl</a> bleDeviceSession)</pre>
+                                        <div class="block"></div>
+
+                                        <dl>
+
+                                        
+
+                                        
+
+                                        
+
+                                        </dl>
+                                    </li>
+                                </ul>
+                                
+                                <a id="sessionsRemoved(java.util.Collection)">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockList"
+                                          >
+                                    <li class="blockList">
+                                        <h4>sessionsRemoved</h4>
+                                        <pre class="methodSignature"> final <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a> <a href=ConnectionHandler.html#sessionsRemoved(java.util.Collection)>sessionsRemoved</a>(<a href=https://developer.android.com/reference/kotlin/java/util/Collection.html>Collection</a>&lt;<a href=../BDDeviceSessionImpl.html>BDDeviceSessionImpl</a>&gt; sessions)</pre>
+                                        <div class="block"><p>Bulk removal must not let one removed session's queued retry start midway through cleanup.</p></div>
+
+                                        <dl>
+
+                                        
+
+                                        
+
+                                        
+
+                                        </dl>
+                                    </li>
+                                </ul>
+                                
+                                <a id="sessionRemoved(com.polar.androidcommunications.enpoints.ble.bluedroid.host.BDDeviceSessionImpl)">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockList"
+                                          >
+                                    <li class="blockList">
+                                        <h4>sessionRemoved</h4>
+                                        <pre class="methodSignature"> final <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a> <a href=ConnectionHandler.html#sessionRemoved(com.polar.androidcommunications.enpoints.ble.bluedroid.host.BDDeviceSessionImpl)>sessionRemoved</a>(<a href=../BDDeviceSessionImpl.html>BDDeviceSessionImpl</a> session)</pre>
+                                        <div class="block"><p>Called when a session object is dropped from the listener's tracking list. If it is still pinned as current the handler would otherwise stay in CONNECTING forever referencing an orphaned session, discarding every later request. Release its GATT and return to FREE.</p></div>
+
+                                        <dl>
+
+                                        
+
+                                        
+
+                                        
+
+                                        </dl>
+                                    </li>
+                                </ul>
+                                
+                                <a id="dispatchGattCallback(com.polar.androidcommunications.enpoints.ble.bluedroid.host.BDDeviceSessionImpl,android.bluetooth.BluetoothGatt,java.lang.Runnable)">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockList"
+                                          >
+                                    <li class="blockList">
+                                        <h4>dispatchGattCallback</h4>
+                                        <pre class="methodSignature"> final <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a> <a href=ConnectionHandler.html#dispatchGattCallback(com.polar.androidcommunications.enpoints.ble.bluedroid.host.BDDeviceSessionImpl,android.bluetooth.BluetoothGatt,java.lang.Runnable)>dispatchGattCallback</a>(<a href=../BDDeviceSessionImpl.html>BDDeviceSessionImpl</a> session, <a href=https://developer.android.com/reference/kotlin/android/bluetooth/BluetoothGatt.html>BluetoothGatt</a> gatt, <a href=https://developer.android.com/reference/kotlin/java/lang/Runnable.html>Runnable</a> action)</pre>
+                                        <div class="block"><p>Validate a GATT callback against the session's <i>current</i> GATT before running it.</p><p>Android keeps delivering callbacks from a GATT object that has already been replaced by a reconnect (or torn down by a power-off). Acting on those drives the state machine with events that belong to a dead connection. The check and the action share the handler lock, so a concurrent power-off or watchdog cleanup cannot slip in between them.</p></div>
+
+                                        <dl>
+
+                                        
+
+                                        
+
+                                        
+
+                                        </dl>
+                                    </li>
+                                </ul>
+                                
+                                <a id="scheduleDirectReconnect(com.polar.androidcommunications.enpoints.ble.bluedroid.host.BDDeviceSessionImpl,java.lang.Long)">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockList"
+                                          >
+                                    <li class="blockList">
+                                        <h4>scheduleDirectReconnect</h4>
+                                        <pre class="methodSignature"> final <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a> <a href=ConnectionHandler.html#scheduleDirectReconnect(com.polar.androidcommunications.enpoints.ble.bluedroid.host.BDDeviceSessionImpl,java.lang.Long)>scheduleDirectReconnect</a>(<a href=../BDDeviceSessionImpl.html>BDDeviceSessionImpl</a> session, <a href=https://developer.android.com/reference/kotlin/java/lang/Long.html>Long</a> delayMs)</pre>
+                                        <div class="block"><p>Queue a direct reconnect for a parked session. Routing this through the retry queue instead of a free-standing timer means it is cancelled by <a href=ConnectionHandler.html#cancel()>cancel</a>, <a href=ConnectionHandler.html#sessionRemoved(com.polar.androidcommunications.enpoints.ble.bluedroid.host.BDDeviceSessionImpl)>sessionRemoved</a>, a power-off, or by disabling automatic reconnection, rather than firing into a torn-down handler.</p></div>
+
+                                        <dl>
+
+                                        
+
+                                        
+
+                                        
+
+                                        </dl>
+                                    </li>
+                                </ul>
+                                
+                                <a id="blePoweredOff(java.util.Collection)">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockList"
+                                          >
+                                    <li class="blockList">
+                                        <h4>blePoweredOff</h4>
+                                        <pre class="methodSignature">@<a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin.jvm/-jvm-overloads/index.html>JvmOverloads</a>() final <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a> <a href=ConnectionHandler.html#blePoweredOff(java.util.Collection)>blePoweredOff</a>(<a href=https://developer.android.com/reference/kotlin/java/util/Collection.html>Collection</a>&lt;<a href=../BDDeviceSessionImpl.html>BDDeviceSessionImpl</a>&gt; trackedSessions)</pre>
+                                        <div class="block"><p>Escape hatch for a Bluetooth power-off. The listener's power-off callback iterates only its tracked session list, so it cannot reach a current session that has already been removed from that list. Reset the handler unconditionally so a Bluetooth toggle always clears a wedged CONNECTING state instead of requiring an app restart.</p></div>
+
+                                        <dl>
+
+                                        
+
+                                        
+
+                                        
+
+                                        </dl>
+                                    </li>
+                                </ul>
+                                
+                                <a id="blePoweredOff()">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockList"
+                                          >
+                                    <li class="blockList">
+                                        <h4>blePoweredOff</h4>
+                                        <pre class="methodSignature">@<a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin.jvm/-jvm-overloads/index.html>JvmOverloads</a>() final <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a> <a href=ConnectionHandler.html#blePoweredOff(java.util.Collection)>blePoweredOff</a>()</pre>
+                                        <div class="block"><p>Escape hatch for a Bluetooth power-off. The listener's power-off callback iterates only its tracked session list, so it cannot reach a current session that has already been removed from that list. Reset the handler unconditionally so a Bluetooth toggle always clears a wedged CONNECTING state instead of requiring an app restart.</p></div>
+
+                                        <dl>
+
+                                        
+
+                                        
+
+                                        
+
+                                        </dl>
+                                    </li>
+                                </ul>
+                                
+                                <a id="blePoweredOn(java.util.Collection)">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockList"
+                                          >
+                                    <li class="blockList">
+                                        <h4>blePoweredOn</h4>
+                                        <pre class="methodSignature">@<a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin.jvm/-jvm-overloads/index.html>JvmOverloads</a>() final <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a> <a href=ConnectionHandler.html#blePoweredOn(java.util.Collection)>blePoweredOn</a>(<a href=https://developer.android.com/reference/kotlin/java/util/Collection.html>Collection</a>&lt;<a href=../BDDeviceSessionImpl.html>BDDeviceSessionImpl</a>&gt; trackedSessions)</pre>
+                                        <div class="block"></div>
+
+                                        <dl>
+
+                                        
+
+                                        
+
+                                        
+
+                                        </dl>
+                                    </li>
+                                </ul>
+                                
+                                <a id="blePoweredOn()">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockListLast"
+                                          >
+                                    <li class="blockList">
+                                        <h4>blePoweredOn</h4>
+                                        <pre class="methodSignature">@<a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin.jvm/-jvm-overloads/index.html>JvmOverloads</a>() final <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a> <a href=ConnectionHandler.html#blePoweredOn(java.util.Collection)>blePoweredOn</a>()</pre>
                                         <div class="block"></div>
 
                                         <dl>

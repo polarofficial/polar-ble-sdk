@@ -32,7 +32,8 @@ object PolarBleSdkModule {
                 PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_FIRMWARE_UPDATE,
                 PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_FEATURES_CONFIGURATION_SERVICE,
                 PolarBleApi.PolarBleSdkFeature.FEATURE_WATCH_FACES_CONFIGURATION,
-                PolarBleApi.PolarBleSdkFeature.FEATURE_TELEMETRY
+                PolarBleApi.PolarBleSdkFeature.FEATURE_TELEMETRY,
+                PolarBleApi.PolarBleSdkFeature.FEATURE_COMPANION_DEVICE_MANAGEMENT
             )
         )
 

@@ -51,19 +51,23 @@ struct OfflineExerciseV2View: View {
                 statusHeader = "Check Exercise"
                 statusDetail = "Checking..."
 
-                bleSdkManager.listOfflineExercisesV2()
-                bleSdkManager.getOfflineExerciseStatusV2()
+                Task { @MainActor in
+                    await bleSdkManager.listOfflineExercisesV2()
+                    await bleSdkManager.getOfflineExerciseStatusV2()
 
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    let running = bleSdkManager.offlineExerciseV2Status
+                    let running = bleSdkManager.isOfflineExcerciseV2Ongoing
                     let hasEntries = !bleSdkManager.offlineExerciseV2Entries.isEmpty
 
+                    statusDetail = ""
                     if running {
                         statusDetail = "Exercise is running"
-                    } else if hasEntries {
-                        statusDetail = "Exercise exists on device"
                     } else {
-                        statusDetail = "No exercise found"
+                        statusDetail = "No exercise running"
+                        if hasEntries {
+                            statusDetail += "\nExercise exists on device"
+                        } else {
+                            statusDetail += "\nNo exercise found"
+                        }
                     }
                 }
             }
@@ -81,6 +85,8 @@ struct OfflineExerciseV2View: View {
                     } catch {
                         statusDetail = "Fetch failed: \(error.localizedDescription)"
                     }
+                    statusHeader = ""
+                    statusDetail = ""
                 }
             }
             .buttonStyle(SecondaryButtonStyle(buttonState: getDefaultButtonState()))

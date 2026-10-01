@@ -65,6 +65,7 @@ $dokka.location:com.polar.androidcommunications.api.ble/BleDeviceListener.BlePow
 $dokka.location:com.polar.androidcommunications.api.ble/BleDeviceListener.BleSearchPreFilter///PointingToDeclaration/com/polar/androidcommunications/api/ble/BleDeviceListener.BleSearchPreFilter.html
 $dokka.location:com.polar.androidcommunications.api.ble/BleDeviceListener.PowerMode///PointingToDeclaration/com/polar/androidcommunications/api/ble/BleDeviceListener.PowerMode.html
 $dokka.location:com.polar.androidcommunications.api.ble/BleLogger.BleLoggerInterface///PointingToDeclaration/com/polar/androidcommunications/api/ble/BleLogger.BleLoggerInterface.html
+$dokka.location:com.polar.androidcommunications.common.ble.companion/PolarCompanionDeviceManager.AssociationCallback///PointingToDeclaration/com/polar/androidcommunications/common/ble/companion/PolarCompanionDeviceManager.AssociationCallback.html
 $dokka.location:com.polar.androidcommunications.common.ble/AtomicSet.CompareFunction///PointingToDeclaration/com/polar/androidcommunications/common/ble/AtomicSet.CompareFunction.html
 $dokka.location:com.polar.androidcommunications.common.ble/BleUtils.AD_TYPE///PointingToDeclaration/com/polar/androidcommunications/common/ble/BleUtils.AD_TYPE.html
 $dokka.location:com.polar.androidcommunications.common.ble/BleUtils.Companion///PointingToDeclaration/com/polar/androidcommunications/common/ble/BleUtils.Companion.html
@@ -101,6 +102,7 @@ $dokka.location:com.polar.sdk.api.model/FirmwareUpdateStatus.FwUpdateFailed///Po
 $dokka.location:com.polar.sdk.api.model/FirmwareUpdateStatus.FwUpdateNotAvailable///PointingToDeclaration/com/polar/sdk/api/model/FirmwareUpdateStatus.FwUpdateNotAvailable.html
 $dokka.location:com.polar.sdk.api.model/FirmwareUpdateStatus.PreparingDeviceForFwUpdate///PointingToDeclaration/com/polar/sdk/api/model/FirmwareUpdateStatus.PreparingDeviceForFwUpdate.html
 $dokka.location:com.polar.sdk.api.model/FirmwareUpdateStatus.WritingFwUpdatePackage///PointingToDeclaration/com/polar/sdk/api/model/FirmwareUpdateStatus.WritingFwUpdatePackage.html
+$dokka.location:com.polar.sdk.api.model/HrSensorConfig.Companion///PointingToDeclaration/com/polar/sdk/api/model/HrSensorConfig.Companion.html
 $dokka.location:com.polar.sdk.api.model/LogConfig.Companion///PointingToDeclaration/com/polar/sdk/api/model/LogConfig.Companion.html
 $dokka.location:com.polar.sdk.api.model/PolarAccelerometerData.PolarAccelerometerDataSample///PointingToDeclaration/com/polar/sdk/api/model/PolarAccelerometerData.PolarAccelerometerDataSample.html
 $dokka.location:com.polar.sdk.api.model/PolarDerivedMeasurementMethod.Companion///PointingToDeclaration/com/polar/sdk/api/model/PolarDerivedMeasurementMethod.Companion.html
@@ -148,8 +150,10 @@ $dokka.location:com.polar.sdk.api/PolarBleApi.PolarBleApiLogger///PointingToDecl
 $dokka.location:com.polar.sdk.api/PolarBleApi.PolarBleSdkFeature///PointingToDeclaration/com/polar/sdk/api/PolarBleApi.PolarBleSdkFeature.html
 $dokka.location:com.polar.sdk.api/PolarBleApi.PolarDeviceDataType///PointingToDeclaration/com/polar/sdk/api/PolarBleApi.PolarDeviceDataType.html
 $dokka.location:com.polar.sdk.api/PolarBleApi.PolarStoredDataType///PointingToDeclaration/com/polar/sdk/api/PolarBleApi.PolarStoredDataType.html
+$dokka.location:com.polar.sdk.api/PolarCompanionDeviceApi.PolarCompanionDeviceCallback///PointingToDeclaration/com/polar/sdk/api/PolarCompanionDeviceApi.PolarCompanionDeviceCallback.html
 $dokka.location:com.polar.sdk.api/PolarDeviceTelemetryType.Companion///PointingToDeclaration/com/polar/sdk/api/PolarDeviceTelemetryType.Companion.html
 $dokka.location:com.polar.sdk.api/PolarDeviceToHostNotification.Companion///PointingToDeclaration/com/polar/sdk/api/PolarDeviceToHostNotification.Companion.html
+$dokka.location:com.polar.sdk.api/PolarH10OfflineExerciseApi.PolarRecordingStatus///PointingToDeclaration/com/polar/sdk/api/PolarH10OfflineExerciseApi.PolarRecordingStatus.html
 $dokka.location:com.polar.sdk.api/PolarH10OfflineExerciseApi.RecordingInterval///PointingToDeclaration/com/polar/sdk/api/PolarH10OfflineExerciseApi.RecordingInterval.html
 $dokka.location:com.polar.sdk.api/PolarH10OfflineExerciseApi.SampleType///PointingToDeclaration/com/polar/sdk/api/PolarH10OfflineExerciseApi.SampleType.html
 $dokka.location:com.polar.sdk.api/PolarOfflineExerciseV2Api.Companion///PointingToDeclaration/com/polar/sdk/api/PolarOfflineExerciseV2Api.Companion.html
@@ -169,6 +173,7 @@ com.polar.androidcommunications.api.ble.model.gatt.client.psftp
 com.polar.androidcommunications.api.ble.model.offlinerecording
 com.polar.androidcommunications.api.ble.model.polar
 com.polar.androidcommunications.common.ble
+com.polar.androidcommunications.common.ble.companion
 com.polar.androidcommunications.enpoints.ble.bluedroid.host
 com.polar.androidcommunications.enpoints.ble.bluedroid.host.connection
 com.polar.androidcommunications.http.client

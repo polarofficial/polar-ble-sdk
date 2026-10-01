@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Companion Device Manager (CDM) support for FEATURE_COMPANION_DEVICE_MANAGEMENT. -->
+    <uses-feature
+        android:name="android.software.companion_device_setup"
+        android:required="false" />
+    <uses-permission android:name="android.permission.REQUEST_COMPANION_RUN_IN_BACKGROUND" />
+    <uses-permission android:name="android.permission.REQUEST_OBSERVE_COMPANION_DEVICE_PRESENCE" />
+
+    <application>
+        <!-- Invisible trampoline used to launch the CDM consent chooser without a host Activity. -->
+        <activity
+            android:name="com.polar.androidcommunications.common.ble.companion.PolarCompanionAssociationActivity"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:launchMode="singleTask"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+
+        <!-- Forwards CDM presence callbacks to the app; requires API 31+. -->
+        <service
+            android:name="com.polar.androidcommunications.common.ble.companion.PolarCompanionDeviceService"
+            android:permission="android.permission.BIND_COMPANION_DEVICE_SERVICE"
+            android:exported="true"
+            tools:targetApi="31">
+            <intent-filter>
+                <action android:name="android.companion.CompanionDeviceService" />
+            </intent-filter>
+        </service>
+    </application>
+</manifest>
+
+

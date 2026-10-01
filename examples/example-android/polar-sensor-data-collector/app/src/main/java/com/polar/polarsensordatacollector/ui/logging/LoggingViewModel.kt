@@ -10,6 +10,7 @@ import com.polar.polarsensordatacollector.repository.PolarDeviceRepository
 import com.polar.polarsensordatacollector.repository.ResultOfRequest
 import com.polar.polarsensordatacollector.ui.landing.ONLINE_OFFLINE_KEY_DEVICE_ID
 import com.polar.sdk.api.model.Errorlog
+import com.polar.sdk.api.model.HrSensorConfig
 import com.polar.sdk.api.model.LogConfig
 import com.polar.sdk.api.model.PolarDeviceLog
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -122,6 +123,7 @@ internal class LoggingViewModel @Inject constructor(
             updateLogConfigState(_uiLogConfigState.value.copy(sleepLogEnabled = !_uiLogConfigState.value.sleepLogEnabled!!))
         }
     }
+
     fun fetchErrorLog() {
         viewModelScope.launch(Dispatchers.IO) {
             try {
@@ -146,6 +148,20 @@ internal class LoggingViewModel @Inject constructor(
         }
     }
 
+    fun setHrSensorLogConfig(deviceName: String, waitForConnect: Boolean) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val updated = HrSensorConfig(
+                deviceInformation = deviceName,
+                waitUntilConnected = waitForConnect
+            )
+            polarDeviceStreamingRepository.setLogConfig(
+                identifier,
+                _uiLogConfigState.value.copy(hrSensorConfig = updated)
+            )
+            updateLogConfigState(_uiLogConfigState.value.copy(hrSensorConfig = updated))
+        }
+    }
+
     private fun updateLogConfigState(logConfig: LogConfig) {
         _uiLogConfigState.update {
             it.copy(
@@ -155,7 +171,8 @@ internal class LoggingViewModel @Inject constructor(
                 skinTemperatureLogEnabled = logConfig.skinTemperatureLogEnabled,
                 metLogEnabled = logConfig.metLogEnabled,
                 caloriesLogEnabled = logConfig.caloriesLogEnabled,
-                sleepLogEnabled = logConfig.sleepLogEnabled
+                sleepLogEnabled = logConfig.sleepLogEnabled,
+                hrSensorConfig = logConfig.hrSensorConfig
             )
         }
     }

@@ -37,6 +37,19 @@ interface PolarH10OfflineExerciseApi {
     }
 
     /**
+     * Polar Recording status
+     *
+     * @property ongoing true if recording is running
+     * @property entryId unique identifier for the exercise entry
+     * @property supported true if device supports recording, null if unknown
+     */
+    data class PolarRecordingStatus(
+        val ongoing: Boolean,
+        val entryId: String,
+        val supported: Boolean
+    )
+
+    /**
      * Request start recording. Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_H10_EXERCISE_RECORDING]
      *
      * @param identifier polar device id or bt address
@@ -64,9 +77,9 @@ interface PolarH10OfflineExerciseApi {
      * Request current recording status. Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_H10_EXERCISE_RECORDING]
      *
      * @param identifier polar device id or bt address
-     * @return Pair first recording status, second entryId if available
+     * @return PolarRecordingStatus first recording status, second entryId if available
      */
-    suspend fun requestRecordingStatus(identifier: String): Pair<Boolean, String>
+    suspend fun requestRecordingStatus(identifier: String): PolarRecordingStatus
 
     /**
      * List exercises stored in the device Polar H10 device. Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_H10_EXERCISE_RECORDING]

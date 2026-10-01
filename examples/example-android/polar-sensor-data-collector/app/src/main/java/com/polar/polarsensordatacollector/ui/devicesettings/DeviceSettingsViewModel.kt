@@ -16,6 +16,7 @@ import com.polar.sdk.api.model.CheckFirmwareUpdateStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -38,6 +39,7 @@ import com.polar.sdk.api.errors.PolarDeviceNotConnected
 import com.polar.sdk.api.errors.PolarDeviceNotFound
 import com.polar.sdk.api.errors.PolarServiceNotAvailable
 import com.polar.sdk.api.model.PolarDiskSpaceData
+import com.polar.sdk.api.model.sleep.PolarSleepRecordingStatus
 import com.polar.sdk.api.model.PolarPhysicalConfiguration
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -57,21 +59,26 @@ data class SdkModeUiState(
     val isAvailable: Boolean = false,
     val sdkModeState: SdkMode.STATE = SdkMode.STATE.DISABLED,
     val sdkModeLedState: SdkMode.STATE = SdkMode.STATE.ENABLED,
-    val ppiModeLedState: SdkMode.STATE = SdkMode.STATE.ENABLED
+    val ppiModeLedState: SdkMode.STATE = SdkMode.STATE.ENABLED,
+    val isSwitchEnabled: Boolean = true,
+    val isLoading: Boolean = false
 )
 
 data class SecurityUiState(
     val isAvailable: Boolean = false,
     val isEnabled: Boolean = false,
+    val isLoading: Boolean = false
 )
 
 data class BleMultiConnectionUiState(
     val isEnabled: Boolean = false,
-    val isSwitchEnabled: Boolean = true
+    val isSwitchEnabled: Boolean = true,
+    val isLoading: Boolean = false
 )
 
 data class SleepRecordingState(
-    val enabled: Boolean?
+    val status: PolarSleepRecordingStatus?,
+    val isLoading: Boolean = false
 )
 
 data class SettingsSupportUiState(
@@ -84,7 +91,8 @@ data class DeviceToHostNotificationsUiState(
 
 data class SensorInitiatedSecurityModeUiState(
     val isEnabled: Boolean = false,
-    val isSwitchEnabled: Boolean = true
+    val isSwitchEnabled: Boolean = true,
+    val isLoading: Boolean = false
 )
 
 data class TelemetryUiState(
@@ -101,6 +109,10 @@ internal class DeviceSettingsViewModel @Inject constructor(
 
     companion object {
         private const val TAG = "DeviceSettingsViewModel"
+
+        // Minimum time to keep a loading indicator visible so fast API replies do not
+        // finish before the fragment's UI collector starts observing the state.
+        private const val MIN_LOADING_DURATION_MS = 400L
     }
 
     private val identifier: String = state.get<String>(ONLINE_OFFLINE_KEY_DEVICE_ID) ?: throw Exception("Device settings viewModel must know the identifier")
@@ -145,7 +157,7 @@ internal class DeviceSettingsViewModel @Inject constructor(
     private var _uiSensorInitiatedSecurityModeState = MutableStateFlow(SensorInitiatedSecurityModeUiState())
     val uiSensorInitiatedSecurityModeState: StateFlow<SensorInitiatedSecurityModeUiState> = _uiSensorInitiatedSecurityModeState.asStateFlow()
 
-    private val _sleepRecordingState = MutableStateFlow(SleepRecordingState(enabled = null))
+    private val _sleepRecordingState = MutableStateFlow(SleepRecordingState(status = null))
     val sleepRecordingState: StateFlow<SleepRecordingState> = _sleepRecordingState.asStateFlow()
 
     var physInfo: PolarPhysicalConfiguration? = null
@@ -244,7 +256,7 @@ internal class DeviceSettingsViewModel @Inject constructor(
         getBleMultiConnectionModeStatus()
         getSensorInitiatedSecurityModeEnabledStatus()
         setDeviceUserLocationDefault()
-        observeSleepRecordingState()
+        observeSleepRecordingStatus()
         checkFirmwareUpdate()
         getDeviceSettingsSupportUiState()
     }
@@ -692,6 +704,7 @@ internal class DeviceSettingsViewModel @Inject constructor(
             try {
                 polarDeviceStreamingRepository.setBleMultiConnectionMode(identifier, enabled)
                 Log.d(TAG, "Set BLE dual connection mode to $enabled on device $identifier.")
+                _uiMultiBleModeState.update { it.copy(isEnabled = enabled) }
             } catch (error: Exception) {
                 Log.e(TAG, "Setting BLE dual connection mode to $enabled failed: $error")
                 _uiMultiBleModeState.update { it.copy(isSwitchEnabled = false) }
@@ -705,6 +718,7 @@ internal class DeviceSettingsViewModel @Inject constructor(
             try {
                 polarDeviceStreamingRepository.setSensorInitiatedSecurityMode(identifier, enabled)
                 Log.d(TAG, "Set sensor initiated security mode to $enabled on device $identifier.")
+                _uiSensorInitiatedSecurityModeState.update { it.copy(isEnabled = enabled) }
             } catch (error: Exception) {
                 Log.e(TAG, "Set sensor initiated security mode to $enabled failed: $error")
                 _uiSensorInitiatedSecurityModeState.update { it.copy(isSwitchEnabled = false) }
@@ -737,25 +751,30 @@ internal class DeviceSettingsViewModel @Inject constructor(
 
 
 
-    fun getSleepRecordingState() = viewModelScope.launch {
+    fun getSleepRecordingStatus() = viewModelScope.launch {
+        _sleepRecordingState.update { it.copy(isLoading = true) }
         try {
             withContext(Dispatchers.IO) {
-                when (val result = polarDeviceStreamingRepository.getSleepRecordingState(identifier)) {
+                when (val result = polarDeviceStreamingRepository.getSleepRecordingStatus(identifier)) {
                     is ResultOfRequest.Success -> {
-                        result.value?.let {
-                            showInfo("Sleep ${if (result.value) "is" else "is not"} available.")
+                        result.value?.let { status ->
+                            _sleepRecordingState.update { it.copy(status = status, isLoading = false) }
+                            showInfo(application.getString(R.string.sleep_recording_status_info, status.toString()))
                         } ?: kotlin.run {
-                            showError("Failed to get sleep recording state.")
+                            _sleepRecordingState.update { it.copy(isLoading = false) }
+                            showError(application.getString(R.string.sleep_recording_status_fetch_failed))
                         }
                     }
                     is ResultOfRequest.Failure -> {
+                        _sleepRecordingState.update { it.copy(isLoading = false) }
                         showError(result.message, result.throwable?.toString() ?: "")
                     }
                 }
             }
         } catch (e: Throwable) {
+            _sleepRecordingState.update { it.copy(isLoading = false) }
             Log.e(TAG, "Error getting sleep recording status: ${e.message}", e)
-            showError(e.message ?: "Failed to get sleep recording state")
+            showError(e.message ?: application.getString(R.string.sleep_recording_status_fetch_failed))
         }
     }
 
@@ -826,47 +845,86 @@ internal class DeviceSettingsViewModel @Inject constructor(
         }
     }
 
-    private fun observeSleepRecordingState() {
+    private fun observeSleepRecordingStatus() {
         sleepRecordingStateJob?.cancel()
         sleepRecordingStateJob = viewModelScope.launch {
-            polarDeviceStreamingRepository.observeSleepRecordingState(identifier)
+            polarDeviceStreamingRepository.observeSleepRecordingStatus(identifier)
                 .catch { error ->
-                    Log.w(TAG, "Observing sleep recording state failed: ${error.message ?: error.toString()}")
+                    Log.w(TAG, "Observing sleep recording status failed: ${error.message ?: error.toString()}")
                 }
                 .collect { value ->
-                    _sleepRecordingState.value = SleepRecordingState(enabled = value)
+                    _sleepRecordingState.value = SleepRecordingState(status = value)
                 }
         }
     }
 
 
+    /**
+     * Run [block] and, if it finishes faster than [MIN_LOADING_DURATION_MS], suspend for the
+     * remaining time. This keeps a "loading" UI state visible long enough for the fragment's
+     * lifecycle-aware collector to start observing it, even if the API call resolves almost
+     * instantly (for example when a feature is not supported and fails fast).
+     */
+    private suspend fun <T> withMinLoadingDuration(block: suspend () -> T): T {
+        val start = System.currentTimeMillis()
+        val result = block()
+        val elapsed = System.currentTimeMillis() - start
+        if (elapsed < MIN_LOADING_DURATION_MS) {
+            delay(MIN_LOADING_DURATION_MS - elapsed)
+        }
+        return result
+    }
+
     private fun getSdkModeStatus() {
         Log.d(TAG, "getSdkModeStatus()")
         viewModelScope.launch(Dispatchers.IO) {
-            polarDeviceStreamingRepository.isSdkModeEnabled(identifier)
+            _uiSdkModeState.update { it.copy(isLoading = true) }
+            when (withMinLoadingDuration { polarDeviceStreamingRepository.isSdkModeEnabled(identifier) }) {
+                is ResultOfRequest.Success -> {
+                    _uiSdkModeState.update { it.copy(isSwitchEnabled = true, isLoading = false) }
+                }
+                is ResultOfRequest.Failure -> {
+                    _uiSdkModeState.update { it.copy(isSwitchEnabled = false, isLoading = false) }
+                }
+            }
         }
     }
 
     private fun getSecurityStatus() {
         Log.d(TAG, "getSdkModeStatus()")
         viewModelScope.launch(Dispatchers.IO) {
-            polarDeviceStreamingRepository.isSecurityEnabled(identifier)
+            _uiSecurityState.update { it.copy(isLoading = true) }
+            try {
+                withMinLoadingDuration { polarDeviceStreamingRepository.isSecurityEnabled(identifier) }
+            } finally {
+                _uiSecurityState.update { it.copy(isLoading = false) }
+            }
         }
     }
 
     private fun getBleMultiConnectionModeStatus() {
         Log.d(TAG, "getBleMultiConnectionMode()")
         viewModelScope.launch(Dispatchers.IO) {
-            val isEnabled = polarDeviceStreamingRepository.getMultiBleModeEnabled(identifier)
-            _uiMultiBleModeState.update { BleMultiConnectionUiState(isEnabled) }
+            _uiMultiBleModeState.update { it.copy(isLoading = true) }
+            val isEnabled = withMinLoadingDuration { polarDeviceStreamingRepository.getMultiBleModeEnabled(identifier) }
+            if (isEnabled != null) {
+                _uiMultiBleModeState.update { BleMultiConnectionUiState(isEnabled = isEnabled, isSwitchEnabled = true, isLoading = false) }
+            } else {
+                _uiMultiBleModeState.update { it.copy(isSwitchEnabled = false, isLoading = false) }
+            }
         }
     }
 
     private fun getSensorInitiatedSecurityModeEnabledStatus() {
         Log.d(TAG, "getSensorInitiatedSecurityMode()")
         viewModelScope.launch(Dispatchers.IO) {
-            val isEnabled = polarDeviceStreamingRepository.getSensorInitiatedSecurityModeEnabled(identifier)
-            _uiSensorInitiatedSecurityModeState.update { SensorInitiatedSecurityModeUiState(isEnabled) }
+            _uiSensorInitiatedSecurityModeState.update { it.copy(isLoading = true) }
+            val isEnabled = withMinLoadingDuration { polarDeviceStreamingRepository.getSensorInitiatedSecurityModeEnabled(identifier) }
+            if (isEnabled != null) {
+                _uiSensorInitiatedSecurityModeState.update { SensorInitiatedSecurityModeUiState(isEnabled = isEnabled, isSwitchEnabled = true, isLoading = false) }
+            } else {
+                _uiSensorInitiatedSecurityModeState.update { it.copy(isSwitchEnabled = false, isLoading = false) }
+            }
         }
     }
 

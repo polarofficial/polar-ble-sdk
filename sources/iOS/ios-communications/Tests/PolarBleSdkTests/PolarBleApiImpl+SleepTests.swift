@@ -73,13 +73,13 @@ final class PolarBleApiImplSleepTests: XCTestCase {
         XCTAssertEqual(operation.path, "/REST/SLEEP.API?cmd=subscribe&event=sleep_recording_state&details=[enabled]")
     }
 
-    func test_getSleepRecordingState_whenNotificationsHang_throwsTimeout() async {
+    func test_getSleepRecordingStatus_whenNotificationsHang_throwsTimeout() async {
         let hangingClient = HangingSleepNotificationClient(gattServiceTransmitter: MockPolarGattServiceTransmitter())
         let hangingSession = MockBleDeviceSession(mockFtpClient: hangingClient)
         let hangingApi = PolarBleApiImplWithMockSession(mockDeviceSession: hangingSession)
 
         do {
-            _ = try await hangingApi.getSleepRecordingState(identifier: deviceId, timeoutMs: 100)
+            _ = try await hangingApi.getSleepRecordingStatus(identifier: deviceId, timeoutMs: 100)
             XCTFail("Expected timeout")
         } catch let error as PolarErrors {
             if case .timeout = error {
@@ -92,7 +92,7 @@ final class PolarBleApiImplSleepTests: XCTestCase {
         }
     }
 
-    func test_getSleepRecordingState_whenNotificationStreamFails_propagatesOriginalError() async {
+    func test_getSleepRecordingStatus_whenNotificationStreamFails_propagatesOriginalError() async {
         let expected = NSError(domain: "sleep.notification", code: 999)
         let failingClient = FailingSleepNotificationClient(
             gattServiceTransmitter: MockPolarGattServiceTransmitter(),
@@ -102,7 +102,7 @@ final class PolarBleApiImplSleepTests: XCTestCase {
         let failingApi = PolarBleApiImplWithMockSession(mockDeviceSession: failingSession)
 
         do {
-            _ = try await failingApi.getSleepRecordingState(identifier: deviceId, timeoutMs: 2_000)
+            _ = try await failingApi.getSleepRecordingStatus(identifier: deviceId, timeoutMs: 2_000)
             XCTFail("Expected stream failure")
         } catch {
             let nsError = error as NSError
@@ -111,18 +111,18 @@ final class PolarBleApiImplSleepTests: XCTestCase {
         }
     }
 
-    func test_observeSleepRecordingState_subscribesAndYieldsMappedBooleanBatches() async throws {
+    func test_observeSleepRecordingStatus_subscribesAndYieldsMappedStatusBatches() async throws {
         mockClient.receiveNotificationCalls = [
             (restApiNotificationId, [sleepRecordingEvent(enabled: 1), sleepRecordingEvent(enabled: 0)], false)
         ]
 
-        var values: [[Bool]] = []
-        for try await batch in api.observeSleepRecordingState(identifier: deviceId) {
+        var values: [[PolarSleepRecordingStatus]] = []
+        for try await batch in api.observeSleepRecordingStatus(identifier: deviceId) {
             values.append(batch)
         }
 
         XCTAssertEqual(values.count, 1)
-        XCTAssertEqual(values[0], [true, false])
+        XCTAssertEqual(values[0], [.enabled, .disabled])
 
         XCTAssertEqual(mockClient.requestCalls.count, 1)
         let getOperation = try Protocol_PbPFtpOperation(serializedBytes: mockClient.requestCalls[0])
@@ -135,14 +135,62 @@ final class PolarBleApiImplSleepTests: XCTestCase {
         XCTAssertEqual(readAll(from: mockClient.writeCalls[0].data), Data("{}".utf8))
     }
 
-    func test_getSleepRecordingState_multipleConsumers_firstCancelledSecondSucceeds() async throws {
+    func test_observeSleepRecordingStatus_whenEnabledMissing_yieldsUnknown() async throws {
+        mockClient.receiveNotificationCalls = [
+            (restApiNotificationId, [sleepRecordingEventMissingEnabled()], false)
+        ]
+
+        var values: [[PolarSleepRecordingStatus]] = []
+        for try await batch in api.observeSleepRecordingStatus(identifier: deviceId) {
+            values.append(batch)
+        }
+
+        XCTAssertEqual(values.count, 1)
+        XCTAssertEqual(values[0], [.unknown])
+    }
+
+    func test_getSleepRecordingStatus_returnsLastStatusFromFirstEventBatch() async throws {
+        mockClient.receiveNotificationCalls = [
+            (restApiNotificationId, [sleepRecordingEvent(enabled: 1), sleepRecordingEvent(enabled: 0)], false)
+        ]
+
+        let status = try await api.getSleepRecordingStatus(identifier: deviceId, timeoutMs: 2_000)
+
+        XCTAssertEqual(status, .disabled)
+    }
+
+    func test_getSleepRecordingStatus_whenEnabledMissing_returnsUnknown() async throws {
+        mockClient.receiveNotificationCalls = [
+            (restApiNotificationId, [sleepRecordingEventMissingEnabled()], false)
+        ]
+
+        let status = try await api.getSleepRecordingStatus(identifier: deviceId, timeoutMs: 2_000)
+
+        XCTAssertEqual(status, .unknown)
+    }
+
+    func test_observeSleepRecordingState_deprecated_whenEnabledMissing_yieldsFalse() async throws {
+        mockClient.receiveNotificationCalls = [
+            (restApiNotificationId, [sleepRecordingEventMissingEnabled()], false)
+        ]
+
+        var values: [[Bool]] = []
+        for try await batch in api.observeSleepRecordingState(identifier: deviceId) {
+            values.append(batch)
+        }
+
+        XCTAssertEqual(values.count, 1)
+        XCTAssertEqual(values[0], [false])
+    }
+
+    func test_getSleepRecordingStatus_multipleConsumers_firstCancelledSecondSucceeds() async throws {
         let broadcastingClient = BroadcastingMockBlePsFtpClient(gattServiceTransmitter: MockPolarGattServiceTransmitter())
         let broadcastingSession = MockBleDeviceSession(mockFtpClient: broadcastingClient)
         let broadcastingApi = PolarBleApiImplWithMockSession(mockDeviceSession: broadcastingSession)
 
         // First caller subscribes, then is cancelled before the device answers.
         let firstTask = Task {
-            _ = try await broadcastingApi.getSleepRecordingState(identifier: deviceId, timeoutMs: 10_000)
+            _ = try await broadcastingApi.getSleepRecordingStatus(identifier: deviceId, timeoutMs: 10_000)
         }
         try await waitForSubscriberCount(1, on: broadcastingClient)
         firstTask.cancel()
@@ -151,8 +199,8 @@ final class PolarBleApiImplSleepTests: XCTestCase {
         try await waitForSubscriberCount(0, on: broadcastingClient)
 
         // Second, independent caller starts only after the first one has fully torn down.
-        let secondTask = Task { () -> Bool in
-            try await broadcastingApi.getSleepRecordingState(identifier: deviceId, timeoutMs: 10_000)
+        let secondTask = Task { () -> PolarSleepRecordingStatus in
+            try await broadcastingApi.getSleepRecordingStatus(identifier: deviceId, timeoutMs: 10_000)
         }
         try await waitForSubscriberCount(1, on: broadcastingClient)
 
@@ -160,8 +208,8 @@ final class PolarBleApiImplSleepTests: XCTestCase {
         // should receive it and resolve successfully.
         broadcastingClient.pushRestApiEvent(uncompressed: [sleepRecordingEvent(enabled: 1)])
 
-        let state = try await secondTask.value
-        XCTAssertTrue(state)
+        let status = try await secondTask.value
+        XCTAssertEqual(status, .enabled)
 
         _ = try? await firstTask.value
     }
@@ -230,6 +278,10 @@ final class PolarBleApiImplSleepTests: XCTestCase {
 
     private func sleepRecordingEvent(enabled: Int) -> Data {
         Data("{\"sleep_recording_state\":{\"enabled\":\(enabled)}}".utf8)
+    }
+
+    private func sleepRecordingEventMissingEnabled() -> Data {
+        Data("{\"sleep_recording_state\":{}}".utf8)
     }
 
     private func makeUtcDate(year: Int, month: Int, day: Int) -> Date {

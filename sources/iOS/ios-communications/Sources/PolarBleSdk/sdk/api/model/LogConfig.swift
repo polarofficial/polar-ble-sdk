@@ -32,8 +32,37 @@ public struct LogConfig {
     public var retainSettingsOverBoot: Bool? = nil
     public var logTrigger: Int? = nil
     public var magnetometerFrequency: Int? = nil
+    public var hrSensorConfig: HrSensorConfig? = nil
     
-    public init(ppiLogEnabled: Bool?, accelerationLogEnabled: Bool?, caloriesLogEnabled: Bool?, gpsLogEnabled: Bool?, gpsNmeaLogEnabled: Bool?, magnetometerLogEnabled: Bool?, tapLogEnabled: Bool?, barometerLogEnabled: Bool?, gyroscopeLogEnabled: Bool?, sleepLogEnabled: Bool?, slopeLogEnabled: Bool?, ambientLightLogEnabled: Bool?, tlrLogEnabled: Bool?, ondemandLogEnabled: Bool?, capsenseLogEnabled: Bool?, fusionLogEnabled: Bool?, metLogEnabled: Bool?, ohrLogEnabled: Bool?, verticalAccLogEnabled: Bool?, amdLogEnabled: Bool?, skinTemperatureLogEnabled: Bool?, compassLogEnabled: Bool?, speed3DLogEnabled: Bool?, logTrigger: Int?, magnetometerFrequency: Int?) {
+    
+    public init(
+        ppiLogEnabled: Bool?,
+        accelerationLogEnabled: Bool?,
+        caloriesLogEnabled: Bool?,
+        gpsLogEnabled: Bool?,
+        gpsNmeaLogEnabled: Bool?,
+        magnetometerLogEnabled: Bool?,
+        tapLogEnabled: Bool?,
+        barometerLogEnabled: Bool?,
+        gyroscopeLogEnabled: Bool?,
+        sleepLogEnabled: Bool?,
+        slopeLogEnabled: Bool?,
+        ambientLightLogEnabled: Bool?,
+        tlrLogEnabled: Bool?,
+        ondemandLogEnabled: Bool?,
+        capsenseLogEnabled: Bool?,
+        fusionLogEnabled: Bool?,
+        metLogEnabled: Bool?,
+        ohrLogEnabled: Bool?,
+        verticalAccLogEnabled: Bool?,
+        amdLogEnabled: Bool?,
+        skinTemperatureLogEnabled: Bool?,
+        compassLogEnabled: Bool?,
+        speed3DLogEnabled: Bool?,
+        logTrigger: Int?,
+        magnetometerFrequency: Int?,
+        hrSensorConfig: HrSensorConfig?
+    ) {
         
         self.accelerationLogEnabled = accelerationLogEnabled
         self.ambientLightLogEnabled = ambientLightLogEnabled
@@ -60,6 +89,7 @@ public struct LogConfig {
         self.verticalAccLogEnabled = verticalAccLogEnabled
         self.logTrigger = logTrigger
         self.magnetometerFrequency = magnetometerFrequency
+        self.hrSensorConfig = hrSensorConfig
     }
     
     static func fromProto(proto: Data_PbSensorDataLog) -> LogConfig {
@@ -89,7 +119,8 @@ public struct LogConfig {
             compassLogEnabled: proto.hasCompassLogEnabled ? proto.compassLogEnabled : nil,
             speed3DLogEnabled: proto.hasSpeed3DLogEnabled ? proto.speed3DLogEnabled : nil,
             logTrigger: proto.hasLogTrigger ? proto.logTrigger.rawValue : nil,
-            magnetometerFrequency: proto.hasMagnetometerLogFrequency ? proto.magnetometerLogFrequency.rawValue : nil
+            magnetometerFrequency: proto.hasMagnetometerLogFrequency ? proto.magnetometerLogFrequency.rawValue : nil,
+            hrSensorConfig: HrSensorConfig.fromProto(proto: proto)
         )
     }
     
@@ -119,9 +150,48 @@ public struct LogConfig {
         if (logConfig.skinTemperatureLogEnabled != nil) {pbSensorDataLog.skinTemperatureLogEnabled = logConfig.skinTemperatureLogEnabled!}
         if (logConfig.compassLogEnabled != nil) {pbSensorDataLog.compassLogEnabled = logConfig.compassLogEnabled!}
         if (logConfig.speed3DLogEnabled != nil) {pbSensorDataLog.speed3DLogEnabled = logConfig.speed3DLogEnabled!}
-        if (logConfig.magnetometerFrequency != nil) {pbSensorDataLog.magnetometerLogFrequency = Data_PbSensorDataLog.PbMagnetometerLogFrequency.init(rawValue: logConfig.magnetometerFrequency!)!}
-        if (logConfig.logTrigger != nil) {pbSensorDataLog.logTrigger = Data_PbSensorDataLog.PbLogTrigger.init(rawValue: logConfig.logTrigger!)!}
+        if let magnetometerFrequency = logConfig.magnetometerFrequency,
+           let frequency = Data_PbSensorDataLog.PbMagnetometerLogFrequency(rawValue: magnetometerFrequency) {
+            pbSensorDataLog.magnetometerLogFrequency = frequency
+        }
+        if let logTrigger = logConfig.logTrigger,
+           let trigger = Data_PbSensorDataLog.PbLogTrigger(rawValue: logTrigger) {
+            pbSensorDataLog.logTrigger = trigger
+        }
+        guard let hrSensorConfig = logConfig.hrSensorConfig else {
+            return pbSensorDataLog
+        }
+        let sensorConfigProto = Data_PbBleHrSensorConfig.with {
+            $0.deviceName = PbBleDeviceName.with {
+                $0.name = hrSensorConfig.deviceInformation ?? ""
+            }
+            $0.waitForConnect = hrSensorConfig.waitUntilConnected ?? false
+        }
+        pbSensorDataLog.bleHrSensorConfig = sensorConfigProto
 
         return pbSensorDataLog
+    }
+}
+
+public struct HrSensorConfig {
+
+    public var deviceInformation: String? = nil
+    public var waitUntilConnected: Bool? = nil
+
+    public init(deviceInformation: String?, waitUntilConnected: Bool?) {
+        self.deviceInformation = deviceInformation
+        self.waitUntilConnected = waitUntilConnected
+    }
+
+    static func fromProto(proto: Data_PbSensorDataLog) -> HrSensorConfig? {
+        guard proto.hasBleHrSensorConfig else {
+            return nil
+        }
+
+        let hrConfig = proto.bleHrSensorConfig
+        return HrSensorConfig(
+            deviceInformation: hrConfig.hasDeviceName ? hrConfig.deviceName.name : nil,
+            waitUntilConnected: hrConfig.hasWaitForConnect ? hrConfig.waitForConnect : nil
+        )
     }
 }

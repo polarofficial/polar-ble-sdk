@@ -8,13 +8,17 @@ import com.polar.androidcommunications.api.ble.model.gatt.client.psftp.BlePsFtpC
 import com.polar.androidcommunications.api.ble.model.gatt.client.psftp.BlePsFtpUtils
 import com.polar.androidcommunications.api.ble.model.gatt.client.psftp.BlePsFtpUtils.PftpResponseError
 import com.polar.androidcommunications.api.ble.model.polar.BlePolarDeviceCapabilitiesUtility
+import com.polar.sdk.api.model.HrSensorConfig
 import com.polar.sdk.api.model.LogConfig
 import data.SensorDataLog
+import fi.polar.remote.representation.protobuf.Structures.PbBleDeviceName
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
 import io.mockk.unmockkAll
+import io.mockk.verify
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertArrayEquals
@@ -27,6 +31,7 @@ import org.junit.Test
 import protocol.PftpError.PbPFtpError
 import protocol.PftpRequest
 import java.io.ByteArrayOutputStream
+import java.io.InputStream
 import java.util.concurrent.atomic.AtomicInteger
 
 internal class PolarLoggingApiImplTest {
@@ -150,11 +155,17 @@ internal class PolarLoggingApiImplTest {
         val (client, listener) = mockBleConnection(deviceId)
         val api = PolarLoggingApiImpl(listener)
 
+        val hrSensorConfig = SensorDataLog.PbBleHrSensorConfig.newBuilder()
+            .setDeviceName(PbBleDeviceName.newBuilder().setName("Polar H10 ABCD1234").build())
+            .setWaitForConnect(true)
+            .build()
+
         val protoBytes = SensorDataLog.PbSensorDataLog.newBuilder()
             .setOhrLogEnabled(true)
             .setPpiLogEnabled(false)
             .setAccelerationLogEnabled(true)
             .setGpsLogEnabled(false)
+            .setBleHrSensorConfig(hrSensorConfig)
             .build()
             .toByteArray()
 
@@ -166,6 +177,9 @@ internal class PolarLoggingApiImplTest {
         assertEquals(false, config.ppiLogEnabled)
         assertEquals(true,  config.accelerationLogEnabled)
         assertEquals(false, config.gpsLogEnabled)
+        assertNotNull(config.hrSensorConfig)
+        assertEquals("Polar H10 ABCD1234", config.hrSensorConfig?.deviceInformation)
+        assertEquals(true, config.hrSensorConfig?.waitUntilConnected)
     }
 
     @Test
@@ -183,6 +197,39 @@ internal class PolarLoggingApiImplTest {
         assertNull(config.accelerationLogEnabled)
         assertNull(config.gpsLogEnabled)
         assertNull(config.sleepLogEnabled)
+        assertNull(config.hrSensorConfig)
+    }
+
+    @Test
+    fun `setLogConfig writes hrSensorConfig into the device proto payload`() = runTest {
+        val (client, listener) = mockBleConnection(deviceId)
+        val api = PolarLoggingApiImpl(listener)
+        val expectedConfig = LogConfig(
+            hrSensorConfig = HrSensorConfig(
+                deviceInformation = "Polar H10 ABCD1234",
+                waitUntilConnected = true
+            )
+        )
+
+        val captured = mutableListOf<Pair<ByteArray, InputStream>>()
+        every { client.write(any(), any()) } answers {
+            captured += (firstArg<ByteArray>() to secondArg<InputStream>())
+            flowOf(1L)
+        }
+
+        api.setLogConfig(deviceId, expectedConfig)
+
+        assertEquals(1, captured.size)
+        val (requestBytes, payloadStream) = captured.first()
+        val request = PftpRequest.PbPFtpOperation.parseFrom(requestBytes)
+        assertEquals(PftpRequest.PbPFtpOperation.Command.PUT, request.command)
+        assertEquals(LogConfig.LOG_CONFIG_FILENAME, request.path)
+
+        val writtenConfig = SensorDataLog.PbSensorDataLog.parseFrom(payloadStream.readBytes())
+        assertNotNull(writtenConfig.bleHrSensorConfig)
+        assertEquals("Polar H10 ABCD1234", writtenConfig.bleHrSensorConfig.deviceName.name)
+        assertEquals(true, writtenConfig.bleHrSensorConfig.waitForConnect)
+        verify(exactly = 1) { client.write(any(), any()) }
     }
 
     @Test

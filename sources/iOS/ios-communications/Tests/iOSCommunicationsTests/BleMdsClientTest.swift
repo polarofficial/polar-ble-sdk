@@ -14,6 +14,7 @@ final class BleMdsClientTest: XCTestCase {
         transmitter = MockMdsGattTransmitter()
         client = BleMdsClient(gattServiceTransmitter: transmitter)
         client.setServiceDiscovered(true)
+        client.setCharacteristicsDiscovered(true)
     }
 
     override func tearDownWithError() throws {
@@ -450,6 +451,7 @@ final class BleMdsClientTest: XCTestCase {
 
     func testClientReady_serviceNotDiscovered_pendingUntilDiscovered() {
         client.setServiceDiscovered(false)
+        client.setCharacteristicsDiscovered(false)
         let exp = expectation(description: "clientReady completes after discovery")
         var cancellable: AnyCancellable?
         var completed = false
@@ -466,6 +468,34 @@ final class BleMdsClientTest: XCTestCase {
 
         DispatchQueue.global().asyncAfter(deadline: .now() + 0.05) { [weak self] in
             self?.client.setServiceDiscovered(true)
+            self?.client.setCharacteristicsDiscovered(true)
+        }
+
+        wait(for: [exp], timeout: 2.0)
+        XCTAssertTrue(completed)
+    }
+
+    func testClientReady_serviceDiscoveredButCharacteristicsNot_pendingUntilCharacteristicsDiscovered() {
+        client.setServiceDiscovered(true)
+        client.setCharacteristicsDiscovered(false)
+        let exp = expectation(description: "clientReady completes after characteristics discovery")
+        var cancellable: AnyCancellable?
+        var completed = false
+
+        cancellable = client.clientReady(false)
+            .sink(
+                receiveCompletion: { completion in
+                    if case .finished = completion { completed = true }
+                    exp.fulfill()
+                    _ = cancellable
+                },
+                receiveValue: { _ in }
+            )
+
+        XCTAssertFalse(completed)
+
+        DispatchQueue.global().asyncAfter(deadline: .now() + 0.05) { [weak self] in
+            self?.client.setCharacteristicsDiscovered(true)
         }
 
         wait(for: [exp], timeout: 2.0)

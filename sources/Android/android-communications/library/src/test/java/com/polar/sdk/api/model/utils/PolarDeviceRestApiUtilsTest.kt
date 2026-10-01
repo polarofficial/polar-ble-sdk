@@ -9,9 +9,13 @@ import com.polar.sdk.impl.utils.receiveRestApiEvents
 import com.polar.sdk.impl.utils.toObject
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert
 import org.junit.Test
@@ -153,6 +157,36 @@ class PolarDeviceRestApiUtilsTest {
     }
 
     @Test
+    fun `receiveRestApiEvents filters events by requested top-level key`() = runTest {
+        val sleepEvent = """{"sleep_recording_state":{"enabled":1}}"""
+        val otherEvent = """{"other_event":{"enabled":0}}"""
+        val notification = makeRestApiNotification(
+            otherEvent.toByteArray(Charsets.UTF_8),
+            sleepEvent.toByteArray(Charsets.UTF_8),
+            uncompressed = true
+        )
+        every { client.waitForNotification() } returns flowOf(notification)
+
+        val result = client.receiveRestApiEvents(identifier, eventKey = "sleep_recording_state").toList()
+
+        Assert.assertEquals(1, result.size)
+        Assert.assertEquals(listOf(sleepEvent), result[0])
+    }
+
+    @Test
+    fun `receiveRestApiEvents emits no batch when key filter has no matches`() = runTest {
+        val notification = makeRestApiNotification(
+            """{"other_event":{"enabled":0}}""".toByteArray(Charsets.UTF_8),
+            uncompressed = true
+        )
+        every { client.waitForNotification() } returns flowOf(notification)
+
+        val result = client.receiveRestApiEvents(identifier, eventKey = "sleep_recording_state").toList()
+
+        Assert.assertTrue(result.isEmpty())
+    }
+
+    @Test
     fun `receiveRestApiEvents propagates upstream errors`() = runTest {
         every { client.waitForNotification() } returns flow { throw RuntimeException("network failure") }
 
@@ -217,5 +251,28 @@ class PolarDeviceRestApiUtilsTest {
         val result = json.toObject<SimplePayload>()
 
         Assert.assertEquals("keep", result.value)
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun `receiveRestApiEventData delivers an event emitted during onSubscribed`() = runTest {
+        // onSubscribed must run only after the shared-flow subscription
+        // is registered. An event that arrives right after the subscribe request must then be
+        // delivered, not dropped. onStart or an unsubscribed emit would lose it on a replay = 0
+        // shared flow.
+        val shared = MutableSharedFlow<BlePsFtpUtils.PftpNotificationMessage>(extraBufferCapacity = 1)
+        every { client.waitForNotification() } returns shared
+        val notification = makeRestApiNotification("late".toByteArray(Charsets.UTF_8), uncompressed = true)
+
+        val results = mutableListOf<Array<ByteArray>>()
+        val job = launch {
+            client.receiveRestApiEventData(identifier, onSubscribed = { shared.emit(notification) })
+                .collect { results.add(it) }
+        }
+        advanceUntilIdle()
+        job.cancel()
+
+        Assert.assertEquals(1, results.size)
+        Assert.assertEquals("late", results[0][0].toString(Charsets.UTF_8))
     }
 }

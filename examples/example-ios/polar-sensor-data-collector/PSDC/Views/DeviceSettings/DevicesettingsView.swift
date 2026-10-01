@@ -708,22 +708,6 @@ struct DeviceSettingsView: View {
                         }
                         .buttonStyle(SecondaryButtonStyle(buttonState: .released))
                     }
-
-                    Button("Export PSDC app logs") {
-                        if appLogFileURL == nil {
-                            appLogFileURL = AppLogger.ensureLogFile()
-                        }
-                        if appLogFileURL != nil {
-                            isShareSheetPresented = true
-                        }
-                    }
-                    .buttonStyle(SecondaryButtonStyle(buttonState: .released))
-                    .padding(.top, 10)
-                    .sheet(isPresented: $isShareSheetPresented) {
-                        if let url = appLogFileURL {
-                            ExportLogsView(text: "Export PSDC app logs", fileURL: url)
-                        }
-                    }
                 }
             } else {
                 Text("Not connected")

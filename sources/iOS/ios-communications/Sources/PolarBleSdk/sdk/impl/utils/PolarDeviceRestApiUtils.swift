@@ -6,10 +6,13 @@ import Combine
 extension BlePsFtpClient {
 
     func receiveRestApiEventData(identifier: String) -> AsyncThrowingStream<[Data], Error> {
+        // Register the notification listener synchronously at creation time so callers can
+        // guarantee the subscriber exists before sending a subscribe command.
+        let notifications = self.waitNotification()
         return AsyncThrowingStream { continuation in
             let task = Task {
                 do {
-                    for try await notification in self.waitNotification() {
+                    for try await notification in notifications {
                         guard notification.id == Protocol_PbPFtpDevToHostNotification.restApiEvent.rawValue else { continue }
                         guard let params = try? Protocol_PbPftpDHRestApiEvent(serializedBytes: notification.parameters as Data) else { continue }
                         let events: [Data]
@@ -39,10 +42,13 @@ extension BlePsFtpClient {
     }
 
     func receiveRestApiEvents<T: Decodable>(identifier: String) -> AsyncThrowingStream<[T], Error> {
+        // Create the data stream synchronously so the underlying waitNotification()
+        // subscriber is registered as soon as this stream is created.
+        let dataStream = self.receiveRestApiEventData(identifier: identifier)
         return AsyncThrowingStream { continuation in
             let task = Task {
                 do {
-                    for try await eventDataList in self.receiveRestApiEventData(identifier: identifier) {
+                    for try await eventDataList in dataStream {
                         let decoded = eventDataList.compactMap { data -> T? in
                             BleLogger.trace("Received REST API event, JSON: \(String(data: data, encoding: .utf8) ?? "<binary>")")
                             return try? JSONDecoder().decode(T.self, from: data)

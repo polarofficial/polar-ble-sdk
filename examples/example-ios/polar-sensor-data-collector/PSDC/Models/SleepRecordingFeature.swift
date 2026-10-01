@@ -1,9 +1,10 @@
 ///  Copyright © 2025 Polar. All rights reserved.
 
 import Foundation
+import PolarBleSdk
 
 struct SleepRecordingFeature {
     var isSupported: Bool = false
-    var sleepRecordingEnabled: Bool = false
-    var sleepRecordingEnabledAvailable: Bool = false
+    // nil means the status has not been fetched yet / control not available.
+    var status: PolarSleepRecordingStatus? = nil
 }

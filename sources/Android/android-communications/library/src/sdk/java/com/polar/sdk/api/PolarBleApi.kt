@@ -19,7 +19,8 @@ import java.util.concurrent.TimeUnit
 abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineStreamingApi,
     PolarOfflineRecordingApi, PolarH10OfflineExerciseApi, PolarSdkModeApi, PolarFirmwareUpdateApi,
     PolarActivityApi, PolarSleepApi, PolarRestServiceApi, PolarTemperatureApi, PolarTrainingSessionApi,
-    PolarBleLowLevelApi, PolarDeviceToHostNotificationsApi, PolarTestApi, PolarWatchFaceApi, PolarLoggingApi, PolarBleTelemetryApi {
+    PolarBleLowLevelApi, PolarDeviceToHostNotificationsApi, PolarTestApi, PolarWatchFaceApi, PolarLoggingApi, PolarBleTelemetryApi,
+    PolarCompanionDeviceApi {
 
     /**
      * Features available in Polar BLE SDK library
@@ -133,7 +134,16 @@ abstract class PolarBleApi(val features: Set<PolarBleSdkFeature>) : PolarOnlineS
         /**
          * Feature to receive device telemetry data with Memfault MDS BLE service.
          */
-        FEATURE_TELEMETRY
+        FEATURE_TELEMETRY,
+
+        /**
+         * Opt-in feature: the SDK associates connected devices with Android's Companion Device
+         * Manager and observes their presence in the background. Presence changes are surfaced via
+         * [PolarBleApiCallbackProvider.polarCompanionDeviceAppeared] /
+         * [PolarBleApiCallbackProvider.polarCompanionDeviceDisappeared]; the SDK does not
+         * reconnect automatically.
+         */
+        FEATURE_COMPANION_DEVICE_MANAGEMENT
     }
 
     /**

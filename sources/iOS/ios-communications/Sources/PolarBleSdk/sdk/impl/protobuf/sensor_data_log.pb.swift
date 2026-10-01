@@ -262,6 +262,17 @@ struct Data_PbSensorDataLog {
   /// Clears the value of `retainSettingsOverBoot`. Subsequent reads from it will return its default value.
   mutating func clearRetainSettingsOverBoot() {_uniqueStorage()._retainSettingsOverBoot = nil}
 
+  /// External BLE HR sensor configuration for data collection.
+  /// When absent, no external BLE HR sensor is configured.
+  var bleHrSensorConfig: Data_PbBleHrSensorConfig {
+    get {return _storage._bleHrSensorConfig ?? Data_PbBleHrSensorConfig()}
+    set {_uniqueStorage()._bleHrSensorConfig = newValue}
+  }
+  /// Returns true if `bleHrSensorConfig` has been explicitly set.
+  var hasBleHrSensorConfig: Bool {return _storage._bleHrSensorConfig != nil}
+  /// Clears the value of `bleHrSensorConfig`. Subsequent reads from it will return its default value.
+  mutating func clearBleHrSensorConfig() {_uniqueStorage()._bleHrSensorConfig = nil}
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   enum PbLogTrigger: SwiftProtobuf.Enum {
@@ -347,10 +358,42 @@ extension Data_PbSensorDataLog.PbMagnetometerLogFrequency: CaseIterable {
 
 #endif  // swift(>=4.2)
 
+struct Data_PbBleHrSensorConfig {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  var deviceName: PbBleDeviceName {
+    get {return _deviceName ?? PbBleDeviceName()}
+    set {_deviceName = newValue}
+  }
+  /// Returns true if `deviceName` has been explicitly set.
+  var hasDeviceName: Bool {return self._deviceName != nil}
+  /// Clears the value of `deviceName`. Subsequent reads from it will return its default value.
+  mutating func clearDeviceName() {self._deviceName = nil}
+
+  var waitForConnect: Bool {
+    get {return _waitForConnect ?? false}
+    set {_waitForConnect = newValue}
+  }
+  /// Returns true if `waitForConnect` has been explicitly set.
+  var hasWaitForConnect: Bool {return self._waitForConnect != nil}
+  /// Clears the value of `waitForConnect`. Subsequent reads from it will return its default value.
+  mutating func clearWaitForConnect() {self._waitForConnect = nil}
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+
+  fileprivate var _deviceName: PbBleDeviceName? = nil
+  fileprivate var _waitForConnect: Bool? = nil
+}
+
 #if swift(>=5.5) && canImport(_Concurrency)
 extension Data_PbSensorDataLog: @unchecked Sendable {}
 extension Data_PbSensorDataLog.PbLogTrigger: @unchecked Sendable {}
 extension Data_PbSensorDataLog.PbMagnetometerLogFrequency: @unchecked Sendable {}
+extension Data_PbBleHrSensorConfig: @unchecked Sendable {}
 #endif  // swift(>=5.5) && canImport(_Concurrency)
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
@@ -386,6 +429,7 @@ extension Data_PbSensorDataLog: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     24: .standard(proto: "speed3d_log_enabled"),
     50: .standard(proto: "magnetometer_log_frequency"),
     100: .standard(proto: "retain_settings_over_boot"),
+    29: .standard(proto: "ble_hr_sensor_config"),
   ]
 
   fileprivate class _StorageClass {
@@ -415,8 +459,17 @@ extension Data_PbSensorDataLog: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     var _speed3DLogEnabled: Bool? = nil
     var _magnetometerLogFrequency: Data_PbSensorDataLog.PbMagnetometerLogFrequency? = nil
     var _retainSettingsOverBoot: Bool? = nil
+    var _bleHrSensorConfig: Data_PbBleHrSensorConfig? = nil
 
-    static let defaultInstance = _StorageClass()
+    #if swift(>=5.10)
+      // This property is used as the initial default value for new instances of the type.
+      // The type itself is protecting the reference to its storage via CoW semantics.
+      // This will force a copy to be made of this reference when the first mutation occurs;
+      // hence, it is safe to mark this as `nonisolated(unsafe)`.
+      static nonisolated(unsafe) let defaultInstance = _StorageClass()
+    #else
+      static let defaultInstance = _StorageClass()
+    #endif
 
     private init() {}
 
@@ -447,6 +500,7 @@ extension Data_PbSensorDataLog: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
       _speed3DLogEnabled = source._speed3DLogEnabled
       _magnetometerLogFrequency = source._magnetometerLogFrequency
       _retainSettingsOverBoot = source._retainSettingsOverBoot
+      _bleHrSensorConfig = source._bleHrSensorConfig
     }
   }
 
@@ -455,6 +509,13 @@ extension Data_PbSensorDataLog: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
       _storage = _StorageClass(copying: _storage)
     }
     return _storage
+  }
+
+  public var isInitialized: Bool {
+    return withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      if let v = _storage._bleHrSensorConfig, !v.isInitialized {return false}
+      return true
+    }
   }
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -489,6 +550,7 @@ extension Data_PbSensorDataLog: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
         case 22: try { try decoder.decodeSingularBoolField(value: &_storage._skinTemperatureLogEnabled) }()
         case 23: try { try decoder.decodeSingularBoolField(value: &_storage._compassLogEnabled) }()
         case 24: try { try decoder.decodeSingularBoolField(value: &_storage._speed3DLogEnabled) }()
+        case 29: try { try decoder.decodeSingularMessageField(value: &_storage._bleHrSensorConfig) }()
         case 50: try { try decoder.decodeSingularEnumField(value: &_storage._magnetometerLogFrequency) }()
         case 100: try { try decoder.decodeSingularBoolField(value: &_storage._retainSettingsOverBoot) }()
         default: break
@@ -575,6 +637,9 @@ extension Data_PbSensorDataLog: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
       try { if let v = _storage._speed3DLogEnabled {
         try visitor.visitSingularBoolField(value: v, fieldNumber: 24)
       } }()
+      try { if let v = _storage._bleHrSensorConfig {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 29)
+      } }()
       try { if let v = _storage._magnetometerLogFrequency {
         try visitor.visitSingularEnumField(value: v, fieldNumber: 50)
       } }()
@@ -616,6 +681,7 @@ extension Data_PbSensorDataLog: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
         if _storage._speed3DLogEnabled != rhs_storage._speed3DLogEnabled {return false}
         if _storage._magnetometerLogFrequency != rhs_storage._magnetometerLogFrequency {return false}
         if _storage._retainSettingsOverBoot != rhs_storage._retainSettingsOverBoot {return false}
+        if _storage._bleHrSensorConfig != rhs_storage._bleHrSensorConfig {return false}
         return true
       }
       if !storagesAreEqual {return false}
@@ -639,4 +705,51 @@ extension Data_PbSensorDataLog.PbMagnetometerLogFrequency: SwiftProtobuf._ProtoN
     2: .same(proto: "MAG_LOG_50HZ"),
     3: .same(proto: "MAG_LOG_100HZ"),
   ]
+}
+
+extension Data_PbBleHrSensorConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".PbBleHrSensorConfig"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "device_name"),
+    2: .standard(proto: "wait_for_connect"),
+  ]
+
+  public var isInitialized: Bool {
+    if let v = self._deviceName, !v.isInitialized {return false}
+    return true
+  }
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularMessageField(value: &self._deviceName) }()
+      case 2: try { try decoder.decodeSingularBoolField(value: &self._waitForConnect) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    try { if let v = self._deviceName {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+    } }()
+    try { if let v = self._waitForConnect {
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 2)
+    } }()
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: Data_PbBleHrSensorConfig, rhs: Data_PbBleHrSensorConfig) -> Bool {
+    if lhs._deviceName != rhs._deviceName {return false}
+    if lhs._waitForConnect != rhs._waitForConnect {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
 }

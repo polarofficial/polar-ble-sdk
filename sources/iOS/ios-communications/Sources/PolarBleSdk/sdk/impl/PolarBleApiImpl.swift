@@ -1326,13 +1326,20 @@ extension PolarBleApiImpl: PolarBleApi  {
         let session = try serviceClientUtils.sessionFtpClientReady(identifier)
         let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as! BlePsFtpClient
         guard BlePolarDeviceCapabilitiesUtility.isRecordingSupported(session.advertisementContent.polarDeviceType) else { throw PolarErrors.operationNotSupported }
-        let data = try await client.query(Protocol_PbPFtpQuery.requestRecordingStatus.rawValue, parameters: nil)
+        var data: NSData = NSData()
+        do {
+            data = try await client.query(Protocol_PbPFtpQuery.requestRecordingStatus.rawValue, parameters: nil)
+        } catch let error as BlePsFtpException {
+            if error._code == 201 {
+                return (ongoing: false, entryId: "", false)
+            }
+        }
         guard data.length > 0 else {
             self.logMessage("request recording status for \(identifier) returned empty data, defaulting to not recording")
-            return (ongoing: false, entryId: "")
+            return (ongoing: false, entryId: "", true)
         }
         let result = try Protocol_PbRequestRecordingStatusResult(serializedBytes: data as Data)
-        return (ongoing: result.recordingOn, entryId: result.hasSampleDataIdentifier ? result.sampleDataIdentifier : "")
+        return (ongoing: result.recordingOn, entryId: result.hasSampleDataIdentifier ? result.sampleDataIdentifier : "", true)
     }
 
     

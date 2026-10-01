@@ -40,7 +40,7 @@ class H10ExerciseFragment : Fragment() {
     ): View = ComposeView(requireContext()).apply {
         setContent {
             var statusText by remember { mutableStateOf("") }
-            var isRecording by remember { mutableStateOf(viewModel.featureState.value.isEnabled) }
+            var isRecording by remember { mutableStateOf(viewModel.featureState.value.isOngoing) }
 
             MaterialTheme {
                 Surface(

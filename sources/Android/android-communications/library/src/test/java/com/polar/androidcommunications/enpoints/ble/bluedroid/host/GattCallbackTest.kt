@@ -26,9 +26,19 @@ import java.util.concurrent.TimeUnit
 
 class GattCallbackTest {
 
+    /**
+     * GattCallback routes connection events through [ConnectionHandler.dispatchGattCallback], which
+     * validates the GATT identity before running the action. A relaxed mock would swallow the
+     * action, so make the mock behave like the real pass-through.
+     */
+    private fun newConnectionHandlerMock(): ConnectionHandler =
+        mockk<ConnectionHandler>(relaxed = true).apply {
+            every { dispatchGattCallback(any(), any(), any()) } answers { thirdArg<Runnable>().run() }
+        }
+
     @Test
     fun onConnectionStateChange_whenPendingDeviceCommandHasExpectedStatus_classifiesDeviceCommand() {
-        val connectionHandler = mockk<ConnectionHandler>(relaxed = true)
+        val connectionHandler = newConnectionHandlerMock()
         val sessions = mockk<BDDeviceList>()
         val gatt = mockk<BluetoothGatt>(relaxed = true)
         val deviceSession = mockk<BDDeviceSessionImpl>(relaxed = true)
@@ -46,7 +56,7 @@ class GattCallbackTest {
 
     @Test
     fun onConnectionStateChange_whenPendingDeviceCommandHasUnexpectedStatus_classifiesDeviceCommandAndLogsWarning() {
-        val connectionHandler = mockk<ConnectionHandler>(relaxed = true)
+        val connectionHandler = newConnectionHandlerMock()
         val sessions = mockk<BDDeviceList>()
         val gatt = mockk<BluetoothGatt>(relaxed = true)
         val deviceSession = mockk<BDDeviceSessionImpl>(relaxed = true)
@@ -77,7 +87,7 @@ class GattCallbackTest {
 
     @Test
     fun onConnectionStateChange_whenNoPendingCommandAndPeerTerminates_classifiesPeerTerminated() {
-        val connectionHandler = mockk<ConnectionHandler>(relaxed = true)
+        val connectionHandler = newConnectionHandlerMock()
         val sessions = mockk<BDDeviceList>()
         val gatt = mockk<BluetoothGatt>(relaxed = true)
         val deviceSession = mockk<BDDeviceSessionImpl>(relaxed = true)
@@ -95,7 +105,7 @@ class GattCallbackTest {
 
     @Test
     fun onConnectionStateChange_whenPendingDeviceCommandExpired_fallsThroughToNormalClassification() {
-        val connectionHandler = mockk<ConnectionHandler>(relaxed = true)
+        val connectionHandler = newConnectionHandlerMock()
         val sessions = mockk<BDDeviceList>()
         val gatt = mockk<BluetoothGatt>(relaxed = true)
         val deviceSession = mockk<BDDeviceSessionImpl>(relaxed = true)
@@ -113,7 +123,7 @@ class GattCallbackTest {
 
     @Test
     fun onConnectionStateChange_whenNoPendingCommandAndConnectionTimesOut_classifiesConnectionLost() {
-        val connectionHandler = mockk<ConnectionHandler>(relaxed = true)
+        val connectionHandler = newConnectionHandlerMock()
         val sessions = mockk<BDDeviceList>()
         val gatt = mockk<BluetoothGatt>(relaxed = true)
         val deviceSession = mockk<BDDeviceSessionImpl>(relaxed = true)
@@ -130,7 +140,7 @@ class GattCallbackTest {
 
     @Test
     fun onConnectionStateChange_whenPendingDeviceCommandAndL2cFailureStatus_classifiesDeviceCommandOverPairingNegotiation() {
-        val connectionHandler = mockk<ConnectionHandler>(relaxed = true)
+        val connectionHandler = newConnectionHandlerMock()
         val sessions = mockk<BDDeviceList>()
         val gatt = mockk<BluetoothGatt>(relaxed = true)
         val deviceSession = mockk<BDDeviceSessionImpl>(relaxed = true)
@@ -151,6 +161,7 @@ class GattCallbackTest {
 
         // Arrange
         val connectionHandler = mockk<ConnectionHandler>()
+        every { connectionHandler.dispatchGattCallback(any(), any(), any()) } answers { thirdArg<Runnable>().run() }
         val sessions = mockk<BDDeviceList>()
         val gatt = mockk<BluetoothGatt>()
         val deviceSession = mockk<BDDeviceSessionImpl>(relaxed = true)
@@ -185,6 +196,7 @@ class GattCallbackTest {
     @Test
     fun onConnectionStateChange_whenBondRemovedWithZeroStatus_classifiesPairingInformationRemoved() {
         val connectionHandler = mockk<ConnectionHandler>()
+        every { connectionHandler.dispatchGattCallback(any(), any(), any()) } answers { thirdArg<Runnable>().run() }
         val sessions = mockk<BDDeviceList>()
         val gatt = mockk<BluetoothGatt>()
         val deviceSession = mockk<BDDeviceSessionImpl>(relaxed = true)
@@ -220,6 +232,7 @@ class GattCallbackTest {
     @Test
     fun onConnectionStateChange_whenL2cConnectionFails_classifiesPairingNegotiationFailed() {
         val connectionHandler = mockk<ConnectionHandler>()
+        every { connectionHandler.dispatchGattCallback(any(), any(), any()) } answers { thirdArg<Runnable>().run() }
         val sessions = mockk<BDDeviceList>()
         val gatt = mockk<BluetoothGatt>()
         val deviceSession = mockk<BDDeviceSessionImpl>(relaxed = true)
@@ -253,7 +266,7 @@ class GattCallbackTest {
     @Test
     fun onCharacteristicRead_whenSessionExists_callsHandleCharacteristicRead() {
         // Arrange
-        val connectionHandler = mockk<ConnectionHandler>(relaxed = true)
+        val connectionHandler = newConnectionHandlerMock()
         val sessions = mockk<BDDeviceList>()
         val gatt = mockk<BluetoothGatt>()
         val deviceSession = mockk<BDDeviceSessionImpl>(relaxed = true)
@@ -281,7 +294,7 @@ class GattCallbackTest {
 
     @Test
     fun onCharacteristicRead_newOverload_whenSessionExists_callsHandleCharacteristicRead() {
-        val connectionHandler = mockk<ConnectionHandler>(relaxed = true)
+        val connectionHandler = newConnectionHandlerMock()
         val sessions = mockk<BDDeviceList>()
         val gatt = mockk<BluetoothGatt>()
         val deviceSession = mockk<BDDeviceSessionImpl>(relaxed = true)
@@ -308,7 +321,7 @@ class GattCallbackTest {
 
     @Test
     fun onCharacteristicRead_whenSessionUnknown_closesGatt() {
-        val connectionHandler = mockk<ConnectionHandler>(relaxed = true)
+        val connectionHandler = newConnectionHandlerMock()
         val sessions = mockk<BDDeviceList>()
         val gatt = mockk<BluetoothGatt>()
         val characteristic = mockk<BluetoothGattCharacteristic>()
@@ -329,7 +342,7 @@ class GattCallbackTest {
 
     @Test
     fun onCharacteristicWrite_whenSessionExists_callsHandleCharacteristicWrite() {
-        val connectionHandler = mockk<ConnectionHandler>(relaxed = true)
+        val connectionHandler = newConnectionHandlerMock()
         val sessions = mockk<BDDeviceList>()
         val gatt = mockk<BluetoothGatt>()
         val deviceSession = mockk<BDDeviceSessionImpl>(relaxed = true)
@@ -355,7 +368,7 @@ class GattCallbackTest {
 
     @Test
     fun onCharacteristicWrite_whenWriteFailsWithError_callsHandleCharacteristicWriteWithErrorStatus() {
-        val connectionHandler = mockk<ConnectionHandler>(relaxed = true)
+        val connectionHandler = newConnectionHandlerMock()
         val sessions = mockk<BDDeviceList>()
         val gatt = mockk<BluetoothGatt>()
         val deviceSession = mockk<BDDeviceSessionImpl>(relaxed = true)
@@ -382,7 +395,7 @@ class GattCallbackTest {
 
     @Test
     fun onCharacteristicWrite_whenSessionUnknown_closesGatt() {
-        val connectionHandler = mockk<ConnectionHandler>(relaxed = true)
+        val connectionHandler = newConnectionHandlerMock()
         val sessions = mockk<BDDeviceList>()
         val gatt = mockk<BluetoothGatt>()
         val characteristic = mockk<BluetoothGattCharacteristic>()
@@ -403,7 +416,7 @@ class GattCallbackTest {
 
     @Test
     fun onServicesDiscovered_whenStatusSuccessAndNoActiveDiscovery_handlesDiscoveryAndNotifiesHandler() {
-        val connectionHandler = mockk<ConnectionHandler>(relaxed = true)
+        val connectionHandler = newConnectionHandlerMock()
         val sessions = mockk<BDDeviceList>()
         val gatt = mockk<BluetoothGatt>()
         val deviceSession = mockk<BDDeviceSessionImpl>(relaxed = true)
@@ -426,7 +439,7 @@ class GattCallbackTest {
 
     @Test
     fun onServicesDiscovered_whenStatusSuccessAndActiveDiscoveryExists_disposesOldDiscoveryBeforeHandling() {
-        val connectionHandler = mockk<ConnectionHandler>(relaxed = true)
+        val connectionHandler = newConnectionHandlerMock()
         val sessions = mockk<BDDeviceList>()
         val gatt = mockk<BluetoothGatt>()
         val deviceSession = mockk<BDDeviceSessionImpl>(relaxed = true)
@@ -457,7 +470,7 @@ class GattCallbackTest {
 
     @Test
     fun onServicesDiscovered_whenStatusFailure_disconnectsDevice() {
-        val connectionHandler = mockk<ConnectionHandler>(relaxed = true)
+        val connectionHandler = newConnectionHandlerMock()
         val sessions = mockk<BDDeviceList>()
         val gatt = mockk<BluetoothGatt>()
         val deviceSession = mockk<BDDeviceSessionImpl>(relaxed = true)
@@ -480,7 +493,7 @@ class GattCallbackTest {
 
     @Test
     fun onServicesDiscovered_whenSessionUnknown_returnsEarly() {
-        val connectionHandler = mockk<ConnectionHandler>(relaxed = true)
+        val connectionHandler = newConnectionHandlerMock()
         val sessions = mockk<BDDeviceList>()
         val gatt = mockk<BluetoothGatt>()
 
@@ -498,7 +511,7 @@ class GattCallbackTest {
 
     @Test
     fun onCharacteristicChanged_deprecatedOverload_whenSessionExists_callsHandleCharacteristicValueUpdated() {
-        val connectionHandler = mockk<ConnectionHandler>(relaxed = true)
+        val connectionHandler = newConnectionHandlerMock()
         val sessions = mockk<BDDeviceList>()
         val gatt = mockk<BluetoothGatt>()
         val deviceSession = mockk<BDDeviceSessionImpl>(relaxed = true)
@@ -526,7 +539,7 @@ class GattCallbackTest {
 
     @Test
     fun onCharacteristicChanged_newOverload_whenSessionExists_callsHandleCharacteristicValueUpdated() {
-        val connectionHandler = mockk<ConnectionHandler>(relaxed = true)
+        val connectionHandler = newConnectionHandlerMock()
         val sessions = mockk<BDDeviceList>()
         val gatt = mockk<BluetoothGatt>()
         val deviceSession = mockk<BDDeviceSessionImpl>(relaxed = true)
@@ -553,7 +566,7 @@ class GattCallbackTest {
 
     @Test
     fun onCharacteristicChanged_deprecatedOverload_whenSessionUnknown_closesGatt() {
-        val connectionHandler = mockk<ConnectionHandler>(relaxed = true)
+        val connectionHandler = newConnectionHandlerMock()
         val sessions = mockk<BDDeviceList>()
         val gatt = mockk<BluetoothGatt>()
         val characteristic = mockk<BluetoothGattCharacteristic>()
@@ -574,7 +587,7 @@ class GattCallbackTest {
 
     @Test
     fun onCharacteristicChanged_newOverload_whenSessionUnknown_closesGatt() {
-        val connectionHandler = mockk<ConnectionHandler>(relaxed = true)
+        val connectionHandler = newConnectionHandlerMock()
         val sessions = mockk<BDDeviceList>()
         val gatt = mockk<BluetoothGatt>()
         val characteristic = mockk<BluetoothGattCharacteristic>()
@@ -597,7 +610,7 @@ class GattCallbackTest {
     @Test
     fun onDescriptorRead_deprecatedOverload_whenSessionExists_callsHandleDescriptorRead() {
         // Arrange
-        val connectionHandler = mockk<ConnectionHandler>(relaxed = true)
+        val connectionHandler = newConnectionHandlerMock()
         val sessions = mockk<BDDeviceList>()
         val gatt = mockk<BluetoothGatt>()
         val deviceSession = mockk<BDDeviceSessionImpl>(relaxed = true)
@@ -623,7 +636,7 @@ class GattCallbackTest {
     @Test
     fun onDescriptorRead_newOverload_whenSessionExists_callsHandleDescriptorRead() {
         // Arrange
-        val connectionHandler = mockk<ConnectionHandler>(relaxed = true)
+        val connectionHandler = newConnectionHandlerMock()
         val sessions = mockk<BDDeviceList>()
         val gatt = mockk<BluetoothGatt>()
         val deviceSession = mockk<BDDeviceSessionImpl>(relaxed = true)
@@ -648,7 +661,7 @@ class GattCallbackTest {
     @Test
     fun onDescriptorRead_deprecatedOverload_whenSessionUnknown_closesGatt() {
         // Arrange
-        val connectionHandler = mockk<ConnectionHandler>(relaxed = true)
+        val connectionHandler = newConnectionHandlerMock()
         val sessions = mockk<BDDeviceList>()
         val gatt = mockk<BluetoothGatt>()
         val descriptor = mockk<BluetoothGattDescriptor>()
@@ -669,7 +682,7 @@ class GattCallbackTest {
     @Test
     fun onDescriptorRead_newOverload_whenSessionUnknown_closesGatt() {
         // Arrange
-        val connectionHandler = mockk<ConnectionHandler>(relaxed = true)
+        val connectionHandler = newConnectionHandlerMock()
         val sessions = mockk<BDDeviceList>()
         val gatt = mockk<BluetoothGatt>()
         val descriptor = mockk<BluetoothGattDescriptor>()
@@ -691,7 +704,7 @@ class GattCallbackTest {
     @Test
     fun onReadRemoteRssi_whenSessionExists_emitsRssiValueToObservers() {
         // Arrange
-        val connectionHandler = mockk<ConnectionHandler>(relaxed = true)
+        val connectionHandler = newConnectionHandlerMock()
         val sessions = mockk<BDDeviceList>()
         val gatt = mockk<BluetoothGatt>()
         val deviceSession = mockk<BDDeviceSessionImpl>(relaxed = true)
@@ -727,7 +740,7 @@ class GattCallbackTest {
     @Test
     fun onReadRemoteRssi_whenSessionExists_emitsCorrectRssiValue() {
         // Arrange
-        val connectionHandler = mockk<ConnectionHandler>(relaxed = true)
+        val connectionHandler = newConnectionHandlerMock()
         val sessions = mockk<BDDeviceList>()
         val gatt = mockk<BluetoothGatt>()
         val deviceSession = mockk<BDDeviceSessionImpl>(relaxed = true)
@@ -763,7 +776,7 @@ class GattCallbackTest {
     @Test
     fun onReadRemoteRssi_whenSessionUnknown_closesGatt() {
         // Arrange
-        val connectionHandler = mockk<ConnectionHandler>(relaxed = true)
+        val connectionHandler = newConnectionHandlerMock()
         val sessions = mockk<BDDeviceList>()
         val gatt = mockk<BluetoothGatt>()
 
@@ -782,7 +795,7 @@ class GattCallbackTest {
     @Test
     fun onMtuChanged_whenSessionExists_callsHandleMtuChangedAndNotifiesHandler() {
         // Arrange
-        val connectionHandler = mockk<ConnectionHandler>(relaxed = true)
+        val connectionHandler = newConnectionHandlerMock()
         val sessions = mockk<BDDeviceList>()
         val gatt = mockk<BluetoothGatt>()
         val deviceSession = mockk<BDDeviceSessionImpl>(relaxed = true)
@@ -810,7 +823,7 @@ class GattCallbackTest {
     @Test
     fun onMtuChanged_whenSessionExistsAndStatusFailure_callsHandleMtuChangedWithErrorStatus() {
         // Arrange
-        val connectionHandler = mockk<ConnectionHandler>(relaxed = true)
+        val connectionHandler = newConnectionHandlerMock()
         val sessions = mockk<BDDeviceList>()
         val gatt = mockk<BluetoothGatt>()
         val deviceSession = mockk<BDDeviceSessionImpl>(relaxed = true)
@@ -839,7 +852,7 @@ class GattCallbackTest {
     @Test
     fun onMtuChanged_whenSessionUnknown_closesGatt() {
         // Arrange
-        val connectionHandler = mockk<ConnectionHandler>(relaxed = true)
+        val connectionHandler = newConnectionHandlerMock()
         val sessions = mockk<BDDeviceList>()
         val gatt = mockk<BluetoothGatt>()
 
@@ -859,7 +872,7 @@ class GattCallbackTest {
     @Test
     fun onPhyUpdate_whenSessionExists_callsPhyUpdated() {
         // Arrange
-        val connectionHandler = mockk<ConnectionHandler>(relaxed = true)
+        val connectionHandler = newConnectionHandlerMock()
         val sessions = mockk<BDDeviceList>()
         val gatt = mockk<BluetoothGatt>()
         val deviceSession = mockk<BDDeviceSessionImpl>(relaxed = true)
@@ -884,7 +897,7 @@ class GattCallbackTest {
     @Test
     fun onPhyUpdate_whenSessionExists_forwardsAllPhyValues() {
         // Arrange
-        val connectionHandler = mockk<ConnectionHandler>(relaxed = true)
+        val connectionHandler = newConnectionHandlerMock()
         val sessions = mockk<BDDeviceList>()
         val gatt = mockk<BluetoothGatt>()
         val deviceSession = mockk<BDDeviceSessionImpl>(relaxed = true)
@@ -909,7 +922,7 @@ class GattCallbackTest {
     @Test
     fun onPhyUpdate_whenSessionUnknown_doesNotCallPhyUpdatedOrCloseGatt() {
         // Arrange
-        val connectionHandler = mockk<ConnectionHandler>(relaxed = true)
+        val connectionHandler = newConnectionHandlerMock()
         val sessions = mockk<BDDeviceList>()
         val gatt = mockk<BluetoothGatt>()
 
@@ -929,7 +942,7 @@ class GattCallbackTest {
     @Test
     fun onPhyRead_whenSessionExists_callsPhyUpdated() {
         // Arrange
-        val connectionHandler = mockk<ConnectionHandler>(relaxed = true)
+        val connectionHandler = newConnectionHandlerMock()
         val sessions = mockk<BDDeviceList>()
         val gatt = mockk<BluetoothGatt>()
         val deviceSession = mockk<BDDeviceSessionImpl>(relaxed = true)
@@ -954,7 +967,7 @@ class GattCallbackTest {
     @Test
     fun onPhyRead_whenSessionExists_forwardsAllPhyValues() {
         // Arrange
-        val connectionHandler = mockk<ConnectionHandler>(relaxed = true)
+        val connectionHandler = newConnectionHandlerMock()
         val sessions = mockk<BDDeviceList>()
         val gatt = mockk<BluetoothGatt>()
         val deviceSession = mockk<BDDeviceSessionImpl>(relaxed = true)
@@ -979,7 +992,7 @@ class GattCallbackTest {
     @Test
     fun onPhyRead_whenSessionUnknown_doesNotCallPhyUpdatedOrCloseGatt() {
         // Arrange
-        val connectionHandler = mockk<ConnectionHandler>(relaxed = true)
+        val connectionHandler = newConnectionHandlerMock()
         val sessions = mockk<BDDeviceList>()
         val gatt = mockk<BluetoothGatt>()
 
@@ -999,7 +1012,7 @@ class GattCallbackTest {
     @Test
     fun onServiceChanged_doesNotInteractWithSessionOrHandler() {
         // Arrange
-        val connectionHandler = mockk<ConnectionHandler>(relaxed = true)
+        val connectionHandler = newConnectionHandlerMock()
         val sessions = mockk<BDDeviceList>(relaxed = true)
         val gatt = mockk<BluetoothGatt>()
         val sut = GattCallback(connectionHandler, sessions)

@@ -15,10 +15,12 @@ import com.polar.androidcommunications.api.ble.model.gatt.client.psftp.BlePsFtpU
 import com.polar.androidcommunications.api.ble.model.polar.BlePolarDeviceCapabilitiesUtility
 import com.polar.androidcommunications.enpoints.ble.bluedroid.host.BDScanCallback
 import com.polar.sdk.api.PolarBleApi
+import com.polar.sdk.api.errors.PolarBleSdkInternalException
 import com.polar.sdk.api.errors.PolarDeviceNotFound
 import com.polar.sdk.api.errors.PolarServiceNotAvailable
 import com.polar.sdk.api.errors.PolarTimeoutException
 import com.polar.sdk.api.model.sleep.PolarSleepAnalysisResult
+import com.polar.sdk.api.model.sleep.PolarSleepRecordingStatus
 import com.polar.sdk.impl.utils.PolarServiceClientUtils
 import com.polar.sdk.impl.utils.PolarSleepUtils
 import com.polar.sdk.impl.utils.receiveRestApiEvents
@@ -39,6 +41,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -266,7 +269,7 @@ internal class PolarSleepApiImplTest {
 
         mockkStatic("com.polar.sdk.impl.utils.PolarDeviceRestApiUtilsKt")
         every { client.write(any(), any()) } returns flowOf(1L)
-        every { client.receiveRestApiEvents(any()) } returns
+        every { client.receiveRestApiEvents(any(), any(), any()) } returns
                 flowOf(listOf("""{"sleep_recording_state":{"enabled":1}}"""))
 
         try {
@@ -291,7 +294,7 @@ internal class PolarSleepApiImplTest {
 
         mockkStatic("com.polar.sdk.impl.utils.PolarDeviceRestApiUtilsKt")
         every { client.write(any(), any()) } returns flowOf(1L)
-        every { client.receiveRestApiEvents(any()) } returns
+        every { client.receiveRestApiEvents(any(), any(), any()) } returns
                 flowOf(listOf("""{"sleep_recording_state":{"enabled":0}}"""))
 
         try {
@@ -317,7 +320,7 @@ internal class PolarSleepApiImplTest {
         mockkStatic("com.polar.sdk.impl.utils.PolarDeviceRestApiUtilsKt")
         every { client.write(any(), any()) } returns flowOf(1L)
         // Flow that suspends forever – timeout should cancel it and throw PolarTimeoutException
-        every { client.receiveRestApiEvents(any()) } returns flow { delay(Long.MAX_VALUE) }
+        every { client.receiveRestApiEvents(any(), any(), any()) } returns flow { delay(Long.MAX_VALUE) }
 
         try {
             // Act – use a short timeout so the virtual-time scheduler advances quickly
@@ -388,7 +391,7 @@ internal class PolarSleepApiImplTest {
         every { client.write(any(), any()) } returns flowOf(1L)
         // Emit the initial state (as a real device would ~10 ms after subscribe) then
         // keep the flow open forever — exactly the scenario that triggered the 8.1.0 hang.
-        every { client.receiveRestApiEvents(any()) } returns flow {
+        every { client.receiveRestApiEvents(any(), any(), any()) } returns flow {
             emit(listOf("""{"sleep_recording_state":{"enabled":1}}"""))
             delay(Long.MAX_VALUE) // subscription stays open on the device side
         }
@@ -417,7 +420,7 @@ internal class PolarSleepApiImplTest {
 
         mockkStatic("com.polar.sdk.impl.utils.PolarDeviceRestApiUtilsKt")
         every { client.write(any(), any()) } returns flowOf(1L)
-        every { client.receiveRestApiEvents(any()) } returns flow {
+        every { client.receiveRestApiEvents(any(), any(), any()) } returns flow {
             emit(listOf("""{"sleep_recording_state":{"enabled":1}}"""))
             emit(listOf("""{"sleep_recording_state":{"enabled":0}}""")) // must NOT override first
             delay(Long.MAX_VALUE)
@@ -448,7 +451,7 @@ internal class PolarSleepApiImplTest {
 
         // Single hot flow shared by both callers — mimics the real SharedFlow inside BlePsFtpClient.
         val eventFlow = MutableSharedFlow<List<String>>(extraBufferCapacity = 8)
-        every { client.receiveRestApiEvents(any()) } returns eventFlow
+        every { client.receiveRestApiEvents(any(), any(), any()) } returns eventFlow
 
         val observedStates = mutableListOf<Boolean>()
         val observeJob = launch {
@@ -485,5 +488,198 @@ internal class PolarSleepApiImplTest {
             unmockkStatic("com.polar.sdk.impl.utils.PolarDeviceRestApiUtilsKt")
             resetCapabilityUtilityState()
         } catch (_: Exception) {}
+    }
+
+    // ── getSleepRecordingStatus ──────────────────────────────────────────────
+
+    @Test
+    fun `getSleepRecordingStatus returns ENABLED when device reports enabled=1`() = runTest {
+        val deviceId = "E123456F"
+        val api = BDBleApiImpl.getInstance(context, setOf(PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_SLEEP_DATA))
+        val (client, _) = mockSleepConnection(deviceId)
+
+        mockkStatic("com.polar.sdk.impl.utils.PolarDeviceRestApiUtilsKt")
+        every { client.write(any(), any()) } returns flowOf(1L)
+        every { client.receiveRestApiEvents(any(), any(), any()) } returns
+                flowOf(listOf("""{"sleep_recording_state":{"enabled":1}}"""))
+
+        try {
+            val result = api.getSleepRecordingStatus(deviceId)
+            Assert.assertEquals(PolarSleepRecordingStatus.ENABLED, result)
+        } finally {
+            unmockkObject(PolarServiceClientUtils)
+            unmockkStatic("com.polar.sdk.impl.utils.PolarDeviceRestApiUtilsKt")
+            resetCapabilityUtilityState()
+        }
+    }
+
+    @Test
+    fun `getSleepRecordingStatus returns DISABLED when device reports enabled=0`() = runTest {
+        val deviceId = "E123456F"
+        val api = BDBleApiImpl.getInstance(context, setOf(PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_SLEEP_DATA))
+        val (client, _) = mockSleepConnection(deviceId)
+
+        mockkStatic("com.polar.sdk.impl.utils.PolarDeviceRestApiUtilsKt")
+        every { client.write(any(), any()) } returns flowOf(1L)
+        every { client.receiveRestApiEvents(any(), any(), any()) } returns
+                flowOf(listOf("""{"sleep_recording_state":{"enabled":0}}"""))
+
+        try {
+            val result = api.getSleepRecordingStatus(deviceId)
+            Assert.assertEquals(PolarSleepRecordingStatus.DISABLED, result)
+        } finally {
+            unmockkObject(PolarServiceClientUtils)
+            unmockkStatic("com.polar.sdk.impl.utils.PolarDeviceRestApiUtilsKt")
+            resetCapabilityUtilityState()
+        }
+    }
+
+    @Test
+    fun `getSleepRecordingStatus maps boolean and string enabled variants`() = runTest {
+        val deviceId = "E123456F"
+        val api = BDBleApiImpl.getInstance(context, setOf(PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_SLEEP_DATA))
+        val (client, _) = mockSleepConnection(deviceId)
+        val cases = listOf(
+            "true" to PolarSleepRecordingStatus.ENABLED,
+            "false" to PolarSleepRecordingStatus.DISABLED,
+            "\"1\"" to PolarSleepRecordingStatus.ENABLED,
+            "\"0\"" to PolarSleepRecordingStatus.DISABLED,
+            "\"true\"" to PolarSleepRecordingStatus.ENABLED,
+            "\"false\"" to PolarSleepRecordingStatus.DISABLED,
+            "\"True\"" to PolarSleepRecordingStatus.ENABLED,
+            "\"False\"" to PolarSleepRecordingStatus.DISABLED
+        )
+
+        mockkStatic("com.polar.sdk.impl.utils.PolarDeviceRestApiUtilsKt")
+        every { client.write(any(), any()) } returns flowOf(1L)
+
+        try {
+            cases.forEach { (enabledJsonValue, expectedStatus) ->
+                every { client.receiveRestApiEvents(any(), any(), any()) } returns
+                        flowOf(listOf("""{"sleep_recording_state":{"enabled":$enabledJsonValue}}"""))
+
+                Assert.assertEquals(expectedStatus, api.getSleepRecordingStatus(deviceId))
+            }
+        } finally {
+            unmockkObject(PolarServiceClientUtils)
+            unmockkStatic("com.polar.sdk.impl.utils.PolarDeviceRestApiUtilsKt")
+            resetCapabilityUtilityState()
+        }
+    }
+
+    @Test
+    fun `getSleepRecordingStatus returns UNKNOWN when enabled field is missing`() = runTest {
+        val deviceId = "E123456F"
+        val api = BDBleApiImpl.getInstance(context, setOf(PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_SLEEP_DATA))
+        val (client, _) = mockSleepConnection(deviceId)
+
+        mockkStatic("com.polar.sdk.impl.utils.PolarDeviceRestApiUtilsKt")
+        every { client.write(any(), any()) } returns flowOf(1L)
+        every { client.receiveRestApiEvents(any(), any(), any()) } returns
+                flowOf(listOf("""{"sleep_recording_state":{}}"""))
+
+        try {
+            val result = api.getSleepRecordingStatus(deviceId)
+            Assert.assertEquals(PolarSleepRecordingStatus.UNKNOWN, result)
+        } finally {
+            unmockkObject(PolarServiceClientUtils)
+            unmockkStatic("com.polar.sdk.impl.utils.PolarDeviceRestApiUtilsKt")
+            resetCapabilityUtilityState()
+        }
+    }
+
+    @Test
+    fun `getSleepRecordingStatus throws when enabled field has unexpected value`() = runTest {
+        val deviceId = "E123456F"
+        val api = BDBleApiImpl.getInstance(context, setOf(PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_SLEEP_DATA))
+        val (client, _) = mockSleepConnection(deviceId)
+
+        mockkStatic("com.polar.sdk.impl.utils.PolarDeviceRestApiUtilsKt")
+        every { client.write(any(), any()) } returns flowOf(1L)
+        every { client.receiveRestApiEvents(any(), any(), any()) } returns
+                flowOf(listOf("""{"sleep_recording_state":{"enabled":2}}"""))
+
+        try {
+            Assert.assertThrows(PolarBleSdkInternalException::class.java) {
+                runBlocking { api.getSleepRecordingStatus(deviceId) }
+            }
+        } finally {
+            unmockkObject(PolarServiceClientUtils)
+            unmockkStatic("com.polar.sdk.impl.utils.PolarDeviceRestApiUtilsKt")
+            resetCapabilityUtilityState()
+        }
+    }
+
+    @Test
+    fun `observeSleepRecordingStatus maps enabled field to status`() = runTest {
+        val deviceId = "E123456F"
+        val api = BDBleApiImpl.getInstance(context, setOf(PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_SLEEP_DATA))
+        val (client, _) = mockSleepConnection(deviceId)
+
+        mockkStatic("com.polar.sdk.impl.utils.PolarDeviceRestApiUtilsKt")
+        every { client.write(any(), any()) } returns flowOf(1L)
+        every { client.receiveRestApiEvents(any(), any(), any()) } returns
+                flowOf(
+                    listOf(
+                        """{"sleep_recording_state":{"enabled":1}}""",
+                        """{"sleep_recording_state":{"enabled":0}}""",
+                        """{"sleep_recording_state":{"enabled":true}}""",
+                        """{"sleep_recording_state":{"enabled":false}}""",
+                        """{"sleep_recording_state":{"enabled":"1"}}""",
+                        """{"sleep_recording_state":{"enabled":"0"}}""",
+                        """{"sleep_recording_state":{"enabled":"true"}}""",
+                        """{"sleep_recording_state":{"enabled":"false"}}""",
+                        """{"sleep_recording_state":{"enabled":"True"}}""",
+                        """{"sleep_recording_state":{"enabled":"False"}}""",
+                        """{"sleep_recording_state":{}}"""
+                    )
+                )
+
+        try {
+            val batches = api.observeSleepRecordingStatus(deviceId).toList()
+            Assert.assertEquals(1, batches.size)
+            Assert.assertArrayEquals(
+                arrayOf(
+                    PolarSleepRecordingStatus.ENABLED,
+                    PolarSleepRecordingStatus.DISABLED,
+                    PolarSleepRecordingStatus.ENABLED,
+                    PolarSleepRecordingStatus.DISABLED,
+                    PolarSleepRecordingStatus.ENABLED,
+                    PolarSleepRecordingStatus.DISABLED,
+                    PolarSleepRecordingStatus.ENABLED,
+                    PolarSleepRecordingStatus.DISABLED,
+                    PolarSleepRecordingStatus.ENABLED,
+                    PolarSleepRecordingStatus.DISABLED,
+                    PolarSleepRecordingStatus.UNKNOWN
+                ),
+                batches[0]
+            )
+        } finally {
+            unmockkObject(PolarServiceClientUtils)
+            unmockkStatic("com.polar.sdk.impl.utils.PolarDeviceRestApiUtilsKt")
+            resetCapabilityUtilityState()
+        }
+    }
+
+    @Test
+    fun `getSleepRecordingState deprecated returns false when enabled field is missing`() = runTest {
+        val deviceId = "E123456F"
+        val api = BDBleApiImpl.getInstance(context, setOf(PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_SLEEP_DATA))
+        val (client, _) = mockSleepConnection(deviceId)
+
+        mockkStatic("com.polar.sdk.impl.utils.PolarDeviceRestApiUtilsKt")
+        every { client.write(any(), any()) } returns flowOf(1L)
+        every { client.receiveRestApiEvents(any(), any(), any()) } returns
+                flowOf(listOf("""{"sleep_recording_state":{}}"""))
+
+        try {
+            @Suppress("DEPRECATION")
+            val result = api.getSleepRecordingState(deviceId)
+            Assert.assertFalse("Deprecated API must collapse unknown to false", result)
+        } finally {
+            unmockkObject(PolarServiceClientUtils)
+            unmockkStatic("com.polar.sdk.impl.utils.PolarDeviceRestApiUtilsKt")
+            resetCapabilityUtilityState()
+        }
     }
 }

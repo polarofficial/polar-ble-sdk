@@ -118,6 +118,13 @@ class PolarSleepUtilsTests: XCTestCase {
         XCTAssertEqual(sleepData.sleepCycles.first?.sleepDepthStart, mockSleepData.sleepCycles.first?.sleepDepthStart)
         XCTAssertEqual(sleepData.sleepWakePhases.first?.secondsFromSleepStart, mockSleepData.sleepWakePhases.first?.secondsFromSleepStart)
         XCTAssertEqual(sleepData.sleepWakePhases.first?.state, mockSleepData.sleepWakePhases.first?.state)
+
+        // Sleep skin temperature (from readSleepSkinTemperatureResult)
+        let skinTemp = try XCTUnwrap(sleepData.sleepSkinTemperatureResult, "Expected sleep skin temperature result to be parsed")
+        let mockSkinTemp = try XCTUnwrap(mockSleepData.sleepSkinTemperatureResult)
+        XCTAssertEqual(skinTemp.sleepResultDate, mockSkinTemp.sleepResultDate)
+        XCTAssertEqual(skinTemp.sleepSkinTemperatureCelsius, mockSkinTemp.sleepSkinTemperatureCelsius)
+        XCTAssertEqual(skinTemp.deviationFromBaseLine, mockSkinTemp.deviationFromBaseLine)
     }
 
     func testReadSleepData_FileNotFound_ReturnsEmptyPlaceholder() async throws {

@@ -35,18 +35,24 @@ struct ActivityRecordingView: View {
                 VStack {
                     VStack {
                         Text(sleepRecordingStateText)
+                            .contentShape(Rectangle())
+                            .onTapGesture {
+                                Task {
+                                    await bleSdkManager.getSleepRecordingStatus()
+                                }
+                            }
                         Button("Stop sleep recording",
                                action: {
                             Task {
                                 bleSdkManager.sleepRecordingStop()
                             }
                         }).buttonStyle(SecondaryButtonStyle(buttonState: ButtonState.released))
-                            .opacity(bleSdkManager.sleepRecordingFeature.sleepRecordingEnabled ? 1.0 : 0.5)
-                            .disabled(bleSdkManager.sleepRecordingFeature.sleepRecordingEnabledAvailable == false || bleSdkManager.sleepRecordingFeature.sleepRecordingEnabled == false)
+                            .opacity(bleSdkManager.sleepRecordingFeature.status == .enabled ? 1.0 : 0.5)
+                            .disabled(bleSdkManager.sleepRecordingFeature.status != .enabled)
                         Divider()
                     }
                     .task {
-                       bleSdkManager.observeSleepRecordingState()
+                       await bleSdkManager.getSleepRecordingStatus()
                     }
                     
                     Button(sleepTextTitle) {
@@ -236,11 +242,14 @@ struct ActivityRecordingView: View {
     }
         
     var sleepRecordingStateText: String {
-        if bleSdkManager.sleepRecordingFeature.sleepRecordingEnabledAvailable {
-            let onOrOff = bleSdkManager.sleepRecordingFeature.sleepRecordingEnabled ? "on" : "off"
-            return "Sleep recording is \(onOrOff)"
-        } else {
+        guard let status = bleSdkManager.sleepRecordingFeature.status else {
             return "Sleep recording control not available"
+        }
+        switch status {
+        case .enabled: return "Sleep recording is on"
+        case .disabled: return "Sleep recording is off"
+        case .unknown: return "Sleep recording state is unknown"
+        @unknown default: return "Sleep recording state is unknown"
         }
     }
 }

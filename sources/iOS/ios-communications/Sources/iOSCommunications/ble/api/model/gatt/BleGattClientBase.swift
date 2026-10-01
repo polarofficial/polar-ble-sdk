@@ -28,6 +28,9 @@ open class BleGattClientBase: Hashable, @unchecked Sendable {
     private let availableReadableCharacteristics = AtomicList<CBUUID>()
     private let serviceUuid: CBUUID
     private let serviceDiscovered = AtomicBoolean(initialValue: false)
+    private let serviceDiscoveredLock = NSLock()
+    private let charsDiscovered = AtomicBoolean(initialValue: false)
+    private let charsDiscoveredLock = NSLock()
     private var cancellables = Set<AnyCancellable>()
 
     let ATT_NOTIFY_OR_INDICATE_STATE_UNKNOWN = -1
@@ -57,6 +60,7 @@ open class BleGattClientBase: Hashable, @unchecked Sendable {
     }
 
     private var serviceWaitObservers = AtomicList<ServiceWaitObserver>()
+    private var charsWaitObservers = AtomicList<ServiceWaitObserver>()
 
     private class NotificationWaitObserver {
         let promise: (Result<Void, Error>) -> Void
@@ -173,7 +177,20 @@ open class BleGattClientBase: Hashable, @unchecked Sendable {
     }
 
     public func disconnected() {
+        serviceDiscoveredLock.lock()
         serviceDiscovered.set(false)
+        let serviceWaiters = serviceWaitObservers.list()
+        serviceWaitObservers.removeAll()
+        serviceDiscoveredLock.unlock()
+        serviceWaiters.forEach { $0.resolve(with: .failure(BleGattException.gattDisconnected)) }
+
+        charsDiscoveredLock.lock()
+        charsDiscovered.set(false)
+        let charsWaiters = charsWaitObservers.list()
+        charsWaitObservers.removeAll()
+        charsDiscoveredLock.unlock()
+        charsWaiters.forEach { $0.resolve(with: .failure(BleGattException.gattDisconnected)) }
+
         mtuSize = 20
         availableCharacteristics.removeAll()
         availableReadableCharacteristics.removeAll()
@@ -182,8 +199,6 @@ open class BleGattClientBase: Hashable, @unchecked Sendable {
         }
         notificationWaitObservers.list().forEach { $0.promise(.failure(BleGattException.gattDisconnected)) }
         notificationWaitObservers.removeAll()
-        serviceWaitObservers.list().forEach { $0.resolve(with: .failure(BleGattException.gattDisconnected)) }
-        serviceWaitObservers.removeAll()
         cancellables.removeAll()
     }
 
@@ -238,16 +253,35 @@ open class BleGattClientBase: Hashable, @unchecked Sendable {
     }
 
     public func setServiceDiscovered(_ value: Bool) {
+        serviceDiscoveredLock.lock()
         serviceDiscovered.set(value)
+        var observers: [ServiceWaitObserver] = []
         if value {
-            let observers = serviceWaitObservers.list()
+            observers = serviceWaitObservers.list()
             serviceWaitObservers.removeAll()
-            observers.forEach { $0.resolve(with: .success(())) }
         }
+        serviceDiscoveredLock.unlock()
+        observers.forEach { $0.resolve(with: .success(())) }
     }
 
     public func isServiceDiscovered() -> Bool {
         return serviceDiscovered.get()
+    }
+
+    public func setCharacteristicsDiscovered(_ value: Bool) {
+        charsDiscoveredLock.lock()
+        charsDiscovered.set(value)
+        var observers: [ServiceWaitObserver] = []
+        if value {
+            observers = charsWaitObservers.list()
+            charsWaitObservers.removeAll()
+        }
+        charsDiscoveredLock.unlock()
+        observers.forEach { $0.resolve(with: .success(())) }
+    }
+
+    public func isCharacteristicsDiscovered() -> Bool {
+        return charsDiscovered.get()
     }
 
     public func serviceBelongsToClient(_ uuid: CBUUID) -> Bool {
@@ -278,11 +312,16 @@ open class BleGattClientBase: Hashable, @unchecked Sendable {
             Future<Void, Error> { [weak self] promise in
                 guard let self = self else { promise(.failure(BleGattException.gattDisconnected)); return }
                 if !checkConnection || self.gattServiceTransmitter?.isConnected() ?? false {
-                    if self.serviceDiscovered.get() == true {
+                    self.serviceDiscoveredLock.lock()
+                    let alreadyDiscovered = self.serviceDiscovered.get()
+                    var observer: ServiceWaitObserver?
+                    if !alreadyDiscovered {
+                        observer = ServiceWaitObserver(promise)
+                        self.serviceWaitObservers.append(observer!)
+                    }
+                    self.serviceDiscoveredLock.unlock()
+                    if alreadyDiscovered {
                         promise(.success(()))
-                    } else {
-                        let observer = ServiceWaitObserver(promise)
-                        self.serviceWaitObservers.append(observer)
                     }
                 } else {
                     promise(.failure(BleGattException.gattDisconnected))
@@ -294,6 +333,34 @@ open class BleGattClientBase: Hashable, @unchecked Sendable {
                 // cancellation, then remove them all.  This is safe because ServiceWaitObserver
                 // resolves exactly once; the promise is already satisfied by the cancel path.
                 self?.serviceWaitObservers.remove { _ in true }
+            })
+        }
+        .ignoreOutput()
+        .eraseToAnyPublisher()
+    }
+
+    public func waitCharacteristicsDiscovered(checkConnection: Bool) -> AnyPublisher<Never, Error> {
+        return Deferred {
+            Future<Void, Error> { [weak self] promise in
+                guard let self = self else { promise(.failure(BleGattException.gattDisconnected)); return }
+                if !checkConnection || self.gattServiceTransmitter?.isConnected() ?? false {
+                    self.charsDiscoveredLock.lock()
+                    let alreadyDiscovered = self.charsDiscovered.get()
+                    var observer: ServiceWaitObserver?
+                    if !alreadyDiscovered {
+                        observer = ServiceWaitObserver(promise)
+                        self.charsWaitObservers.append(observer!)
+                    }
+                    self.charsDiscoveredLock.unlock()
+                    if alreadyDiscovered {
+                        promise(.success(()))
+                    }
+                } else {
+                    promise(.failure(BleGattException.gattDisconnected))
+                }
+            }
+            .handleEvents(receiveCancel: { [weak self] in
+                self?.charsWaitObservers.remove { _ in true }
             })
         }
         .ignoreOutput()

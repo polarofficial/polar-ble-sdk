@@ -106,4 +106,20 @@ abstract class PolarBleApiCallback : PolarBleApiCallbackProvider {
      * @param unavailable features not supported by this device
      */
     override fun bleSdkFeaturesReadiness(identifier: String, ready: List<PolarBleApi.PolarBleSdkFeature>, unavailable: List<PolarBleApi.PolarBleSdkFeature>) {}
+
+    /**
+     * The device came back into BLE range. Requires feature
+     * [PolarBleApi.PolarBleSdkFeature.FEATURE_COMPANION_DEVICE_MANAGEMENT].
+     *
+     * @param identifier Polar device id or bt address
+     */
+    override fun polarCompanionDeviceAppeared(identifier: String) {}
+
+    /**
+     * The device is no longer in BLE range. Requires feature
+     * [PolarBleApi.PolarBleSdkFeature.FEATURE_COMPANION_DEVICE_MANAGEMENT].
+     *
+     * @param identifier Polar device id or bt address
+     */
+    override fun polarCompanionDeviceDisappeared(identifier: String) {}
 }
