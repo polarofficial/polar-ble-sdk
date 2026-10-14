@@ -119,6 +119,19 @@ class BlePolarDeviceCapabilitiesUtilityTest {
     }
 
     @Test
+    fun bundledAsset_vantageV2_usesWatchDefaults_andSupportsActivityData() {
+        val assetJson = File("src/main/assets/polar_device_capabilities.json").readText()
+        val config = Gson().fromJson(assetJson, DeviceCapabilitiesConfig::class.java)
+        resetStateAndInitialize(config)
+
+        assertEquals(FileSystemType.POLAR_FILE_SYSTEM_V2, BlePolarDeviceCapabilitiesUtility.getFileSystemType("vantage v2"))
+        assertTrue(BlePolarDeviceCapabilitiesUtility.isActivityDataSupported("vantage v2"))
+        assertFalse(BlePolarDeviceCapabilitiesUtility.isDeviceSensor("vantage v2"))
+        assertFalse(BlePolarDeviceCapabilitiesUtility.isRecordingSupported("vantage v2"))
+        assertTrue(BlePolarDeviceCapabilitiesUtility.isFirmwareUpdateSupported("vantage v2"))
+    }
+
+    @Test
     fun booleanFlags_whenDevicePresent_useDeviceValues() {
         resetStateAndInitialize(
             DeviceCapabilitiesConfig(
