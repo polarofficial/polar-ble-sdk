@@ -100,6 +100,7 @@ struct DeviceSettingsView: View {
                                     ProgressView()
                                 }
                             }
+                            
                             Button(action: { showFilePicker = true }) {
                                 Text(getFirmwareFileButtonText())
                             }
@@ -113,6 +114,9 @@ struct DeviceSettingsView: View {
                             }
                         }
                         .padding(.trailing)
+                        HStack { Text(getMandatoryUpdateText()) }
+                        
+                        Spacer()
                         
                         HStack {
                             Text("Status:")
@@ -730,10 +734,24 @@ struct DeviceSettingsView: View {
         var buttonText = "Do firmware update"
         if let deviceId = bleSdkManager.deviceId,
            deviceId == bleSdkManager.checkFirmwareUpdateFeature.polarDeviceInfo?.deviceId,
-           let version = selectedFirmwareFileURL?.lastPathComponent ?? bleSdkManager.checkFirmwareUpdateFeature.firmwareVersionAvailable {
+           let version = selectedFirmwareFileURL?.lastPathComponent ?? bleSdkManager.checkFirmwareUpdateFeature.firmwareVersionAvailable?.0 {
             buttonText += " to \(version)"
         }
         return buttonText
+    }
+    
+    func getMandatoryUpdateText() -> String {
+        var mandatoryUpdateText = ""
+        if let deviceId = bleSdkManager.deviceId,
+           deviceId == bleSdkManager.checkFirmwareUpdateFeature.polarDeviceInfo?.deviceId,
+           let version = selectedFirmwareFileURL?.lastPathComponent ?? bleSdkManager.checkFirmwareUpdateFeature.firmwareVersionAvailable?.0 {
+            if ((bleSdkManager.checkFirmwareUpdateFeature.firmwareVersionAvailable?.1) != nil) {
+                mandatoryUpdateText += "This is mandatory update."
+            } else {
+                mandatoryUpdateText += "This is optional update."
+            }
+        }
+        return mandatoryUpdateText
     }
 
     func getMultiBleModeButtonState() -> ButtonState {

@@ -1,10 +1,49 @@
 //  Copyright © 2021 Polar. All rights reserved.
 
 import XCTest
-import iOSCommunications
+@testable import PolarBleSdk
 
 class BlePsFtpUtilityTest: XCTestCase {
-   
+
+    func test_pftpResponseErrorsResolveAllDeclaredErrorCodes() {
+        let expectedErrors: [(Int, Protocol_PbPFtpError)] = [
+            (0, .operationSucceeded),
+            (1, .rebooting),
+            (2, .tryAgain),
+            (100, .unidentifiedHostError),
+            (101, .invalidCommand),
+            (102, .invalidParameter),
+            (103, .noSuchFileOrDirectory),
+            (104, .directoryExists),
+            (105, .fileExists),
+            (106, .operationNotPermitted),
+            (107, .noSuchUser),
+            (108, .timeout),
+            (200, .unidentifiedDeviceError),
+            (201, .notImplemented),
+            (202, .systemBusy),
+            (203, .invalidContent),
+            (204, .checksumFailure),
+            (205, .diskFull),
+            (206, .prerequisiteNotMet),
+            (207, .insufficientBuffer),
+            (208, .waitForIdling),
+            (209, .batteryTooLow),
+            (210, .waitForPairing)
+        ]
+
+        XCTAssertEqual(expectedErrors.map { $0.1 }, Array(Protocol_PbPFtpError.allCases))
+
+        for (expectedCode, expectedError) in expectedErrors {
+            let responseError = BlePsFtpException.responseError(errorCode: expectedCode)
+
+            XCTAssertEqual(expectedError.rawValue, expectedCode)
+            XCTAssertEqual(Protocol_PbPFtpError(rawValue: expectedCode), expectedError)
+            XCTAssertEqual(responseError._code, expectedCode)
+            XCTAssertEqual(responseError.errorName, "ResponseError.\(expectedError)")
+        }
+    }
+
     func test_processSingleFrame() throws {
         // Arrange
         // HEX 02 FF 00

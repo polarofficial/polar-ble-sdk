@@ -12,6 +12,8 @@ extension PolarBleApiImpl {
         toDate: Date? = nil
     ) async throws -> [PolarTrainingSessionReference] {
         logApiCall("getTrainingSessionReferences", ("identifier", identifier), ("fromDate", fromDate), ("toDate", toDate))
+        let guardToken = try apiCallGuard.acquire("getTrainingSessionReferences", identifier)
+        defer { apiCallGuard.release(guardToken) }
         let session = try serviceClientUtils.sessionFtpClientReady(identifier)
         guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
             throw PolarErrors.serviceNotFound
@@ -28,6 +30,8 @@ extension PolarBleApiImpl {
         trainingSessionReference: PolarTrainingSessionReference
     ) async throws -> PolarTrainingSession {
         logApiCall("getTrainingSession", ("identifier", identifier))
+        let guardToken = try apiCallGuard.acquire("getTrainingSession", identifier)
+        defer { apiCallGuard.release(guardToken) }
         let session = try serviceClientUtils.sessionFtpClientReady(identifier)
         guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
             throw PolarErrors.serviceNotFound
@@ -44,6 +48,8 @@ extension PolarBleApiImpl {
         progressHandler: @escaping (PolarTrainingSessionProgress) -> Void
     ) async throws -> PolarTrainingSession {
         logApiCall("getTrainingSessionWithProgress", ("identifier", identifier))
+        let guardToken = try apiCallGuard.acquire("getTrainingSessionWithProgress", identifier)
+        defer { apiCallGuard.release(guardToken) }
         let session = try serviceClientUtils.sessionFtpClientReady(identifier)
         guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
             throw PolarErrors.serviceNotFound
@@ -57,6 +63,8 @@ extension PolarBleApiImpl {
     
     func deleteTrainingSession(identifier: String, reference: PolarTrainingSessionReference) async throws {
         logApiCall("deleteTrainingSession", ("identifier", identifier))
+        let guardToken = try apiCallGuard.acquire("deleteTrainingSession", identifier)
+        defer { apiCallGuard.release(guardToken) }
         let session = try serviceClientUtils.sessionFtpClientReady(identifier)
         guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else { throw PolarErrors.serviceNotFound }
         BleLogger.trace("Delete training session with path '\(sanitizePathForLog(reference.path))' ")

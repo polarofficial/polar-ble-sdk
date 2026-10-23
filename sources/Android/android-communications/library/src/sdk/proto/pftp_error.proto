@@ -35,5 +35,7 @@ enum PbPFtpError {
   INSUFFICIENT_BUFFER = 207;
   WAIT_FOR_IDLING = 208;
   BATTERY_TOO_LOW = 209;
+  WAIT_FOR_PAIRING = 210;
+
   /* 300-399 reserved for communication interface specific errors */
 };

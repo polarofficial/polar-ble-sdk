@@ -36,7 +36,8 @@ import java.time.LocalDate
  * and [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_TEMPERATURE_DATA] for temperature methods.
  */
 internal class PolarActivityApiImpl(
-    private val listener: BleDeviceListener
+    private val listener: BleDeviceListener,
+    private val apiCallGuard: PolarApiCallGuard = PolarApiCallGuard()
 ) : PolarActivityApi, PolarTemperatureApi {
 
     companion object {
@@ -58,11 +59,13 @@ internal class PolarActivityApiImpl(
         fromDate: LocalDate,
         toDate: LocalDate
     ): List<Polar247HrSamplesData> {
-        validateDateRange(fromDate, toDate)
-        val session = PolarServiceClientUtils.sessionPsFtpClientReady(identifier, listener)
-        val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
-            ?: throw PolarServiceNotAvailable()
-        return PolarAutomaticSamplesUtils.read247HrSamples(client, fromDate, toDate)
+        return apiCallGuard.guardSuspend("get247HrSamples", identifier) {
+            validateDateRange(fromDate, toDate)
+            val session = PolarServiceClientUtils.sessionPsFtpClientReady(identifier, listener)
+            val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
+                ?: throw PolarServiceNotAvailable()
+            PolarAutomaticSamplesUtils.read247HrSamples(client, fromDate, toDate)
+        }
     }
 
     override suspend fun get247PPiSamples(
@@ -70,11 +73,13 @@ internal class PolarActivityApiImpl(
         fromDate: LocalDate,
         toDate: LocalDate
     ): List<Polar247PPiSamplesData> {
-        validateDateRange(fromDate, toDate)
-        val session = PolarServiceClientUtils.sessionPsFtpClientReady(identifier, listener)
-        val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
-            ?: throw PolarServiceNotAvailable()
-        return PolarAutomaticSamplesUtils.read247PPiSamples(client, fromDate, toDate)
+        return apiCallGuard.guardSuspend("get247PPiSamples", identifier) {
+            validateDateRange(fromDate, toDate)
+            val session = PolarServiceClientUtils.sessionPsFtpClientReady(identifier, listener)
+            val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
+                ?: throw PolarServiceNotAvailable()
+            PolarAutomaticSamplesUtils.read247PPiSamples(client, fromDate, toDate)
+        }
     }
 
     override suspend fun getNightlyRecharge(
@@ -82,15 +87,17 @@ internal class PolarActivityApiImpl(
         fromDate: LocalDate,
         toDate: LocalDate
     ): List<PolarNightlyRechargeData> {
-        validateDateRange(fromDate, toDate)
-        val session = PolarServiceClientUtils.sessionPsFtpClientReady(identifier, listener)
-        val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
-            ?: throw PolarServiceNotAvailable()
-        val result = mutableListOf<PolarNightlyRechargeData>()
-        for (date in getDatesBetween(fromDate, toDate)) {
-            PolarNightlyRechargeUtils.readNightlyRechargeData(client, date)?.let { result.add(it) }
+        return apiCallGuard.guardSuspend("getNightlyRecharge", identifier) {
+            validateDateRange(fromDate, toDate)
+            val session = PolarServiceClientUtils.sessionPsFtpClientReady(identifier, listener)
+            val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
+                ?: throw PolarServiceNotAvailable()
+            val result = mutableListOf<PolarNightlyRechargeData>()
+            for (date in getDatesBetween(fromDate, toDate)) {
+                PolarNightlyRechargeUtils.readNightlyRechargeData(client, date)?.let { result.add(it) }
+            }
+            result
         }
-        return result
     }
 
     override suspend fun getSteps(
@@ -98,12 +105,14 @@ internal class PolarActivityApiImpl(
         fromDate: LocalDate,
         toDate: LocalDate
     ): List<PolarStepsData> {
-        validateDateRange(fromDate, toDate)
-        val session = PolarServiceClientUtils.sessionPsFtpClientReady(identifier, listener)
-        val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
-            ?: throw PolarServiceNotAvailable()
-        return getDatesBetween(fromDate, toDate).map { date ->
-            PolarStepsData(date, PolarActivityUtils.readStepsFromDayDirectory(client, date))
+        return apiCallGuard.guardSuspend("getSteps", identifier) {
+            validateDateRange(fromDate, toDate)
+            val session = PolarServiceClientUtils.sessionPsFtpClientReady(identifier, listener)
+            val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
+                ?: throw PolarServiceNotAvailable()
+            getDatesBetween(fromDate, toDate).map { date ->
+                PolarStepsData(date, PolarActivityUtils.readStepsFromDayDirectory(client, date))
+            }
         }
     }
 
@@ -112,12 +121,14 @@ internal class PolarActivityApiImpl(
         fromDate: LocalDate,
         toDate: LocalDate
     ): List<PolarActivitySamplesDayData> {
-        validateDateRange(fromDate, toDate)
-        val session = PolarServiceClientUtils.sessionPsFtpClientReady(identifier, listener)
-        val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
-            ?: throw PolarServiceNotAvailable()
-        return getDatesBetween(fromDate, toDate).map { date ->
-            PolarActivityUtils.readActivitySamplesDataFromDayDirectory(client, date)
+        return apiCallGuard.guardSuspend("getActivitySampleData", identifier) {
+            validateDateRange(fromDate, toDate)
+            val session = PolarServiceClientUtils.sessionPsFtpClientReady(identifier, listener)
+            val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
+                ?: throw PolarServiceNotAvailable()
+            getDatesBetween(fromDate, toDate).map { date ->
+                PolarActivityUtils.readActivitySamplesDataFromDayDirectory(client, date)
+            }
         }
     }
 
@@ -126,12 +137,14 @@ internal class PolarActivityApiImpl(
         fromDate: LocalDate,
         toDate: LocalDate
     ): List<PolarDailySummaryData> {
-        validateDateRange(fromDate, toDate)
-        val session = PolarServiceClientUtils.sessionPsFtpClientReady(identifier, listener)
-        val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
-            ?: throw PolarServiceNotAvailable()
-        return getDatesBetween(fromDate, toDate).mapNotNull { date ->
-            PolarActivityUtils.readDailySummaryDataFromDayDirectory(client, date)
+        return apiCallGuard.guardSuspend("getDailySummaryData", identifier) {
+            validateDateRange(fromDate, toDate)
+            val session = PolarServiceClientUtils.sessionPsFtpClientReady(identifier, listener)
+            val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
+                ?: throw PolarServiceNotAvailable()
+            getDatesBetween(fromDate, toDate).mapNotNull { date ->
+                PolarActivityUtils.readDailySummaryDataFromDayDirectory(client, date)
+            }
         }
     }
 
@@ -140,12 +153,14 @@ internal class PolarActivityApiImpl(
         fromDate: LocalDate,
         toDate: LocalDate
     ): List<PolarDistanceData> {
-        validateDateRange(fromDate, toDate)
-        val session = PolarServiceClientUtils.sessionPsFtpClientReady(identifier, listener)
-        val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
-            ?: throw PolarServiceNotAvailable()
-        return getDatesBetween(fromDate, toDate).map { date ->
-            PolarDistanceData(date, PolarActivityUtils.readDistanceFromDayDirectory(client, date))
+        return apiCallGuard.guardSuspend("getDistance", identifier) {
+            validateDateRange(fromDate, toDate)
+            val session = PolarServiceClientUtils.sessionPsFtpClientReady(identifier, listener)
+            val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
+                ?: throw PolarServiceNotAvailable()
+            getDatesBetween(fromDate, toDate).map { date ->
+                PolarDistanceData(date, PolarActivityUtils.readDistanceFromDayDirectory(client, date))
+            }
         }
     }
 
@@ -155,12 +170,14 @@ internal class PolarActivityApiImpl(
         toDate: LocalDate,
         caloriesType: CaloriesType
     ): List<PolarCaloriesData> {
-        validateDateRange(fromDate, toDate)
-        val session = PolarServiceClientUtils.sessionPsFtpClientReady(identifier, listener)
-        val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
-            ?: throw PolarServiceNotAvailable()
-        return getDatesBetween(fromDate, toDate).map { date ->
-            PolarCaloriesData(date, PolarActivityUtils.readSpecificCaloriesFromDayDirectory(client, date, caloriesType))
+        return apiCallGuard.guardSuspend("getCalories", identifier) {
+            validateDateRange(fromDate, toDate)
+            val session = PolarServiceClientUtils.sessionPsFtpClientReady(identifier, listener)
+            val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
+                ?: throw PolarServiceNotAvailable()
+            getDatesBetween(fromDate, toDate).map { date ->
+                PolarCaloriesData(date, PolarActivityUtils.readSpecificCaloriesFromDayDirectory(client, date, caloriesType))
+            }
         }
     }
 
@@ -169,12 +186,14 @@ internal class PolarActivityApiImpl(
         fromDate: LocalDate,
         toDate: LocalDate
     ): List<PolarActiveTimeData> {
-        validateDateRange(fromDate, toDate)
-        val session = PolarServiceClientUtils.sessionPsFtpClientReady(identifier, listener)
-        val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
-            ?: throw PolarServiceNotAvailable()
-        return getDatesBetween(fromDate, toDate).map { date ->
-            PolarActivityUtils.readActiveTimeFromDayDirectory(client, date)
+        return apiCallGuard.guardSuspend("getActiveTime", identifier) {
+            validateDateRange(fromDate, toDate)
+            val session = PolarServiceClientUtils.sessionPsFtpClientReady(identifier, listener)
+            val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
+                ?: throw PolarServiceNotAvailable()
+            getDatesBetween(fromDate, toDate).map { date ->
+                PolarActivityUtils.readActiveTimeFromDayDirectory(client, date)
+            }
         }
     }
 
@@ -184,16 +203,18 @@ internal class PolarActivityApiImpl(
         fromDate: LocalDate,
         toDate: LocalDate
     ): List<PolarSkinTemperatureData> {
-        validateDateRange(fromDate, toDate)
-        val session = PolarServiceClientUtils.sessionPsFtpClientReady(identifier, listener)
-        val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
-            ?: throw PolarServiceNotAvailable()
-        val result = mutableListOf<PolarSkinTemperatureData>()
-        for (date in getDatesBetween(fromDate, toDate)) {
-            PolarSkinTemperatureUtils.readSkinTemperatureDataFromDayDirectory(client, date)
-                ?.let { result.add(PolarSkinTemperatureData(date, it)) }
+        return apiCallGuard.guardSuspend("getSkinTemperature", identifier) {
+            validateDateRange(fromDate, toDate)
+            val session = PolarServiceClientUtils.sessionPsFtpClientReady(identifier, listener)
+            val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
+                ?: throw PolarServiceNotAvailable()
+            val result = mutableListOf<PolarSkinTemperatureData>()
+            for (date in getDatesBetween(fromDate, toDate)) {
+                PolarSkinTemperatureUtils.readSkinTemperatureDataFromDayDirectory(client, date)
+                    ?.let { result.add(PolarSkinTemperatureData(date, it)) }
+            }
+            result
         }
-        return result
     }
 
 }

@@ -124,7 +124,17 @@ class ExerciseRepository(
     suspend fun pause() {
         try {
             api.pauseExercise(identifier)
-            _state.value = _state.value.copy(status = PolarExerciseSession.ExerciseStatus.PAUSED)
+            // Read the status back from the device instead of assuming the
+            // command took effect. This is the single source of truth that
+            // feeds every screen that shows pause/resume state, so a failed
+            // pause cannot leave the UI showing "paused" by mistake.
+            val info = mergeWithMemory(api.getExerciseStatus(identifier))
+            _state.value = info
+            if (info.status != PolarExerciseSession.ExerciseStatus.PAUSED) {
+                val msg = "Pause command did not take effect, exercise status is ${info.status}"
+                _errorEvent.value = msg
+                throw IllegalStateException(msg)
+            }
             _errorEvent.value = null
         } catch (e: Exception) {
             Log.w(TAG, "pause failed: ${e.message}")
@@ -136,7 +146,14 @@ class ExerciseRepository(
     suspend fun resume() {
         try {
             api.resumeExercise(identifier)
-            _state.value = _state.value.copy(status = PolarExerciseSession.ExerciseStatus.IN_PROGRESS)
+            // Verify against the device status, see comment in pause().
+            val info = mergeWithMemory(api.getExerciseStatus(identifier))
+            _state.value = info
+            if (info.status != PolarExerciseSession.ExerciseStatus.IN_PROGRESS) {
+                val msg = "Resume command did not take effect, exercise status is ${info.status}"
+                _errorEvent.value = msg
+                throw IllegalStateException(msg)
+            }
             _errorEvent.value = null
         } catch (e: Exception) {
             Log.w(TAG, "resume failed: ${e.message}")

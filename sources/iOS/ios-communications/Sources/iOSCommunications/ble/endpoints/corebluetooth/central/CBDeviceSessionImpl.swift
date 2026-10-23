@@ -3,6 +3,10 @@ import CoreBluetooth
 import Combine
 
 class CBDeviceSessionImpl: BleDeviceSession, CBPeripheralDelegate, BleAttributeTransportProtocol {
+    // Polar devices consistently expose the standard Heart Rate service. Do not
+    // rely on services from the latest advertisement.
+    static let systemConnectionService = BleHrClient.HR_SERVICE
+
     private(set) var peripheral: CBPeripheral
     private let central: CBCentralManager
     private let scanner: CBScanningProtocol
@@ -72,14 +76,23 @@ class CBDeviceSessionImpl: BleDeviceSession, CBPeripheralDelegate, BleAttributeT
     }
     
     override func isConnectable() -> Bool {
-        var cbconnected = false
-        if let services = advertisementContent.advData[CBAdvertisementDataServiceUUIDsKey] as? [CBUUID] {
-            let peripherals = self.central.retrieveConnectedPeripherals(withServices: services)
-            cbconnected = peripherals.contains(peripheral)
-        }
+        let connectedPeripheralIdentifiers = central
+            .retrieveConnectedPeripherals(withServices: [Self.systemConnectionService])
+            .map(\.identifier)
+        let cbconnected = Self.matchesSystemConnectedPeripheral(
+            peripheral.identifier,
+            connectedPeripheralIdentifiers: connectedPeripheralIdentifiers
+        )
         return cbconnected || peripheral.state == .connected || advertisementContent.isConnectable
     }
-    
+
+    static func matchesSystemConnectedPeripheral(
+        _ identifier: UUID,
+        connectedPeripheralIdentifiers: [UUID]
+    ) -> Bool {
+        connectedPeripheralIdentifiers.contains(identifier)
+    }
+
     func connected() {
         if peripheral.services == nil || peripheral.services?.count == 0 {
             peripheral.delegate = self

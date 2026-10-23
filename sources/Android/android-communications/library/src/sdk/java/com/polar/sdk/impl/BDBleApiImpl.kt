@@ -143,21 +143,28 @@ import com.polar.sdk.impl.utils.PolarServiceClientUtils.fetchSession
 import com.polar.sdk.impl.utils.PolarWatchFaceUtils
 import com.polar.sdk.api.model.PolarWatchFaceComplication
 import com.polar.sdk.api.model.PolarWatchFaceConfig
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.takeWhile
+import kotlinx.coroutines.flow.updateAndGet
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.selects.select
 import kotlinx.coroutines.withContext
 
 /**
@@ -213,6 +220,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
     private lateinit var trainingSessionApiImpl: PolarTrainingSessionApiImpl
     private lateinit var offlineRecordingApiImpl: PolarOfflineRecordingApiImpl
     private lateinit var telemetryAvailabilityMap: MutableMap<String, MutableList<PolarDeviceTelemetryType>?>
+    private val apiCallGuard = PolarApiCallGuard()
 
     init {
         val clients: MutableSet<Class<out BleGattBase>> = mutableSetOf()
@@ -296,13 +304,13 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         }
 
         listener?.let {
-            offlineExerciseV2Api = PolarOfflineExerciseV2ApiImpl(it)
-            loggingApiImpl = PolarLoggingApiImpl(it)
-            activityApiImpl = PolarActivityApiImpl(it)
-            testApiImpl = PolarTestApiImpl(it)
-            sleepApiImpl = PolarSleepApiImpl(it)
-            trainingSessionApiImpl = PolarTrainingSessionApiImpl(it)
-            offlineRecordingApiImpl = PolarOfflineRecordingApiImpl(it)
+            offlineExerciseV2Api = PolarOfflineExerciseV2ApiImpl(it, apiCallGuard)
+            loggingApiImpl = PolarLoggingApiImpl(it, apiCallGuard)
+            activityApiImpl = PolarActivityApiImpl(it, apiCallGuard)
+            testApiImpl = PolarTestApiImpl(it, apiCallGuard)
+            sleepApiImpl = PolarSleepApiImpl(it, apiCallGuard)
+            trainingSessionApiImpl = PolarTrainingSessionApiImpl(it, apiCallGuard)
+            offlineRecordingApiImpl = PolarOfflineRecordingApiImpl(it, apiCallGuard)
         }
 
         listener?.let {
@@ -312,6 +320,8 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         if (PolarBleSdkFeature.FEATURE_COMPANION_DEVICE_MANAGEMENT in features) {
             companionDeviceApi.resumeAllAssociatedDevicesPresenceObservation(companionDeviceEventForwarder)
         }
+
+        startDevicesStateMonitor(bdDeviceListenerImpl)
 
         logSdkInitialization()
     }
@@ -338,12 +348,12 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
 
     override fun cleanup() {
        logApiCall("cleanup")
-        devicesStateMonitorJob?.cancel()
-        devicesStateMonitorJob = null
+        // devicesStateMonitorJob is intentionally left running: it is started once for the
+        // instance lifetime (see startDevicesStateMonitor()) and must keep observing session
+        // state changes - including devices reconnected automatically after this cleanup -
+        // until shutDown() is called.
         listener?.removeAllSessions()
         telemetryAvailabilityMap = mutableMapOf()
-        
-
     }
 
     override fun setPolarFilter(enable: Boolean) {
@@ -741,30 +751,47 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         if (service != null && !service.matches(Regex("([0-9a-fA-F]{4})"))) {
             throw PolarInvalidArgument("Invalid service string format")
         }
-        val it = listener ?: throw PolarBleSdkInstanceException("PolarBleApi instance is shutdown")
-        var start = 0L
+        val searchListener = listener ?: throw PolarBleSdkInstanceException("PolarBleApi instance is shutdown")
         val timeoutMillis = unit.toMillis(timeout.toLong())
+        // Only one auto connect search may run at a time. A newer call supersedes an older one, so
+        // repeated calls (e.g. from a reconnect timer) cannot pile up search collectors and scan clients.
+        val generation = autoConnectGeneration.updateAndGet { g -> g + 1 }
         val collected = mutableSetOf<BleDeviceSession>()
-        it.search(false)
-            .filter { bleDeviceSession: BleDeviceSession ->
-                if (bleDeviceSession.medianRssi >= rssiLimit && bleDeviceSession.isConnectableAdvertisement
-                    && (polarDeviceType == null || polarDeviceType == bleDeviceSession.polarDeviceType)
-                    && (service == null || bleDeviceSession.advertisementContent.containsService(service))
-                ) {
-                    if (start == 0L) {
-                        start = System.currentTimeMillis()
+        var superseded = false
+        coroutineScope {
+            val firstMatch = CompletableDeferred<Unit>()
+            val searchJob = launch {
+                searchListener.search(false)
+                    .filter { bleDeviceSession: BleDeviceSession ->
+                        bleDeviceSession.medianRssi >= rssiLimit && bleDeviceSession.isConnectableAdvertisement
+                            && (polarDeviceType == null || polarDeviceType == bleDeviceSession.polarDeviceType)
+                            && (service == null || bleDeviceSession.advertisementContent.containsService(service))
                     }
-                    true
-                } else {
-                    false
-                }
+                    .collect { session ->
+                        collected.add(session)
+                        firstMatch.complete(Unit)
+                    }
             }
-            .takeWhile {
-                if (start == 0L) return@takeWhile true
-                val diff = System.currentTimeMillis() - start
-                diff < timeoutMillis
+            // The collection window is timer based: it ends [timeout] after the first match even if
+            // no further advertisements arrive.
+            val windowJob = launch {
+                firstMatch.await()
+                delay(timeoutMillis)
             }
-            .collect { session -> collected.add(session) }
+            val supersedeJob = launch { autoConnectGeneration.first { g -> g != generation } }
+            select<Unit> {
+                windowJob.onJoin {}
+                searchJob.onJoin {}
+                supersedeJob.onJoin { superseded = true }
+            }
+            searchJob.cancelAndJoin()
+            windowJob.cancel()
+            supersedeJob.cancel()
+        }
+        if (superseded) {
+            log("[autoConnect] search superseded by a newer autoConnectToDevice call")
+            return
+        }
         val list = collected.sortedWith { s1, s2 -> if (s1.rssi > s2.rssi) -1 else 1 }
         if (list.isEmpty()) {
             log("[autoConnect] search complete — no matching device found")
@@ -1292,7 +1319,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         params.sleep = false
         params.otaFwupdate = preservePairingInformation
         BleLogger.d(TAG, "send factory reset notification to device $identifier")
-        session.markExpectedDeviceCommandDisconnect(BleDeviceSession.DeviceCommand.FACTORY_RESET)
+        session.markExpectedDeviceCommandDisconnect(BleDeviceSession.DeviceCommand.FACTORY_RESET, preservesPairing = preservePairingInformation)
         client.sendNotification(PftpNotification.PbPFtpHostToDevNotification.RESET.ordinal, params.build().toByteArray())
     }
 
@@ -1304,7 +1331,9 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         val params = PftpNotification.PbPFtpFactoryResetParams.newBuilder()
         params.sleep = false
         BleLogger.d(TAG, "send factory reset notification to device $identifier")
-        session.markExpectedDeviceCommandDisconnect(BleDeviceSession.DeviceCommand.FACTORY_RESET)
+        // This overload performs a full factory reset: device-side pairing is erased, so the
+        // app must be told to re-pair and perform FTU after reconnecting.
+        session.markExpectedDeviceCommandDisconnect(BleDeviceSession.DeviceCommand.FACTORY_RESET, preservesPairing = false)
         client.sendNotification(PftpNotification.PbPFtpHostToDevNotification.RESET.ordinal, params.build().toByteArray())
     }
 
@@ -1508,7 +1537,8 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         params.sleep = true
         params.doFactoryDefaults = true
         BleLogger.d(TAG, "Setting warehouse sleep to true, device: $identifier.")
-        session.markExpectedDeviceCommandDisconnect(BleDeviceSession.DeviceCommand.WAREHOUSE_SLEEP)
+        // Warehouse sleep does a factory reset on the device, so pairing is erased.
+        session.markExpectedDeviceCommandDisconnect(BleDeviceSession.DeviceCommand.WAREHOUSE_SLEEP, preservesPairing = false)
         client.sendNotification(PftpNotification.PbPFtpHostToDevNotification.RESET.ordinal, params.build().toByteArray())
     }
 
@@ -1557,101 +1587,90 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         }
     }
 
-    private fun openConnection(session: BleDeviceSession) {
-        listener?.let { bleListener ->
-            if (devicesStateMonitorJob == null || devicesStateMonitorJob?.isActive == false) {
-                devicesStateMonitorJob = apiScope.launch {
-                    var firstEmission = true
-                    bleListener.monitorDeviceSessionState().collect { pair ->
-                        val bleSession = pair.first
-                        val state = pair.second
-                        val isFirstEmission = firstEmission
-                        firstEmission = false
-                        // The session state flow replays its latest value. When the monitor is
-                        // relaunched for a new connection, that replay is typically the stale
-                        // SESSION_CLOSED of the previously disconnected device, which was already
-                        // handled by the previous monitor. Processing it again would re-emit
-                        // deviceDisconnected and, as no session is active yet, cancel this
-                        // monitor before the new device's SESSION_OPEN is observed.
-                        if (isFirstEmission &&
-                            state == DeviceSessionState.SESSION_CLOSED &&
-                            bleSession.address != session.address
-                        ) {
-                            BleLogger.d(TAG, "Ignoring replayed SESSION_CLOSED of previous session")
-                            return@collect
-                        }
-                        deviceSessionState = state
-                        val hasSAGRFCFileSystem = getFileSystemType(bleSession.polarDeviceType) == FileSystemType.POLAR_FILE_SYSTEM_V2
-                        val deviceAddress = bleSession.address ?: ""
-                        val deviceId = bleSession.polarDeviceId.ifEmpty {
-                            if (deviceAddress.isNotEmpty()) deviceAddress else bleSession.name
-                        }
-                        val info = if (deviceId.isNotEmpty() && deviceAddress.isNotEmpty()) {
-                            PolarDeviceInfo(deviceId, deviceAddress, bleSession.rssi, bleSession.name, true, hasSAGRFCFileSystem = hasSAGRFCFileSystem)
-                        } else {
-                            null
-                        }
-                        when (state) {
-                            DeviceSessionState.SESSION_OPEN -> {
-                                withContext(Dispatchers.Main) {
-                                    if (info != null) {
-                                        callback?.deviceConnected(info)
-                                    } else {
-                                        BleLogger.w(TAG, "SESSION_OPEN callback skipped due missing info: id='$deviceId' addr='$deviceAddress' name='${bleSession.name}'")
-                                    }
-                                }
-                                setupDevice(bleSession)
-                                if (PolarBleSdkFeature.FEATURE_COMPANION_DEVICE_MANAGEMENT in features && deviceId.isNotEmpty()) {
-                                    // Association (if needed) is requested in openConnection() while the
-                                    // device is still advertising; here only resume presence observation.
-                                    companionDeviceApi.observePresenceIfAssociated(deviceId, companionDeviceEventForwarder)
-                                }
+    /**
+     * Starts the single collector of [BleDeviceListener.monitorDeviceSessionState] and keeps it
+     * running for the whole instance lifetime (cancelled only by [shutDown]).
+     *
+     * The BLE layer's automatic reconnection moves a session SESSION_CLOSED -> SESSION_OPENING ->
+     * SESSION_OPEN on its own, without calling [openConnection]. One collector stays alive for the
+     * whole instance lifetime, so it always observes these state changes and reliably fires
+     * deviceConnected/bleSdkFeatureReady, even when the state change comes from automatic
+     * reconnection instead of a user-initiated [openConnection] call.
+     */
+    private fun startDevicesStateMonitor(bleListener: BleDeviceListener) {
+        devicesStateMonitorJob = apiScope.launch {
+            bleListener.monitorDeviceSessionState().collect { pair ->
+                val bleSession = pair.first
+                val state = pair.second
+                deviceSessionState = state
+                val hasSAGRFCFileSystem = getFileSystemType(bleSession.polarDeviceType) == FileSystemType.POLAR_FILE_SYSTEM_V2
+                val deviceAddress = bleSession.address ?: ""
+                val deviceId = bleSession.polarDeviceId.ifEmpty {
+                    if (deviceAddress.isNotEmpty()) deviceAddress else bleSession.name
+                }
+                val info = if (deviceId.isNotEmpty() && deviceAddress.isNotEmpty()) {
+                    PolarDeviceInfo(deviceId, deviceAddress, bleSession.rssi, bleSession.name, true, hasSAGRFCFileSystem = hasSAGRFCFileSystem)
+                } else {
+                    null
+                }
+                when (state) {
+                    DeviceSessionState.SESSION_OPEN -> {
+                        withContext(Dispatchers.Main) {
+                            if (info != null) {
+                                callback?.deviceConnected(info)
+                            } else {
+                                BleLogger.w(TAG, "SESSION_OPEN callback skipped due missing info: id='$deviceId' addr='$deviceAddress' name='${bleSession.name}'")
                             }
-                            DeviceSessionState.SESSION_CLOSED -> {
-                                if (bleSession.previousState == DeviceSessionState.SESSION_OPEN ||
-                                    bleSession.previousState == DeviceSessionState.SESSION_OPENING ||
-                                    bleSession.previousState == DeviceSessionState.SESSION_OPEN_PARK ||
-                                    bleSession.previousState == DeviceSessionState.SESSION_CLOSING) {
-                                    withContext(Dispatchers.Main) {
-                                        if (info != null) {
-                                            val disconnectInfo = mapDisconnectInfo(bleSession)
-                                            callback?.deviceDisconnected(info, disconnectInfo)
-                                            @Suppress("DEPRECATION")
-                                            callback?.deviceDisconnected(info)
-                                        } else {
-                                            BleLogger.w(TAG, "SESSION_CLOSED callback skipped due missing info: id='$deviceId' addr='$deviceAddress' name='${bleSession.name}'")
-                                        }
-                                    }
-                                    telemetryAvailabilityMap.getOrPut(deviceId as String) { mutableListOf() }
-                                        ?.remove(PolarDeviceTelemetryType.memfault_mds)
-                                }
-                                tearDownDevice(bleSession)
-                                // Cancel the monitor when no sessions remain open or opening
-                                val hasActiveSessions = listener?.deviceSessions()?.any {
-                                    it?.sessionState == DeviceSessionState.SESSION_OPEN ||
-                                    it?.sessionState == DeviceSessionState.SESSION_OPENING ||
-                                    it?.sessionState == DeviceSessionState.SESSION_OPEN_PARK
-                                } ?: false
-                                if (!hasActiveSessions) {
-                                    BleLogger.d(TAG, "No active sessions remaining, cancelling devicesStateMonitorJob")
-                                    devicesStateMonitorJob?.cancel()
-                                    devicesStateMonitorJob = null
-                                }
-                            }
-                            DeviceSessionState.SESSION_OPENING -> {
-                                withContext(Dispatchers.Main) {
-                                    if (info != null) {
-                                        callback?.deviceConnecting(info)
-                                    } else {
-                                        BleLogger.w(TAG, "SESSION_OPENING callback skipped due missing info: id='$deviceId' addr='$deviceAddress' name='${bleSession.name}'")
-                                    }
-                                }
-                            }
-                            else -> {}
+                        }
+                        setupDevice(bleSession)
+                        if (PolarBleSdkFeature.FEATURE_COMPANION_DEVICE_MANAGEMENT in features && deviceId.isNotEmpty()) {
+                            // Association (if needed) is requested in openConnection() while the
+                            // device is still advertising; here only resume presence observation.
+                            companionDeviceApi.observePresenceIfAssociated(deviceId, companionDeviceEventForwarder)
                         }
                     }
+                    DeviceSessionState.SESSION_CLOSED -> {
+                        if (bleSession.previousState == DeviceSessionState.SESSION_OPEN ||
+                            bleSession.previousState == DeviceSessionState.SESSION_OPENING ||
+                            bleSession.previousState == DeviceSessionState.SESSION_OPEN_PARK ||
+                            bleSession.previousState == DeviceSessionState.SESSION_CLOSING) {
+                            withContext(Dispatchers.Main) {
+                                if (info != null) {
+                                    var overrideAction: PolarBleRecoveryAction? = null
+                                    if (listener?.getIndicatesPairingProblem(deviceId)?.first
+                                            ?: false) {
+                                        overrideAction = PolarBleRecoveryAction.REMOVE_PAIRING_AND_PAIR_AGAIN
+                                    }
+                                    var disconnectInfo = mapDisconnectInfo(bleSession, overrideAction)
+                                    callback?.deviceDisconnected(info, disconnectInfo)
+                                    @Suppress("DEPRECATION")
+                                    callback?.deviceDisconnected(info)
+                                } else {
+                                    BleLogger.w(TAG, "SESSION_CLOSED callback skipped due missing info: id='$deviceId' addr='$deviceAddress' name='${bleSession.name}'")
+                                }
+                            }
+                            telemetryAvailabilityMap.getOrPut(deviceId as String) { mutableListOf() }
+                                ?.remove(PolarDeviceTelemetryType.memfault_mds)
+                        }
+                        tearDownDevice(bleSession)
+                    }
+                    DeviceSessionState.SESSION_OPENING -> {
+                        withContext(Dispatchers.Main) {
+                            if (info != null) {
+                                callback?.deviceConnecting(info)
+                            } else {
+                                BleLogger.w(TAG, "SESSION_OPENING callback skipped due missing info: id='$deviceId' addr='$deviceAddress' name='${bleSession.name}'")
+                            }
+                        }
+                    }
+                    else -> {}
                 }
             }
+        }
+    }
+
+    private fun openConnection(session: BleDeviceSession) {
+        listener?.let { bleListener ->
             if (!requestCompanionAssociationBeforeConnect(session) { bleListener.openSessionDirect(session) }) {
                 bleListener.openSessionDirect(session)
             }
@@ -1660,6 +1679,9 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
 
     /** Pending GATT connects deferred until the CDM association flow has finished, by address. */
     private val companionDeferredConnects = java.util.concurrent.ConcurrentHashMap<String, Job>()
+
+    /** Incremented on every autoConnectToDevice call; an in-flight search stops when it changes. */
+    private val autoConnectGeneration = MutableStateFlow(0L)
 
     /**
      * Requests CDM association before the GATT connection is opened and defers [connect] until the
@@ -1719,8 +1741,17 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         }
     }
 
-    private fun mapDisconnectInfo(session: BleDeviceSession): PolarBleDisconnectInfo {
+    private fun mapDisconnectInfo(session: BleDeviceSession, overrideAction: PolarBleRecoveryAction?): PolarBleDisconnectInfo {
         val status = session.disconnectStatus
+
+        if (checkIfDeviceDisconnectedDueRemovedPairing(session.polarDeviceId).first) {
+            return PolarBleDisconnectInfo(
+                PolarBleDisconnectReason.PAIRING_INFORMATION_REMOVED,
+                PolarBleRecoveryAction.REMOVE_PAIRING_AND_PAIR_AGAIN,
+                status
+            )
+        }
+
         return when (session.disconnectReason) {
             BleDeviceSession.DisconnectReason.INSUFFICIENT_ENCRYPTION -> PolarBleDisconnectInfo(
                 PolarBleDisconnectReason.INSUFFICIENT_ENCRYPTION,
@@ -1764,7 +1795,7 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
             )
             BleDeviceSession.DisconnectReason.DEVICE_COMMAND -> PolarBleDisconnectInfo(
                 PolarBleDisconnectReason.DEVICE_COMMAND,
-                PolarBleRecoveryAction.NONE,
+                overrideAction ?: PolarBleRecoveryAction.NONE,
                 status,
                 mapDeviceCommand(session.pendingDeviceCommand)
             )
@@ -2077,13 +2108,20 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         }
 
         val fwUrlProvider = if (firmwareUrl.isNotBlank()) {
-            Triple(File(firmwareUrl).name, firmwareUrl, FirmwareUpdateStatus.PreparingDeviceForFwUpdate("Preparing for firmware update"))
+            PolarFirmwareAvailableInfo(
+                uri = firmwareUrl,
+                availableFwVersion = File(firmwareUrl).name,
+                mandatoryUpdate = null,
+                status = FirmwareUpdateStatus.PreparingDeviceForFwUpdate("Preparing for firmware update")
+            )
         } else {
             checkFirmwareUrlAvailability(client, identifier)
         }
 
         try {
-            val (availableVersionInfo, url, updateStatus) = fwUrlProvider
+            val availableVersionInfo = fwUrlProvider.availableFwVersion
+            val url = fwUrlProvider.uri
+            val updateStatus = fwUrlProvider.status ?: FirmwareUpdateStatus.FwUpdateFailed("Firmware update status unavailable")
             firmwareVersionInfo = availableVersionInfo ?: "new version"
 
             if (url.isNullOrBlank()) {
@@ -2167,20 +2205,29 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         val session = PolarServiceClientUtils.sessionPsFtpClientReady(identifier, listener)
         val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as? BlePsFtpClient
             ?: throw PolarServiceNotAvailable()
-        val (availableVersion, _, firmwareStatus) = checkFirmwareUrlAvailability(client, identifier)
+        val availableInfo = checkFirmwareUrlAvailability(client, identifier)
+        val availableVersion = availableInfo.availableFwVersion
+        val firmwareStatus = availableInfo.status ?: FirmwareUpdateStatus.FwUpdateFailed("Firmware update status unavailable")
+        val mandatoryUpdate = availableInfo.mandatoryUpdate ?: true
         emit(when (firmwareStatus) {
-            is FirmwareUpdateStatus.FetchingFwUpdatePackage -> CheckFirmwareUpdateStatus.CheckFwUpdateAvailable(version = availableVersion ?: "Unknown")
+            is FirmwareUpdateStatus.FetchingFwUpdatePackage -> CheckFirmwareUpdateStatus.CheckFwUpdateAvailable(
+                version = availableVersion ?: "Unknown",
+                mandatoryUpdate = mandatoryUpdate
+            )
             is FirmwareUpdateStatus.PreparingDeviceForFwUpdate,
             is FirmwareUpdateStatus.WritingFwUpdatePackage,
             is FirmwareUpdateStatus.FinalizingFwUpdate -> CheckFirmwareUpdateStatus.CheckFwUpdateFailed(details = "Firmware update is currently in progress; update cannot be performed now.")
             is FirmwareUpdateStatus.FwUpdateCompletedSuccessfully -> CheckFirmwareUpdateStatus.CheckFwUpdateNotAvailable(details = "Firmware update already completed successfully.")
             is FirmwareUpdateStatus.FwUpdateNotAvailable -> CheckFirmwareUpdateStatus.CheckFwUpdateNotAvailable(details = firmwareStatus.details)
             is FirmwareUpdateStatus.FwUpdateFailed -> CheckFirmwareUpdateStatus.CheckFwUpdateFailed(details = firmwareStatus.details)
+            else -> {
+                CheckFirmwareUpdateStatus.CheckFwUpdateFailed(details = "Unexpected firmware update status: $firmwareStatus")
+            }
         })
     }
 
     // Returns availableVersion, firmwareURL, FirmwareUpdateStatus
-    private suspend fun checkFirmwareUrlAvailability(client: BlePsFtpClient, identifier: String): Triple<String?, String?, FirmwareUpdateStatus> {
+    private suspend fun checkFirmwareUrlAvailability(client: BlePsFtpClient, identifier: String): PolarFirmwareAvailableInfo {
         val deviceInfo = PolarFirmwareUpdateUtils.readDeviceFirmwareInfo(client, identifier)
         val httpClient = RetrofitClient.createRetrofitInstance()
         val firmwareUpdateApi = httpClient.create(FirmwareUpdateApi::class.java)
@@ -2197,18 +2244,47 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
                 BleLogger.d(TAG, "Received firmware update response: $firmwareUpdateResponse")
                 if (firmwareUpdateResponse != null &&
                     PolarFirmwareUpdateUtils.isAvailableFirmwareVersionHigher(deviceInfo.deviceFwVersion, firmwareUpdateResponse.version)) {
-                    Triple(firmwareUpdateResponse.version, firmwareUpdateResponse.fileUrl, FirmwareUpdateStatus.FetchingFwUpdatePackage("Firmware available, fetching"))
+                    val hwVer = firmwareUpdateResponse.hardwareVersions.firstOrNull { hwCode -> hwCode.hardwareCode == deviceInfo.deviceHardwareCode }
+                    val mandatory = hwVer?.mandatory ?: null
+                    PolarFirmwareAvailableInfo(
+                        uri = firmwareUpdateResponse.fileUrl,
+                        availableFwVersion = firmwareUpdateResponse.version,
+                        mandatoryUpdate = mandatory,
+                        status = FirmwareUpdateStatus.FetchingFwUpdatePackage("Firmware available, fetching")
+                    )
                 } else {
-                    Triple(null, null, FirmwareUpdateStatus.FwUpdateNotAvailable("No fw update available, device firmware version ${deviceInfo.deviceFwVersion}"))
+                    PolarFirmwareAvailableInfo(
+                        uri = null,
+                        availableFwVersion = null,
+                        mandatoryUpdate = null,
+                        status = FirmwareUpdateStatus.FwUpdateNotAvailable("No fw update available, device firmware version ${deviceInfo.deviceFwVersion}")
+                    )
                 }
             }
-            HttpResponseCodes.NO_CONTENT -> Triple(null, null, FirmwareUpdateStatus.FwUpdateNotAvailable("No firmware update available"))
+
+            HttpResponseCodes.NO_CONTENT -> PolarFirmwareAvailableInfo(
+                uri = null,
+                availableFwVersion = null,
+                mandatoryUpdate = null,
+                status = FirmwareUpdateStatus.FwUpdateNotAvailable("No firmware update available")
+            )
             HttpResponseCodes.BAD_REQUEST -> {
                 val errorBody = try { response.errorBody()?.string() ?: "Failed to read error body" } catch (e: Exception) { "Error reading error body: ${e.message}" }
                 BleLogger.e(TAG, "Bad request to firmware update API: $errorBody")
-                Triple(null, null, FirmwareUpdateStatus.FwUpdateFailed("Bad request to firmware update API: $errorBody"))
+                PolarFirmwareAvailableInfo(
+                    uri = null,
+                    availableFwVersion = null,
+                    mandatoryUpdate = null,
+                    status = FirmwareUpdateStatus.FwUpdateFailed("Bad request to firmware update API: $errorBody")
+                )
             }
-            else -> Triple(null, null, FirmwareUpdateStatus.FwUpdateFailed("Unexpected response code: ${response.code()}"))
+
+            else -> PolarFirmwareAvailableInfo(
+                uri = null,
+                availableFwVersion = null,
+                mandatoryUpdate = null,
+                status = FirmwareUpdateStatus.FwUpdateFailed("Unexpected response code: ${response.code()}")
+            )
         }
     }
 

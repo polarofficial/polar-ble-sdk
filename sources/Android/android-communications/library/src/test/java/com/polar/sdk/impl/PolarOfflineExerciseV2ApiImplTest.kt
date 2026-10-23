@@ -8,17 +8,23 @@ import com.polar.androidcommunications.api.ble.model.gatt.client.psftp.BlePsFtpC
 import com.polar.androidcommunications.api.ble.model.gatt.client.psftp.BlePsFtpUtils
 import com.polar.sdk.api.PolarOfflineExerciseV2Api
 import com.polar.sdk.api.errors.PolarDeviceNotFound
+import com.polar.sdk.api.errors.PolarSdkConcurrentApiCallException
 import com.polar.sdk.api.errors.PolarServiceNotAvailable
 import com.polar.sdk.api.model.PolarExerciseEntry
 import com.polar.sdk.api.model.PolarExerciseSession
+import fi.polar.remote.representation.protobuf.Device
 import fi.polar.remote.representation.protobuf.ExerciseSamples.PbExerciseSamples
 import fi.polar.remote.representation.protobuf.Structures
 import fi.polar.remote.representation.protobuf.Types
 import io.mockk.*
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.async
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert
 import org.junit.Test
+import protocol.PftpError.PbPFtpError
 import protocol.PftpRequest
 import protocol.PftpResponse
 import java.io.ByteArrayOutputStream
@@ -30,6 +36,9 @@ import java.util.concurrent.atomic.AtomicInteger
  *
  * These tests validate the API implementation using mocked PFTP requests/responses.
  */
+private fun PolarOfflineExerciseV2ApiImpl(listener: BleDeviceListener) =
+    PolarOfflineExerciseV2ApiImpl(listener, PolarApiCallGuard())
+
 class PolarOfflineExerciseV2ApiImplTest {
 
     private val deviceId = "E123456F"
@@ -405,6 +414,38 @@ class PolarOfflineExerciseV2ApiImplTest {
     }
 
     @Test
+    fun `offline exercise operations reject overlapping guarded calls`() = runTest {
+        val (client, listener) = mockBleConnection(deviceId)
+        val api = PolarOfflineExerciseV2ApiImpl(listener)
+        val started = CompletableDeferred<Unit>()
+        val release = CompletableDeferred<Unit>()
+        var firstCall = true
+
+        coEvery { client.query(any(), any()) } coAnswers {
+            if (firstCall) {
+                firstCall = false
+                started.complete(Unit)
+                release.await()
+            }
+            val response = PftpResponse.PbPftpStartDmExerciseResult.newBuilder()
+                .setResult(PftpResponse.PbPftpStartDmExerciseResult.PbStartDmExerciseResult.RESULT_SUCCESS)
+                .build()
+            ByteArrayOutputStream().apply { response.writeTo(this) }
+        }
+
+        val first = async { api.startOfflineExerciseV2(deviceId, PolarExerciseSession.SportProfile.RUNNING) }
+        started.await()
+
+        val exception = Assert.assertThrows(PolarSdkConcurrentApiCallException::class.java) {
+            runBlocking { api.stopOfflineExerciseV2(deviceId) }
+        }
+
+        Assert.assertTrue(exception.message!!.contains("stopOfflineExerciseV2"))
+        release.complete(Unit)
+        Assert.assertEquals(PolarOfflineExerciseV2Api.StartResult.SUCCESS, first.await().result)
+    }
+
+    @Test
     fun `test StartResult enum values`() {
         // Arrange
         // Act
@@ -458,5 +499,84 @@ class PolarOfflineExerciseV2ApiImplTest {
         every { client.isServiceDiscovered } returns false
 
         return Triple(client, listener, session)
+    }
+
+    @Test
+    fun `isOfflineExerciseV2Supported() should return true when device has dm_exercise capability`() = runTest {
+        // Arrange
+        val (client, listener) = mockBleConnection(deviceId)
+        val api = PolarOfflineExerciseV2ApiImpl(listener)
+        val deviceInfo = Device.PbDeviceInfo.newBuilder()
+            .addCapabilities("dm_exercise")
+            .build()
+        coEvery { client.request(any<ByteArray>()) } returns ByteArrayOutputStream().apply { deviceInfo.writeTo(this) }
+
+        // Act
+        val result = api.isOfflineExerciseV2Supported(deviceId)
+
+        // Assert
+        Assert.assertTrue(result)
+    }
+
+    @Test
+    fun `isOfflineExerciseV2Supported() should return true when device is busy with running exercise`() = runTest {
+        // Arrange
+        val (client, listener) = mockBleConnection(deviceId)
+        val api = PolarOfflineExerciseV2ApiImpl(listener)
+        coEvery { client.request(any<ByteArray>()) } throws
+                BlePsFtpUtils.PftpResponseError("busy", PbPFtpError.SYSTEM_BUSY.number)
+        val status = PftpResponse.PbPftpGetExerciseStatusResult.newBuilder()
+            .setExerciseType(PftpResponse.PbPftpGetExerciseStatusResult.PbExerciseType.EXERCISE_TYPE_DATA_MERGE)
+            .setExerciseState(PftpResponse.PbPftpGetExerciseStatusResult.PbExerciseState.EXERCISE_STATE_RUNNING)
+            .build()
+        coEvery { client.query(any(), any()) } returns ByteArrayOutputStream().apply { status.writeTo(this) }
+
+        // Act
+        val result = api.isOfflineExerciseV2Supported(deviceId)
+
+        // Assert
+        Assert.assertTrue(result)
+        coVerify { client.query(PftpRequest.PbPFtpQuery.GET_EXERCISE_STATUS_VALUE, any()) }
+    }
+
+    @Test
+    fun `isOfflineExerciseV2Supported() should return false when device is busy and no exercise is running`() = runTest {
+        // Arrange
+        val (client, listener) = mockBleConnection(deviceId)
+        val api = PolarOfflineExerciseV2ApiImpl(listener)
+        coEvery { client.request(any<ByteArray>()) } throws
+                BlePsFtpUtils.PftpResponseError("busy", PbPFtpError.SYSTEM_BUSY.number)
+        val status = PftpResponse.PbPftpGetExerciseStatusResult.newBuilder()
+            .setExerciseType(PftpResponse.PbPftpGetExerciseStatusResult.PbExerciseType.EXERCISE_TYPE_NORMAL)
+            .setExerciseState(PftpResponse.PbPftpGetExerciseStatusResult.PbExerciseState.EXERCISE_STATE_RUNNING)
+            .build()
+        coEvery { client.query(any(), any()) } returns ByteArrayOutputStream().apply { status.writeTo(this) }
+
+        // Act
+        val result = api.isOfflineExerciseV2Supported(deviceId)
+
+        // Assert
+        Assert.assertFalse(result)
+    }
+
+    @Test
+    fun `isOfflineExerciseV2Supported() should throw when device is busy and exercise status query is also busy`() = runTest {
+        // Arrange: DEVICE.BPB read is busy, and the exercise-status fallback query is ALSO busy
+        // (e.g. for some other reason than a data merge exercise). Support genuinely cannot be
+        // determined here, so this must not be reported as "false" (= not supported).
+        val (client, listener) = mockBleConnection(deviceId)
+        val api = PolarOfflineExerciseV2ApiImpl(listener)
+        coEvery { client.request(any<ByteArray>()) } throws
+                BlePsFtpUtils.PftpResponseError("busy", PbPFtpError.SYSTEM_BUSY.number)
+        coEvery { client.query(any(), any()) } throws
+                BlePsFtpUtils.PftpResponseError("busy", PbPFtpError.SYSTEM_BUSY.number)
+
+        // Act & Assert
+        try {
+            api.isOfflineExerciseV2Supported(deviceId)
+            Assert.fail("Expected an exception instead of a misleading false result")
+        } catch (e: Exception) {
+            // expected — support is unknown, not confirmed unsupported
+        }
     }
 }

@@ -23,8 +23,16 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import com.polar.polarsensordatacollector.R
 import com.polar.polarsensordatacollector.ui.landing.ONLINE_OFFLINE_KEY_DEVICE_ID
+import com.polar.sdk.api.model.PolarExerciseSession
 import dagger.hilt.android.AndroidEntryPoint
 
+
+// Represents the offline exercise lifecycle shown in this screen.
+// PAUSED and RUNNING are sub-states that only apply when an exercise
+// has been started. This keeps "paused but not running" unrepresentable.
+private enum class ExerciseUiState {
+    STOPPED, RUNNING, PAUSED
+}
 
 @AndroidEntryPoint
 class ExerciseV2Fragment : Fragment() {
@@ -50,13 +58,58 @@ class ExerciseV2Fragment : Fragment() {
         setContent {
             var statusText by remember { mutableStateOf("") }
 
+            // Offline recording running/not-running. This is the only
+            // dimension that can report STOPPED; pause/resume cannot apply
+            // until an offline recording is running.
+            var isOfflineRunning by remember { mutableStateOf(false) }
+
+            // Single source of truth for the online training-session status
+            // (and therefore pause/resume state), shared with the Exercise
+            // screen. Reading it here instead of tracking a separate local
+            // flag keeps this screen from drifting out of sync with what the
+            // device actually reports.
+            val onlineExerciseInfo by viewModel.onlineExerciseState.collectAsState()
+            val isPaused = onlineExerciseInfo.status == PolarExerciseSession.ExerciseStatus.PAUSED
+
+            val exerciseState = when {
+                !isOfflineRunning -> ExerciseUiState.STOPPED
+                isPaused -> ExerciseUiState.PAUSED
+                else -> ExerciseUiState.RUNNING
+            }
+
             val context = LocalContext.current
             val shareTitleText = stringResource(R.string.exercise_v2_share_title)
             val startPrefix = stringResource(R.string.btn_start).uppercase()
             val stopPrefix = stringResource(R.string.btn_stop).uppercase()
+            val pausePrefix = stringResource(R.string.btn_pause).uppercase()
+            val resumePrefix = stringResource(R.string.btn_resume).uppercase()
             val checkStatusPrefix = stringResource(R.string.exercise_v2_check_status).uppercase()
             val fetchPrefix = stringResource(R.string.exercise_v2_prefix_fetch).uppercase()
             val removePrefix = stringResource(R.string.exercise_v2_prefix_remove).uppercase()
+
+            fun refreshStatus() {
+                viewModel.getOfflineExerciseStatus(
+                    onResult = { running ->
+                        isOfflineRunning = running
+                        val prefix = if (running) stopPrefix else startPrefix
+                        val runningText = if (running) {
+                            context.getString(R.string.exercise_v2_status_running)
+                        } else {
+                            context.getString(R.string.exercise_v2_status_not_running)
+                        }
+                        statusText = "[$prefix]\n$runningText"
+                    },
+                    onError = { err ->
+                        val prefix = if (isOfflineRunning) stopPrefix else startPrefix
+                        statusText = "[$prefix]\n${context.getString(R.string.exercise_v2_status_failed_to_get_status, err)}"
+                    }
+                )
+                viewModel.refreshOnlineExerciseStatus()
+            }
+
+            LaunchedEffect(Unit) {
+                refreshStatus()
+            }
             val outline = BorderStroke(1.dp, Color.Red)
             val buttonColors = ButtonDefaults.outlinedButtonColors(
                 backgroundColor = Color.Black,
@@ -85,36 +138,66 @@ class ExerciseV2Fragment : Fragment() {
                             border = outline,
                             colors = buttonColors,
                             onClick = {
-                                statusText = "[$startPrefix]\n${context.getString(R.string.exercise_v2_status_exercise_started)}"
-                                viewModel.startOfflineExercise(
-                                    onResult = {
-                                        statusText = "[$startPrefix]\n${context.getString(R.string.exercise_v2_status_exercise_started)}"
-                                    },
-                                    onError = { err ->
-                                        statusText = "[$startPrefix]\n${context.getString(R.string.exercise_v2_status_failed_to_start, err)}"
-                                    }
-                                )
+                                if (exerciseState != ExerciseUiState.STOPPED) {
+                                    viewModel.stopOfflineExercise(
+                                        onResult = { refreshStatus() },
+                                        onError = { err ->
+                                            statusText = "[$stopPrefix]\n${context.getString(R.string.exercise_v2_status_failed_to_stop, err)}"
+                                        }
+                                    )
+                                } else {
+                                    viewModel.startOfflineExercise(
+                                        onResult = { refreshStatus() },
+                                        onError = { err ->
+                                            statusText = "[$startPrefix]\n${context.getString(R.string.exercise_v2_status_failed_to_start, err)}"
+                                        }
+                                    )
+                                }
                             }
                         ) {
-                            Text(stringResource(R.string.exercise_v2_start_exercise))
+                            Text(
+                                if (exerciseState != ExerciseUiState.STOPPED) {
+                                    stringResource(R.string.exercise_v2_stop_exercise)
+                                } else {
+                                    stringResource(R.string.exercise_v2_start_exercise)
+                                }
+                            )
                         }
 
-                        OutlinedButton(
-                            border = outline,
-                            colors = buttonColors,
-                            onClick = {
-                                statusText = "[$stopPrefix]\n${context.getString(R.string.exercise_v2_status_exercise_stopped)}"
-                                viewModel.stopOfflineExercise(
-                                    onResult = {
-                                        statusText = "[$stopPrefix]\n${context.getString(R.string.exercise_v2_status_exercise_stopped)}"
-                                    },
-                                    onError = { err ->
-                                        statusText = "[$stopPrefix]\n${context.getString(R.string.exercise_v2_status_failed_to_stop, err)}"
+                        if (exerciseState != ExerciseUiState.STOPPED) {
+                            OutlinedButton(
+                                border = outline,
+                                colors = buttonColors,
+                                onClick = {
+                                    if (exerciseState == ExerciseUiState.PAUSED) {
+                                        viewModel.resumeExercise(
+                                            onResult = {
+                                                statusText = "[$resumePrefix]\n${context.getString(R.string.exercise_v2_status_exercise_resumed)}"
+                                            },
+                                            onError = { err ->
+                                                statusText = "[$resumePrefix]\n${context.getString(R.string.exercise_v2_status_failed_to_resume, err)}"
+                                            }
+                                        )
+                                    } else {
+                                        viewModel.pauseExercise(
+                                            onResult = {
+                                                statusText = "[$pausePrefix]\n${context.getString(R.string.exercise_v2_status_exercise_paused)}"
+                                            },
+                                            onError = { err ->
+                                                statusText = "[$pausePrefix]\n${context.getString(R.string.exercise_v2_status_failed_to_pause, err)}"
+                                            }
+                                        )
+                                    }
+                                }
+                            ) {
+                                Text(
+                                    if (exerciseState == ExerciseUiState.PAUSED) {
+                                        stringResource(R.string.btn_resume)
+                                    } else {
+                                        stringResource(R.string.btn_pause)
                                     }
                                 )
                             }
-                        ) {
-                            Text(stringResource(R.string.exercise_v2_stop_exercise))
                         }
 
                         Column(
@@ -125,13 +208,23 @@ class ExerciseV2Fragment : Fragment() {
                                 border = outline,
                                 colors = buttonColors,
                                 onClick = {
-                                    viewModel.checkStatusAndListOfflineExercises(
-                                        onResult = { running, hasExercise, _ ->
-                                            val runningText = if (running) {
+                                    var runningText = ""
+                                    var exerciseText = ""
+                                    viewModel.getOfflineExerciseStatus(
+                                        onResult = { running ->
+                                            runningText = if (running) {
                                                 context.getString(R.string.exercise_v2_status_running)
                                             } else {
                                                 context.getString(R.string.exercise_v2_status_not_running)
                                             }
+                                            statusText = "[$checkStatusPrefix]\n$runningText"
+                                            },
+                                        onError = { err ->
+                                            statusText = "[$checkStatusPrefix]\n${context.getString(R.string.exercise_v2_status_failed_to_get_status, err)}"
+                                        })
+
+                                    viewModel.listOfflineExercises(
+                                        onResult = { hasExercise, _ ->
                                             val exerciseText = if (hasExercise) {
                                                 context.getString(R.string.exercise_v2_status_exercise_found)
                                             } else {
@@ -140,11 +233,13 @@ class ExerciseV2Fragment : Fragment() {
                                             statusText = "[$checkStatusPrefix]\n$runningText\n$exerciseText"
                                         },
                                         onError = { err ->
-                                            statusText = "[$checkStatusPrefix]\n${context.getString(R.string.exercise_v2_status_failed_to_get_status, err)}"
-                                        }
-                                    )
-                                }
-                            ) {
+                                            if (runningText.isNotEmpty()) {
+                                                statusText = "[$checkStatusPrefix]\n$runningText\n${context.getString(R.string.exercise_v2_status_failed_to_get_exercise_list, err)}"
+                                            } else {
+                                                statusText = "[$checkStatusPrefix]\n${context.getString(R.string.exercise_v2_status_failed_to_get_exercise_list, err)}"
+                                            }
+                                        })
+                                }) {
                                 Text(stringResource(R.string.exercise_v2_check_status))
                             }
 

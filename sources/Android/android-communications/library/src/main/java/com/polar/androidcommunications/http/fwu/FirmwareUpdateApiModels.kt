@@ -17,5 +17,16 @@ data class FirmwareUpdateResponse(
     @SerializedName("version")
     val version: String,
     @SerializedName("fileUrl")
-    val fileUrl: String
+    val fileUrl: String,
+    @SerializedName("hardwareVersions")
+    val hardwareVersions: List<FirmwareUpdateResponseHardwareVersion>
+)
+
+data class FirmwareUpdateResponseHardwareVersion(
+    @SerializedName("expired")
+    val expired: Boolean,
+    @SerializedName("mandatory")
+    val mandatory: Boolean,
+    @SerializedName("erpNumber")
+    val hardwareCode: String
 )

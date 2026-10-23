@@ -8,6 +8,8 @@ extension PolarBleApiImpl {
 
     func requestOfflineRecordingSettings(_ identifier: String, feature: PolarDeviceDataType) async throws -> PolarSensorSetting {
         logApiCall("requestOfflineRecordingSettings", ("identifier", identifier), ("feature", feature))
+        let guardToken = try apiCallGuard.acquire("requestOfflineRecordingSettings", identifier)
+        defer { apiCallGuard.release(guardToken) }
         BleLogger.trace("Request offline stream settings. Feature: \(feature) Device: \(identifier)")
         switch feature {
         case .ecg: return try await querySettings(identifier, type: .ecg, recordingType: .offline)
@@ -24,6 +26,8 @@ extension PolarBleApiImpl {
 
     func requestFullOfflineRecordingSettings(_ identifier: String, feature: PolarDeviceDataType) async throws -> PolarSensorSetting {
         logApiCall("requestFullOfflineRecordingSettings", ("identifier", identifier), ("feature", feature))
+        let guardToken = try apiCallGuard.acquire("requestFullOfflineRecordingSettings", identifier)
+        defer { apiCallGuard.release(guardToken) }
         BleLogger.trace("Request full offline stream settings. Feature: \(feature) Device: \(identifier)")
         switch feature {
         case .ecg: return try await queryFullSettings(identifier, type: .ecg, recordingType: .offline)
@@ -39,6 +43,8 @@ extension PolarBleApiImpl {
 
     func getAvailableOfflineRecordingDataTypes(_ identifier: String) async throws -> Set<PolarDeviceDataType> {
         logApiCall("getAvailableOfflineRecordingDataTypes", ("identifier", identifier))
+        let guardToken = try apiCallGuard.acquire("getAvailableOfflineRecordingDataTypes", identifier)
+        defer { apiCallGuard.release(guardToken) }
         let session = try serviceClientUtils.sessionPmdClientReady(identifier)
         guard let client = session.fetchGattClient(BlePmdClient.PMD_SERVICE) as? BlePmdClient else { throw PolarErrors.serviceNotFound }
         let pmdFeature = try await client.readFeature(true)
@@ -73,44 +79,49 @@ extension PolarBleApiImpl {
     func listOfflineRecordings(_ identifier: String) -> AsyncThrowingStream<PolarOfflineRecordingEntry, Error> {
         logApiCall("listOfflineRecordings", ("identifier", identifier))
         return AsyncThrowingStream { continuation in
-            Task {
-                do {
-                    let session = try self.serviceClientUtils.sessionFtpClientReady(identifier)
-                    guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
-                        continuation.finish(throwing: PolarErrors.serviceNotFound)
-                        return
-                    }
-                    // Try fast listing (PMDFiles.txt) first, fall back to recursive
-                    let pmdData = try await self.deviceSupportsFasterOfflineRecordListing(identifier: identifier)
-                    if !pmdData.isEmpty {
-                        let entries = try PolarOfflineRecordingUtils.listOfflineRecordingsV2(fileData: Data(pmdData))
-                        for entry in entries { continuation.yield(entry) }
-                    } else {
-                        let entries = try await self.fetchRecursive("/U/0/", client: client, condition: { entry in
-                            entry.matches("^([0-9]{8})(\\/)") ||
-                            entry.matches("^([0-9]{6})(\\/)") ||
-                            entry == "R/" ||
-                            entry.contains(".REC")
-                        })
-                        for entry in entries {
-                            let components = entry.name.split(separator: "/")
-                            let dateFormatter = DateFormatter()
-                            dateFormatter.calendar = .init(identifier: .iso8601)
-                            dateFormatter.locale = Locale(identifier: "en_US_POSIX")
-                            dateFormatter.dateFormat = "yyyyMMddHHmmss"
-                            dateFormatter.timeZone = TimeZone.current
-                            guard components.count >= 6,
-                                  entry.size > 0,
-                                  let date = dateFormatter.date(from: String(components[2] + components[4])) else { continue }
-                            guard let pmdMeasurementType = try? OfflineRecordingUtils.mapOfflineRecordingFileNameToMeasurementType(fileName: String(components[5])),
-                                  let type = try? PolarDataUtils.mapToPolarFeature(from: pmdMeasurementType) else { continue }
-                            continuation.yield(PolarOfflineRecordingEntry(path: entry.name, size: UInt(entry.size), date: date, type: type))
+            let task = Task {
+                self.apiCallGuard.streamTask("listOfflineRecordings", identifier, continuation) {
+                    do {
+                        let session = try self.serviceClientUtils.sessionFtpClientReady(identifier)
+                        guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
+                            continuation.finish(throwing: PolarErrors.serviceNotFound)
+                            return
                         }
+                        // Try fast listing (PMDFiles.txt) first, fall back to recursive
+                        let pmdData = try await self.deviceSupportsFasterOfflineRecordListing(identifier: identifier)
+                        if !pmdData.isEmpty {
+                            let entries = try PolarOfflineRecordingUtils.listOfflineRecordingsV2(fileData: Data(pmdData))
+                            for entry in entries { continuation.yield(entry) }
+                        } else {
+                            let entries = try await self.fetchRecursive("/U/0/", client: client, condition: { entry in
+                                entry.matches("^([0-9]{8})(\\/)") ||
+                                entry.matches("^([0-9]{6})(\\/)") ||
+                                entry == "R/" ||
+                                entry.contains(".REC")
+                            })
+                            for entry in entries {
+                                let components = entry.name.split(separator: "/")
+                                let dateFormatter = DateFormatter()
+                                dateFormatter.calendar = .init(identifier: .iso8601)
+                                dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+                                dateFormatter.dateFormat = "yyyyMMddHHmmss"
+                                dateFormatter.timeZone = TimeZone.current
+                                guard components.count >= 6,
+                                      entry.size > 0,
+                                      let date = dateFormatter.date(from: String(components[2] + components[4])) else { continue }
+                                guard let pmdMeasurementType = try? OfflineRecordingUtils.mapOfflineRecordingFileNameToMeasurementType(fileName: String(components[5])),
+                                      let type = try? PolarDataUtils.mapToPolarFeature(from: pmdMeasurementType) else { continue }
+                                continuation.yield(PolarOfflineRecordingEntry(path: entry.name, size: UInt(entry.size), date: date, type: type))
+                            }
+                        }
+                        continuation.finish()
+                    } catch {
+                        continuation.finish(throwing: error)
                     }
-                    continuation.finish()
-                } catch {
-                    continuation.finish(throwing: error)
                 }
+            }
+            continuation.onTermination = { _ in
+                task.cancel()
             }
         }
     }
@@ -125,7 +136,10 @@ extension PolarBleApiImpl {
             let request = try operation.serializedData()
             let data = try await client.request(request)
             return data.isEmpty ? [] : [UInt8](data)
+        } catch is CancellationError {
+            throw CancellationError()
         } catch {
+            if Task.isCancelled { throw CancellationError() }
             return []
         }
     }
@@ -138,7 +152,10 @@ extension PolarBleApiImpl {
         do {
             let data = try await client.request(requestData)
             return [UInt8](data)
+        } catch is CancellationError {
+            throw CancellationError()
         } catch {
+            if Task.isCancelled { throw CancellationError() }
             return []
         }
     }
@@ -149,6 +166,17 @@ extension PolarBleApiImpl {
         secret: PolarRecordingSecret?
     ) async throws -> PolarOfflineRecordingData {
         logApiCall("getOfflineRecord", ("identifier", identifier), ("entry.type", entry.type), ("entry.size", entry.size), ("entry.date", entry.date), ("secret", secret != nil))
+        let guardToken = try apiCallGuard.acquire("getOfflineRecord", identifier)
+        defer { apiCallGuard.release(guardToken) }
+        return try await readOfflineRecord(identifier, entry: entry, secret: secret)
+    }
+
+    /// Reads an offline recording without taking the API call guard, for use by already guarded calls.
+    private func readOfflineRecord(
+        _ identifier: String,
+        entry: PolarOfflineRecordingEntry,
+        secret: PolarRecordingSecret?
+    ) async throws -> PolarOfflineRecordingData {
         let session = try serviceClientUtils.sessionFtpClientReady(identifier)
         guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
             throw PolarErrors.serviceNotFound
@@ -244,7 +272,7 @@ extension PolarBleApiImpl {
     ) -> AsyncThrowingStream<PolarOfflineRecordingResult, Error> {
         logApiCall("getOfflineRecordWithProgress", ("identifier", identifier), ("entry.type", entry.type), ("entry.size", entry.size), ("entry.date", entry.date), ("secret", secret != nil))
         return AsyncThrowingStream { continuation in
-            Task {
+            self.apiCallGuard.streamTask("getOfflineRecordWithProgress", identifier, continuation) {
                 do {
                     let session = try self.serviceClientUtils.sessionFtpClientReady(identifier)
                     guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
@@ -305,7 +333,7 @@ extension PolarBleApiImpl {
                     client.progressCallback = progressCallback
 
                     do {
-                        let data = try await self.getOfflineRecord(identifier, entry: entry, secret: secret)
+                        let data = try await self.readOfflineRecord(identifier, entry: entry, secret: secret)
                         client.progressCallback = nil
                         continuation.yield(.progress(PolarOfflineRecordingProgress(
                             bytesDownloaded: totalBytes,
@@ -369,7 +397,7 @@ extension PolarBleApiImpl {
     func listSplitOfflineRecordings(_ identifier: String) -> AsyncThrowingStream<PolarOfflineRecordingEntry, Error> {
         logApiCall("listSplitOfflineRecordings", ("identifier", identifier))
         return AsyncThrowingStream { continuation in
-            Task {
+            self.apiCallGuard.streamTask("listSplitOfflineRecordings", identifier, continuation) {
                 do {
                     let session = try self.serviceClientUtils.sessionFtpClientReady(identifier)
                     guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
@@ -410,6 +438,8 @@ extension PolarBleApiImpl {
 
     func getSplitOfflineRecord(_ identifier: String, entry: PolarOfflineRecordingEntry, secret: PolarRecordingSecret?) async throws -> PolarOfflineRecordingData {
         logApiCall("getSplitOfflineRecord", ("identifier", identifier))
+        let guardToken = try apiCallGuard.acquire("getSplitOfflineRecord", identifier)
+        defer { apiCallGuard.release(guardToken) }
         let session = try serviceClientUtils.sessionFtpClientReady(identifier)
         guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else { throw PolarErrors.serviceNotFound }
         guard .polarFileSystemV2 == BlePolarDeviceCapabilitiesUtility.fileSystemType(session.advertisementContent.polarDeviceType) else { throw PolarErrors.operationNotSupported }
@@ -441,6 +471,8 @@ extension PolarBleApiImpl {
 
     func removeOfflineRecord(_ identifier: String, entry: PolarOfflineRecordingEntry) async throws {
         logApiCall("removeOfflineRecord", ("identifier", identifier), ("entry.type", entry.type), ("entry.size", entry.size), ("entry.date", entry.date))
+        let guardToken = try apiCallGuard.acquire("removeOfflineRecord", identifier)
+        defer { apiCallGuard.release(guardToken) }
         BleLogger.trace("Remove offline record. Device: \(identifier) Path: \(sanitizePathForLog(entry.path))")
         let session = try serviceClientUtils.sessionFtpClientReady(identifier)
         guard session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) is BlePsFtpClient else { throw PolarErrors.serviceNotFound }

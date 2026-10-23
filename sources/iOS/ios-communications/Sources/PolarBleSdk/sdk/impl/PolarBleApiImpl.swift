@@ -61,7 +61,18 @@ import UIKit
     internal var telemetryAvailabilityMap = [String: [PolarDeviceTelemetryType]]()
     internal let telemetryAvailabilityLock = NSLock()
     var serviceList = [CBUUID.init(string: "180D")]
+#if os(iOS)
+    internal var isApplicationInBackground: Bool {
+        if Thread.isMainThread {
+            return UIApplication.shared.applicationState == .background
+        }
+        return DispatchQueue.main.sync {
+            UIApplication.shared.applicationState == .background
+        }
+    }
+#endif
     let features:Set<PolarBleSdkFeature>
+    let apiCallGuard = PolarApiCallGuard()
     let PMDFilePath = "/PMDFILES.TXT"
     public private(set) var serviceClientUtils: PolarServiceClientUtils
     var fileUtils: PolarFileUtils
@@ -146,6 +157,10 @@ import UIKit
 #if os(iOS)
         NotificationCenter.default.addObserver(self, selector: #selector(foreground), name: UIApplication.willEnterForegroundNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(background), name: UIApplication.didEnterBackgroundNotification, object: nil)
+        // A Bluetooth restoration launch may already be in background, with no transition notification.
+        if isApplicationInBackground {
+            background()
+        }
 #endif
         BlePolarDeviceCapabilitiesUtility.initialize()
         emitSdkInitializationLog()
@@ -410,16 +425,11 @@ import UIKit
         }
         return Future<FeatureState, Never> { promise in
             Task {
-                var operation = Protocol_PbPFtpOperation()
-                operation.command = .get
-                operation.path = "/DEVICE.BPB"
                 do {
-                    let request = try operation.serializedData()
-                    let response = try await client.request(request)
-                    let deviceInfo = try Data_PbDeviceInfo(serializedBytes: Data(response))
-                    promise(.success(deviceInfo.capabilities.contains("dm_exercise") ? .ready : .notAvailable))
+                    let supported = try await self.checkDmExerciseSupport(client)
+                    promise(.success(supported ? .ready : .notAvailable))
                 } catch {
-                    promise(.success(.notAvailable))
+                    promise(.success(.notReady))
                 }
             }
         }.eraseToAnyPublisher()
@@ -1182,12 +1192,20 @@ extension PolarBleApiImpl: PolarBleApi  {
 #endif
             self.listener.openSessionDirect(session!)
         } else {
+            let peripheralIdentifier = listener.knownPeripheralIdentifier(for: identifier)
             connectSubscriptions[identifier] = Task {
                 do {
-                    try await self.listener.search(self.serviceList, identifiers: nil, fetchKnownDevices: true)
+                    try await self.listener.search(
+                        peripheralIdentifier == nil ? self.serviceList : nil,
+                        identifiers: peripheralIdentifier.map { [$0] },
+                        fetchKnownDevices: true
+                    )
                         .receive(on: self.scheduler)
                         .filter { (sess: BleDeviceSession) -> Bool in
-                            identifier.contains("-") ? sess.address.uuidString == identifier : sess.advertisementContent.polarDeviceIdUntouched == identifier
+                            if let peripheralIdentifier {
+                                return sess.address == peripheralIdentifier
+                            }
+                            return identifier.contains("-") ? sess.address.uuidString == identifier : sess.advertisementContent.polarDeviceIdUntouched == identifier
                         }
                         .prefix(1)
                         .asyncForEach { value in
@@ -1850,7 +1868,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                         }
                     }
                     if let result = result, let url = result.fileUrl, !url.isEmpty {
-                        continuation.yield(.checkFwUpdateAvailable(version: result.version ?? ""))
+                        continuation.yield(.checkFwUpdateAvailable(version: result.version ?? "", mandatory: result.mandatory))
                     } else {
                         continuation.yield(.checkFwUpdateNotAvailable(details: "No new firmware available"))
                     }
@@ -2082,6 +2100,8 @@ extension PolarBleApiImpl: PolarBleApi  {
     
     public func startExercise(identifier: String, profile: PolarExerciseSession.SportProfile) async throws {
         logApiCall("startExercise", ("identifier", identifier), ("profile", profile))
+        let guardToken = try apiCallGuard.acquire("startExercise", identifier)
+        defer { apiCallGuard.release(guardToken) }
         let session = try serviceClientUtils.sessionFtpClientReady(identifier)
         guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else { throw PolarErrors.serviceNotFound }
         var sportId = PbSportIdentifier()
@@ -2101,6 +2121,8 @@ extension PolarBleApiImpl: PolarBleApi  {
 
     public func pauseExercise(identifier: String) async throws {
         logApiCall("pauseExercise", ("identifier", identifier))
+        let guardToken = try apiCallGuard.acquire("pauseExercise", identifier)
+        defer { apiCallGuard.release(guardToken) }
         let session = try serviceClientUtils.sessionFtpClientReady(identifier)
         guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else { throw PolarErrors.serviceNotFound }
         do {
@@ -2115,6 +2137,8 @@ extension PolarBleApiImpl: PolarBleApi  {
 
     public func resumeExercise(identifier: String) async throws {
         logApiCall("resumeExercise", ("identifier", identifier))
+        let guardToken = try apiCallGuard.acquire("resumeExercise", identifier)
+        defer { apiCallGuard.release(guardToken) }
         let session = try serviceClientUtils.sessionFtpClientReady(identifier)
         guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else { throw PolarErrors.serviceNotFound }
         do {
@@ -2129,6 +2153,8 @@ extension PolarBleApiImpl: PolarBleApi  {
 
     public func stopExercise(identifier: String, save: Bool = true) async throws {
         logApiCall("stopExercise", ("identifier", identifier), ("save", save))
+        let guardToken = try apiCallGuard.acquire("stopExercise", identifier)
+        defer { apiCallGuard.release(guardToken) }
         let session = try serviceClientUtils.sessionFtpClientReady(identifier)
         guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else { throw PolarErrors.serviceNotFound }
         var params = Protocol_PbPFtpStopExerciseParams()
@@ -2146,6 +2172,8 @@ extension PolarBleApiImpl: PolarBleApi  {
 
     public func getExerciseStatus(identifier: String) async throws -> PolarExerciseSession.ExerciseInfo {
         logApiCall("getExerciseStatus", ("identifier", identifier))
+        let guardToken = try apiCallGuard.acquire("getExerciseStatus", identifier)
+        defer { apiCallGuard.release(guardToken) }
         let session = try serviceClientUtils.sessionFtpClientReady(identifier)
         guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else { throw PolarErrors.serviceNotFound }
         do {
@@ -2162,6 +2190,7 @@ extension PolarBleApiImpl: PolarBleApi  {
     
     func observeExerciseStatus(identifier: String) -> AsyncThrowingStream<PolarExerciseSession.ExerciseInfo, Error> {
         logApiCall("observeExerciseStatus", ("identifier", identifier))
+        // Long-lived observer: intentionally not guarded so that exercise control calls can run while observing.
         BleLogger.trace("Start observing exercise status for \(identifier)")
         return AsyncThrowingStream { continuation in
             Task {

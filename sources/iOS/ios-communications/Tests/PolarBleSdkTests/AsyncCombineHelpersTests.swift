@@ -62,6 +62,25 @@ final class AsyncCombineHelpersTests: XCTestCase {
         XCTAssertEqual(error as? TestError, .expected)
     }
 
+    func test_asyncPublisher_cancellationCancelsBackingTask() async {
+        let started = expectation(description: "operation started")
+        let cancelled = expectation(description: "operation cancelled")
+        let cancellable = asyncPublisher { () async throws -> Int in
+            started.fulfill()
+            do {
+                try await Task.sleep(nanoseconds: 60_000_000_000)
+                return 1
+            } catch {
+                cancelled.fulfill()
+                throw error
+            }
+        }.sink(receiveCompletion: { _ in }, receiveValue: { _ in })
+
+        await fulfillment(of: [started], timeout: 1)
+        cancellable.cancel()
+        await fulfillment(of: [cancelled], timeout: 1)
+    }
+
     func test_asyncVoidPublisher_success_completesWithoutValues() {
         let completionExpectation = expectation(description: "asyncVoidPublisher completion")
         let valueExpectation = expectation(description: "asyncVoidPublisher should not emit value")
@@ -195,6 +214,56 @@ final class AsyncCombineHelpersTests: XCTestCase {
         }
     }
 
+    func test_asyncForEach_cancellationCancelsSubscriptionAndThrowsCancellationError() async {
+        let subject = PassthroughSubject<Int, Error>()
+        let subscribed = expectation(description: "subscription installed")
+        let cancelled = expectation(description: "subscription cancelled")
+        var receivedValues: [Int] = []
+        let publisher = subject.handleEvents(
+            receiveSubscription: { _ in subscribed.fulfill() },
+            receiveCancel: { cancelled.fulfill() }
+        )
+
+        let task = Task { () -> Error? in
+            do {
+                try await publisher.asyncForEach { receivedValues.append($0) }
+                return nil
+            } catch {
+                return error
+            }
+        }
+
+        await fulfillment(of: [subscribed], timeout: 1)
+        task.cancel()
+        await fulfillment(of: [cancelled], timeout: 1)
+        subject.send(123)
+
+        let error = await task.value
+        XCTAssertTrue(error is CancellationError)
+        XCTAssertTrue(receivedValues.isEmpty)
+    }
+
+    func test_asyncForEach_cancelledBeforeSubscriptionDoesNotSubscribe() async {
+        let subject = PassthroughSubject<Int, Error>()
+        let subscription = expectation(description: "publisher should not be subscribed")
+        subscription.isInverted = true
+        let publisher = subject.handleEvents(receiveSubscription: { _ in subscription.fulfill() })
+
+        let task = Task { () -> Error? in
+            withUnsafeCurrentTask { $0?.cancel() }
+            do {
+                try await publisher.asyncForEach { _ in }
+                return nil
+            } catch {
+                return error
+            }
+        }
+
+        let error = await task.value
+        XCTAssertTrue(error is CancellationError)
+        await fulfillment(of: [subscription], timeout: 0.1)
+    }
+
     func test_awaitCompletion_success_returnsWhenFinished() async throws {
         let publisher = Empty<Never, Error>(completeImmediately: true)
             .eraseToAnyPublisher()
@@ -212,5 +281,31 @@ final class AsyncCombineHelpersTests: XCTestCase {
         } catch {
             XCTAssertEqual(error as? TestError, .expected)
         }
+    }
+
+    func test_awaitCompletion_cancellationCancelsSubscriptionAndThrowsCancellationError() async {
+        let subject = PassthroughSubject<Never, Error>()
+        let subscribed = expectation(description: "subscription installed")
+        let cancelled = expectation(description: "subscription cancelled")
+        let publisher = subject.handleEvents(
+            receiveSubscription: { _ in subscribed.fulfill() },
+            receiveCancel: { cancelled.fulfill() }
+        )
+
+        let task = Task { () -> Error? in
+            do {
+                try await publisher.awaitCompletion()
+                return nil
+            } catch {
+                return error
+            }
+        }
+
+        await fulfillment(of: [subscribed], timeout: 1)
+        task.cancel()
+        await fulfillment(of: [cancelled], timeout: 1)
+
+        let error = await task.value
+        XCTAssertTrue(error is CancellationError)
     }
 }

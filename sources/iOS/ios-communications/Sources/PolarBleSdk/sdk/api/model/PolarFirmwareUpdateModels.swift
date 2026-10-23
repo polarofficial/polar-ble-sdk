@@ -3,7 +3,7 @@
 import Foundation
 
 public enum CheckFirmwareUpdateStatus {
-    case checkFwUpdateAvailable(version: String)
+    case checkFwUpdateAvailable(version: String, mandatory: Bool? = nil)
     case checkFwUpdateNotAvailable(details: String)
     case checkFwUpdateFailed(details: String)
 }

@@ -20,10 +20,37 @@ struct FirmwareUpdateResponse: Decodable {
     let version: String?
     let fileUrl: String?
     var statusCode: Int?
-    
+    var mandatory: Bool?
+
     enum CodingKeys: String, CodingKey {
         case version
         case fileUrl
+        case mandatory
+    }
+}
+
+struct FirmwareUpdateDeviceResponse: Decodable {
+    let version: String?
+    let fileUrl: String?
+    var hardwareVersions: [FirmwareUpdateResponseHardwareVersion]?
+    var statusCode: Int?
+
+    enum CodingKeys: String, CodingKey {
+        case version
+        case fileUrl
+        case hardwareVersions
+    }
+}
+
+struct FirmwareUpdateResponseHardwareVersion: Decodable {
+    let expired: Bool?
+    let mandatory: Bool?
+    let hardwareCode: String?
+
+    enum CodingKeys: String, CodingKey {
+        case expired
+        case mandatory
+        case hardwareCode = "erpNumber"
     }
 }
 

@@ -10,6 +10,8 @@ extension PolarBleApiImpl: PolarLoggingApi {
 
     func exportDeviceLogs(_ identifier: String) async throws -> [PolarDeviceLog] {
         logApiCall("exportDeviceLogs", ("identifier", identifier))
+        let guardToken = try apiCallGuard.acquire("exportDeviceLogs", identifier)
+        defer { apiCallGuard.release(guardToken) }
         let session = try serviceClientUtils.sessionFtpClientReady(identifier)
         guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
             throw PolarErrors.serviceNotFound
@@ -52,6 +54,8 @@ extension PolarBleApiImpl: PolarLoggingApi {
 
     func getLogConfig(_ identifier: String) async throws -> LogConfig {
         logApiCall("getLogConfig", ("identifier", identifier))
+        let guardToken = try apiCallGuard.acquire("getLogConfig", identifier)
+        defer { apiCallGuard.release(guardToken) }
         let session = try serviceClientUtils.sessionFtpClientReady(identifier)
         guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
             throw PolarErrors.serviceNotFound
@@ -81,6 +85,8 @@ extension PolarBleApiImpl: PolarLoggingApi {
 
     func setLogConfig(_ identifier: String, logConfig: LogConfig) async throws {
         logApiCall("setLogConfig", ("identifier", identifier), ("logConfig", logConfig))
+        let guardToken = try apiCallGuard.acquire("setLogConfig", identifier)
+        defer { apiCallGuard.release(guardToken) }
         let session = try serviceClientUtils.sessionFtpClientReady(identifier)
         guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
             throw PolarErrors.serviceNotFound

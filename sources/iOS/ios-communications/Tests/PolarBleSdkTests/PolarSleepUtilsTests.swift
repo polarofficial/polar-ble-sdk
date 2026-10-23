@@ -170,15 +170,117 @@ class PolarSleepUtilsTests: XCTestCase {
         mockClient.requestReturnValues.append(.success(try Self.minimalValidSleepProtoData()))
         mockClient.requestReturnValues.append(.success(Data([0xFF, 0xFE, 0xFD])))
         do {
-            _ = try await PolarSleepUtils.readSleepFromDayDirectory(client: mockClient, date: Date())
+            // maxAttempts: 1 — this test is about the skin-temperature parse failure itself,
+            // not the retry behavior (covered separately below).
+            _ = try await PolarSleepUtils.readSleepFromDayDirectory(client: mockClient, date: Date(), maxAttempts: 1)
             XCTFail("Expected readSleepFromDayDirectory to throw on a skin-temperature parse error")
         } catch {
         }
     }
 
+    // MARK: - readSleepFromDayDirectory retry behavior
+
+    // GIVEN a day's sleep file read fails for a real reason (not "no such file") on the first
+    //       attempt, but the device/session recovers before the next attempt
+    // WHEN readSleepFromDayDirectory is used
+    // THEN it retries and returns the data instead of giving up after a single transient failure
+    func testReadSleepFromDayDirectory_succeedsAfterTransientFailure() async throws {
+        mockClient.requestReturnValues.append(.failure(BlePsFtpException.responseError(errorCode: 500)))
+        mockClient.requestReturnValues.append(.success(try Self.minimalValidSleepProtoData()))
+        mockClient.requestReturnValues.append(
+            .failure(BlePsFtpException.responseError(errorCode: Protocol_PbPFtpError.noSuchFileOrDirectory.rawValue))
+        )
+
+        let result = try await PolarSleepUtils.readSleepFromDayDirectory(
+            client: mockClient,
+            date: Date(),
+            maxAttempts: 3,
+            baseRetryDelayMs: 1
+        )
+
+        XCTAssertNotNil(result.sleepStartTime, "Expected the retried attempt to succeed")
+        XCTAssertEqual(mockClient.requestCalls.count, 3, "Expected: failing sleep GET, retried sleep GET, then skin-temp GET")
+    }
+
+    // GIVEN a day's sleep file read keeps failing for a real reason on every attempt
+    // WHEN readSleepFromDayDirectory exhausts all attempts
+    // THEN it throws the last underlying error (same externally-visible failure as before this
+    //      fix, so getSleep's existing per-date catch-and-skip behavior is unaffected) instead of
+    //      hanging or silently returning a placeholder
+    func testReadSleepFromDayDirectory_exhaustsAttempts_throwsLastError() async throws {
+        mockClient.requestReturnValues.append(.failure(BlePsFtpException.responseError(errorCode: 500)))
+        mockClient.requestReturnValues.append(.failure(BlePsFtpException.responseError(errorCode: 501)))
+        mockClient.requestReturnValues.append(.failure(BlePsFtpException.responseError(errorCode: 502)))
+
+        do {
+            _ = try await PolarSleepUtils.readSleepFromDayDirectory(
+                client: mockClient,
+                date: Date(),
+                maxAttempts: 3,
+                baseRetryDelayMs: 1
+            )
+            XCTFail("Expected readSleepFromDayDirectory to throw after exhausting all attempts")
+        } catch BlePsFtpException.responseError(let code) {
+            XCTAssertEqual(code, 502, "Expected the error from the last attempt")
+        }
+        XCTAssertEqual(mockClient.requestCalls.count, 3, "Expected exactly maxAttempts sleep-file GET attempts, no more")
+    }
+
+    // GIVEN a day genuinely has no sleep file (the device reports "no such file")
+    // WHEN readSleepFromDayDirectory reads that date
+    // THEN it must not retry at all — this is the ordinary "no data" case, not a failure
+    func testReadSleepFromDayDirectory_noSuchFile_doesNotRetry() async throws {
+        mockClient.requestReturnValues.append(
+            .failure(BlePsFtpException.responseError(errorCode: Protocol_PbPFtpError.noSuchFileOrDirectory.rawValue))
+        )
+
+        let result = try await PolarSleepUtils.readSleepFromDayDirectory(
+            client: mockClient,
+            date: Date(),
+            maxAttempts: 3,
+            baseRetryDelayMs: 1
+        )
+
+        XCTAssertNil(result.sleepStartTime)
+        XCTAssertEqual(mockClient.requestCalls.count, 2, "Expected a single attempt (sleep GET + skin-temp GET), no retries, for a legitimate 'no data' date")
+    }
+
+    // GIVEN every attempt fails for a real reason
+    // WHEN readSleepFromDayDirectory retries
+    // THEN the delay between attempts doubles each time (exponential backoff: base, base*2,
+    //      base*4, ...), giving a slow-to-recover session more time on later attempts instead of
+    //      hammering it at a fixed interval
+    func testReadSleepFromDayDirectory_backoffDelayDoublesBetweenAttempts() async throws {
+        mockClient.requestReturnValues.append(.failure(BlePsFtpException.responseError(errorCode: 500)))
+        mockClient.requestReturnValues.append(.failure(BlePsFtpException.responseError(errorCode: 500)))
+        mockClient.requestReturnValues.append(.failure(BlePsFtpException.responseError(errorCode: 500)))
+        mockClient.requestReturnValues.append(.failure(BlePsFtpException.responseError(errorCode: 500)))
+
+        let start = Date()
+        do {
+            _ = try await PolarSleepUtils.readSleepFromDayDirectory(
+                client: mockClient,
+                date: Date(),
+                maxAttempts: 4,
+                baseRetryDelayMs: 20
+            )
+            XCTFail("Expected readSleepFromDayDirectory to throw after exhausting all attempts")
+        } catch {
+        }
+        let elapsedMs = Date().timeIntervalSince(start) * 1000
+
+        // Delays before attempts 2, 3, 4: 20ms, 40ms, 80ms = 140ms minimum.
+        XCTAssertGreaterThanOrEqual(elapsedMs, 140, "Expected the delay between attempts to double (exponential backoff)")
+        XCTAssertEqual(mockClient.requestCalls.count, 4)
+    }
+
     // MARK: - Helpers
 
-    private static func minimalValidSleepProtoData() throws -> Data {
+    static func minimalValidSleepProtoData() throws -> Data {
+        try minimalValidSleepProtoDataImpl()
+    }
+
+    private static func minimalValidSleepProtoDataImpl() throws -> Data {
         let pbDate: (UInt32, UInt32, UInt32) -> PbDate = { d, mo, y in
             PbDate.with { $0.day = d; $0.month = mo; $0.year = y }
         }

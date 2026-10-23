@@ -36,7 +36,8 @@ import java.time.LocalDate
  * Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_SLEEP_DATA].
  */
 internal class PolarSleepApiImpl(
-    private val listener: BleDeviceListener
+    private val listener: BleDeviceListener,
+    private val apiCallGuard: PolarApiCallGuard = PolarApiCallGuard()
 ) : PolarSleepApi {
 
     companion object {
@@ -73,56 +74,57 @@ internal class PolarSleepApiImpl(
         }
 
     override suspend fun getSleepRecordingStatus(identifier: String, timeoutMs: Long): PolarSleepRecordingStatus {
-        // Resolve session and client up front so that PolarServiceNotAvailable is thrown
-        // immediately, before any BLE traffic is started.
-        val deviceType = fetchSession(identifier, listener)?.polarDeviceType
-            ?: throw PolarServiceNotAvailable()
-        if (!BlePolarDeviceCapabilitiesUtility.isActivityDataSupported(deviceType)) {
-            throw PolarServiceNotAvailable()
+        return apiCallGuard.guardSuspend(
+            "getSleepRecordingStatus",
+            identifier,
+            allowConcurrent = true
+        ) {
+            val deviceType = fetchSession(identifier, listener)?.polarDeviceType
+                ?: throw PolarServiceNotAvailable()
+            if (!BlePolarDeviceCapabilitiesUtility.isActivityDataSupported(deviceType)) {
+                throw PolarServiceNotAvailable()
+            }
+            val session = PolarServiceClientUtils.sessionPsFtpClientReady(identifier, listener)
+            val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
+                ?: throw PolarServiceNotAvailable()
+            withTimeoutOrNull(timeoutMs) {
+                client.receiveRestApiEvents(
+                    identifier,
+                    onSubscribed = { sendSubscribeRequest(identifier) },
+                    eventKey = SLEEP_RECORDING_STATE_EVENT
+                )
+                    .mapNotNull { events -> firstStatus(events) }
+                    .first()
+            } ?: throw PolarTimeoutException("getSleepRecordingState timed out after ${timeoutMs}ms")
         }
-        val session = PolarServiceClientUtils.sessionPsFtpClientReady(identifier, listener)
-        val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
-            ?: throw PolarServiceNotAvailable()
-
-        // The subscribe write is sent from inside onSubscription (see sendSubscribeRequest), so it
-        // runs only after the event collector is registered on the shared notification flow. This
-        // prevents the device's first event from being emitted while there is no subscriber and
-        // dropped, which which would cause repeated overlapping calls to time out.
-        // first() returns as soon as the first state arrives, even if the device keeps the
-        // subscription open.
-        val enabled = withTimeoutOrNull(timeoutMs) {
-            client.receiveRestApiEvents(
-                identifier,
-                onSubscribed = { sendSubscribeRequest(identifier) },
-                eventKey = SLEEP_RECORDING_STATE_EVENT
-            )
-                .mapNotNull { events -> firstStatus(events) }
-                .first()
-        } ?: throw PolarTimeoutException("getSleepRecordingState timed out after ${timeoutMs}ms")
-        return enabled
     }
 
-    override fun observeSleepRecordingStatus(identifier: String): Flow<Array<PolarSleepRecordingStatus>> = flow {
-        val deviceType = fetchSession(identifier, listener)?.polarDeviceType
-            ?: throw PolarServiceNotAvailable()
-        if (!BlePolarDeviceCapabilitiesUtility.isActivityDataSupported(deviceType)) {
-            throw PolarServiceNotAvailable()
-        }
-        val session = PolarServiceClientUtils.sessionPsFtpClientReady(identifier, listener)
-        val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
-            ?: throw PolarServiceNotAvailable()
+    override fun observeSleepRecordingStatus(identifier: String): Flow<Array<PolarSleepRecordingStatus>> =
+        apiCallGuard.guardFlow(
+            "observeSleepRecordingStatus",
+            identifier,
+            allowConcurrent = true
+        ) {
+            val deviceType = fetchSession(identifier, listener)?.polarDeviceType
+                ?: throw PolarServiceNotAvailable()
+            if (!BlePolarDeviceCapabilitiesUtility.isActivityDataSupported(deviceType)) {
+                throw PolarServiceNotAvailable()
+            }
+            val session = PolarServiceClientUtils.sessionPsFtpClientReady(identifier, listener)
+            val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
+                ?: throw PolarServiceNotAvailable()
 
-        emitAll(
-            client.receiveRestApiEvents(
-                identifier,
-                onSubscribed = { sendSubscribeRequest(identifier) },
-                eventKey = SLEEP_RECORDING_STATE_EVENT
+            emitAll(
+                client.receiveRestApiEvents(
+                    identifier,
+                    onSubscribed = { sendSubscribeRequest(identifier) },
+                    eventKey = SLEEP_RECORDING_STATE_EVENT
+                )
+                    .map { list ->
+                        list.mapNotNull { jsonString -> parseSleepRecordingStatus(jsonString) }.toTypedArray()
+                    }
             )
-                .map { list ->
-                    list.mapNotNull { jsonString -> parseSleepRecordingStatus(jsonString) }.toTypedArray()
-                }
-        )
-    }
+        }
 
     // Subscribes to the sleep_recording_state event. Called from onSubscription, after the event
     // collector is registered, so no event can be lost between subscribe and the first notification.
@@ -168,13 +170,15 @@ internal class PolarSleepApiImpl(
     }
 
     override suspend fun stopSleepRecording(identifier: String) {
-        pFtpWriteOperation(
-            identifier = identifier,
-            listener = listener,
-            data = "{}".toByteArray(),
-            path = "/REST/SLEEP.API?cmd=post&endpoint=stop_sleep_recording",
-            tag = TAG
-        )
+        apiCallGuard.guardSuspend("stopSleepRecording", identifier) {
+            pFtpWriteOperation(
+                identifier = identifier,
+                listener = listener,
+                data = "{}".toByteArray(),
+                path = "/REST/SLEEP.API?cmd=post&endpoint=stop_sleep_recording",
+                tag = TAG
+            )
+        }
     }
 
     override suspend fun getSleep(
@@ -182,19 +186,20 @@ internal class PolarSleepApiImpl(
         fromDate: LocalDate,
         toDate: LocalDate
     ): List<PolarSleepData> {
-        val session = PolarServiceClientUtils.sessionPsFtpClientReady(identifier, listener)
-        val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
-            ?: throw PolarServiceNotAvailable()
-        val dates = generateSequence(fromDate) { it.plusDays(1) }.takeWhile { !it.isAfter(toDate) }.toList()
-        return dates.mapNotNull { date ->
-            try {
-                val result = PolarSleepUtils.readSleepDataFromDayDirectory(client, date)
-                if (result.sleepStartTime != null) PolarSleepData(date, result) else null
-            } catch (e: Throwable) {
-                BleLogger.w(TAG, "Failed to read sleep data for $date: $e")
-                null
+        return apiCallGuard.guardSuspend("getSleep", identifier) {
+            val session = PolarServiceClientUtils.sessionPsFtpClientReady(identifier, listener)
+            val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
+                ?: throw PolarServiceNotAvailable()
+            val dates = generateSequence(fromDate) { it.plusDays(1) }.takeWhile { !it.isAfter(toDate) }.toList()
+            dates.mapNotNull { date ->
+                try {
+                    val result = PolarSleepUtils.readSleepDataFromDayDirectory(client, date)
+                    if (result.sleepStartTime != null) PolarSleepData(date, result) else null
+                } catch (e: Throwable) {
+                    BleLogger.w(TAG, "Failed to read sleep data for $date: $e")
+                    null
+                }
             }
         }
     }
 }
-

@@ -434,21 +434,19 @@ final class PolarBleApiImplTimeZoneTests: XCTestCase {
     func test_getSleep_multiDayUTCRange_requestsConsecutiveUTCPaths() async throws {
         let from = makeDate(year: 2024, month: 5, day: 20, timeZone: utc)
         let to   = makeDate(year: 2024, month: 5, day: 22, timeZone: utc)
-        mockClient.requestReturnValues = [
-            .failure(NSError(domain: "test", code: 103)),
-            .failure(NSError(domain: "test", code: 103)),
-            .failure(NSError(domain: "test", code: 103))
-        ]
+        // A real (non-"no such file") error, so readSleepFromDayDirectory retries each day
+        // up to 3 times (with backoff) before giving up and moving to the next day.
+        mockClient.requestReturnValue = .failure(NSError(domain: "test", code: 103))
 
         let _ = try await api.getSleep(identifier: deviceId, fromDate: from, toDate: to)
 
-        // getSleep requests SLEEPRES.BPB for each day (first request per day)
+        // getSleep retries each day's sleep file request up to 3 times before giving up
         let paths = try mockClient.requestCalls.map { try decodePath(from: Data($0)) }
         let sleepPaths = paths.filter { $0.contains("SLEEP") }
-        XCTAssertEqual(sleepPaths.count, 3, "Expected 3 sleep file requests, one per day")
-        XCTAssertTrue(sleepPaths[0].contains("20240520"), "Day 0 sleep path wrong: \(sleepPaths[0])")
-        XCTAssertTrue(sleepPaths[1].contains("20240521"), "Day 1 sleep path wrong: \(sleepPaths[1])")
-        XCTAssertTrue(sleepPaths[2].contains("20240522"), "Day 2 sleep path wrong: \(sleepPaths[2])")
+        XCTAssertEqual(sleepPaths.count, 9, "Expected 3 retries per day across 3 days")
+        XCTAssertTrue(sleepPaths[0...2].allSatisfy { $0.contains("20240520") }, "Day 0 retries should all target 20240520")
+        XCTAssertTrue(sleepPaths[3...5].allSatisfy { $0.contains("20240521") }, "Day 1 retries should all target 20240521")
+        XCTAssertTrue(sleepPaths[6...8].allSatisfy { $0.contains("20240522") }, "Day 2 retries should all target 20240522")
     }
 
     // MARK: - getActivitySampleData — path correctness

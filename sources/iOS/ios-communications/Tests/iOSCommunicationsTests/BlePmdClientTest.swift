@@ -1,6 +1,7 @@
 //  Copyright © 2023 Polar. All rights reserved.
 
 import XCTest
+import CoreBluetooth
 @testable import iOSCommunications
 
 class BlePmdClientTest: XCTestCase {
@@ -16,6 +17,72 @@ class BlePmdClientTest: XCTestCase {
     override func tearDownWithError() throws {
         mockGattServiceTransmitterImpl = nil
         blePmdClient = nil
+    }
+
+    // MARK: - Test utilities for deallocation-race regression tests
+
+    /// A GATT transmitter that always fails operations, used to trigger queued operations
+    /// that will race with client deallocation
+    private class FailingGattTransmitter: BleAttributeTransportProtocol {
+        func isConnected() -> Bool {
+            return true
+        }
+
+        func transmitMessage(_ parent: BleGattClientBase, serviceUuid: CBUUID, characteristicUuid: CBUUID, packet: Data, withResponse: Bool) throws {
+            throw NSError(domain: "FailingGattTransmitter", code: 1, userInfo: nil)
+        }
+
+        func characteristicWith(uuid: CBUUID) throws -> CBCharacteristic? {
+            return nil
+        }
+
+        func characteristicNameWith(uuid: CBUUID) -> String? {
+            return nil
+        }
+
+        func readValue(_ parent: BleGattClientBase, serviceUuid: CBUUID, characteristicUuid: CBUUID) throws {
+            throw NSError(domain: "FailingGattTransmitter", code: 2, userInfo: nil)
+        }
+
+        func setCharacteristicNotify(_ parent: BleGattClientBase, serviceUuid: CBUUID, characteristicUuid: CBUUID, notify: Bool) throws {
+            throw NSError(domain: "FailingGattTransmitter", code: 3, userInfo: nil)
+        }
+
+        func attributeOperationStarted() {
+            // Do nothing
+        }
+
+        func attributeOperationFinished() {
+            // Do nothing
+        }
+    }
+
+    /// Helper function to verify that client deallocation immediately after subscribing
+    /// causes the operation to terminate without crashing.
+    /// The client is deallocated while the queued async operation is pending, which
+    /// tests the [weak self] guard pattern in the async methods.
+    private func assertTerminatesWhenClientDeallocated(
+        _ testCase: XCTestCase,
+        makeClient: @escaping (BleAttributeTransportProtocol) -> BlePmdClient,
+        createOperation: @escaping (BlePmdClient) async throws -> Void
+    ) async {
+        let expectation = XCTestExpectation(description: "operation terminates without crash")
+
+        let transmitter = FailingGattTransmitter()
+
+        Task {
+            do {
+                try await createOperation(makeClient(transmitter))
+            } catch {
+                // An error (e.g. the failing transmitter or clientDeallocated) is acceptable;
+                // the key is that the operation terminates without crashing.
+            }
+            expectation.fulfill()
+        }
+
+        // Wait for the operation to complete (or error out)
+        await fulfillment(of: [expectation], timeout: 5.0)
+        withExtendedLifetime(transmitter) {}
     }
 
     func testProcessControlPointResponseWhenStatusIsSuccess() throws {
@@ -36,6 +103,51 @@ class BlePmdClientTest: XCTestCase {
         // Assert
         let data = try blePmdClient.pmdCpResponseQueue.pop()
         XCTAssertEqual(controlPointResponse, data)
+    }
+
+    func testStopMeasurement_sendsStopControlPointCommand() async throws {
+        let transmitter = StopMeasurementRespondingTransmitter()
+        let client = BlePmdClient(gattServiceTransmitter: transmitter)
+
+        try await client.stopMeasurement(.acc)
+
+        XCTAssertEqual(transmitter.packet, Data([
+            PmdControlPointCommandClientToService.STOP_MEASUREMENT,
+            PmdMeasurementType.acc.rawValue
+        ]))
+        XCTAssertEqual(transmitter.characteristicUuid, BlePmdClient.PMD_CP)
+    }
+
+    func testStopMeasurement_throwsControlPointErrorWhenDeviceRejectsRequest() async {
+        let transmitter = StopMeasurementRespondingTransmitter(responseCode: .errorInvalidState)
+        let client = BlePmdClient(gattServiceTransmitter: transmitter)
+
+        do {
+            try await client.stopMeasurement(.acc)
+            XCTFail("Expected stopMeasurement to throw when the device rejects the request")
+        } catch let error as BlePmdError {
+            guard case let .controlPointRequestFailed(errorCode, _) = error else {
+                return XCTFail("Expected controlPointRequestFailed, got \(error)")
+            }
+            XCTAssertEqual(errorCode, PmdResponseCode.errorInvalidState.rawValue)
+        } catch {
+            XCTFail("Expected BlePmdError, got \(error)")
+        }
+    }
+
+    func testStopMeasurement_propagatesTransportFailure() async {
+        let expectedError = NSError(domain: "StopMeasurementTest", code: 42)
+        let transmitter = StopMeasurementRespondingTransmitter(transmissionError: expectedError)
+        let client = BlePmdClient(gattServiceTransmitter: transmitter)
+
+        do {
+            try await client.stopMeasurement(.acc)
+            XCTFail("Expected stopMeasurement to propagate the transport failure")
+        } catch {
+            let receivedError = error as NSError
+            XCTAssertEqual(receivedError.domain, expectedError.domain)
+            XCTAssertEqual(receivedError.code, expectedError.code)
+        }
     }
 
     func testProcessMeasurementStopControlPointCommand() async throws {
@@ -489,6 +601,82 @@ class BlePmdClientTest: XCTestCase {
         
         // Assert
         XCTAssertGreaterThan(result.count, 1, "Should process multiple delta frames")
-        XCTAssertEqual(result[0], [100, 200, 300], "Reference samples")
+         XCTAssertEqual(result[0], [100, 200, 300], "Reference samples")
+     }
+
+     // MARK: - unowned-self deallocation-race regression
+
+     private func makeFailingClient(_ transmitter: BleAttributeTransportProtocol) -> BlePmdClient {
+         BlePmdClient(gattServiceTransmitter: transmitter)
+     }
+
+     func testReadMeasurementStatus_clientDeallocatedImmediatelyAfterSubscribe_terminatesWithoutCrash() async {
+         await assertTerminatesWhenClientDeallocated(self, makeClient: makeFailingClient) { client in
+             _ = try await client.readMeasurementStatus()
+         }
+     }
+
+     func testQuerySettings_clientDeallocatedImmediatelyAfterSubscribe_terminatesWithoutCrash() async {
+         await assertTerminatesWhenClientDeallocated(self, makeClient: makeFailingClient) { client in
+             _ = try await client.querySettings(.acc, .online)
+         }
+     }
+
+     func testQueryFullSettings_clientDeallocatedImmediatelyAfterSubscribe_terminatesWithoutCrash() async {
+         await assertTerminatesWhenClientDeallocated(self, makeClient: makeFailingClient) { client in
+             _ = try await client.queryFullSettings(.acc, .online)
+         }
+     }
+
+     func testIsSdkModeEnabled_clientDeallocatedImmediatelyAfterSubscribe_terminatesWithoutCrash() async {
+         await assertTerminatesWhenClientDeallocated(self, makeClient: makeFailingClient) { client in
+             _ = try await client.isSdkModeEnabled()
+         }
+     }
+
+     func testGetOfflineRecordingTriggerStatus_clientDeallocatedImmediatelyAfterSubscribe_terminatesWithoutCrash() async {
+         await assertTerminatesWhenClientDeallocated(self, makeClient: makeFailingClient) { client in
+             _ = try await client.getOfflineRecordingTriggerStatus()
+         }
+     }
+ }
+
+private final class StopMeasurementRespondingTransmitter: BleAttributeTransportProtocol {
+    var packet: Data?
+    var characteristicUuid: CBUUID?
+    private let responseCode: PmdResponseCode
+    private let transmissionError: Error?
+
+    init(responseCode: PmdResponseCode = .success, transmissionError: Error? = nil) {
+        self.responseCode = responseCode
+        self.transmissionError = transmissionError
     }
+
+    func isConnected() -> Bool { true }
+
+    func transmitMessage(
+        _ parent: BleGattClientBase,
+        serviceUuid: CBUUID,
+        characteristicUuid: CBUUID,
+        packet: Data,
+        withResponse: Bool
+    ) throws {
+        if let transmissionError {
+            throw transmissionError
+        }
+        self.packet = packet
+        self.characteristicUuid = characteristicUuid
+        parent.processServiceData(
+            characteristicUuid,
+            data: Data([0xF0, packet[0], packet[1], UInt8(responseCode.rawValue)]),
+            err: 0
+        )
+    }
+
+    func characteristicWith(uuid: CBUUID) throws -> CBCharacteristic? { nil }
+    func characteristicNameWith(uuid: CBUUID) -> String? { nil }
+    func readValue(_ parent: BleGattClientBase, serviceUuid: CBUUID, characteristicUuid: CBUUID) throws {}
+    func setCharacteristicNotify(_ parent: BleGattClientBase, serviceUuid: CBUUID, characteristicUuid: CBUUID, notify: Bool) throws {}
+    func attributeOperationStarted() {}
+    func attributeOperationFinished() {}
 }

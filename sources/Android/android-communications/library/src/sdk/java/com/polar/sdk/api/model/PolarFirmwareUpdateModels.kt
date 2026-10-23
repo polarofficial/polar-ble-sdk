@@ -4,7 +4,7 @@ package com.polar.sdk.api.model
      * Result for firmware update check.
      */
     sealed class CheckFirmwareUpdateStatus {
-        data class CheckFwUpdateAvailable(val version: String) : CheckFirmwareUpdateStatus()
+        data class CheckFwUpdateAvailable(val version: String, val mandatoryUpdate: Boolean) : CheckFirmwareUpdateStatus()
         data class CheckFwUpdateNotAvailable(val details: String) : CheckFirmwareUpdateStatus()
         data class CheckFwUpdateFailed(val details: String) : CheckFirmwareUpdateStatus()
     }
@@ -28,4 +28,11 @@ data class PolarFirmwareVersionInfo(
         val deviceFwVersion: String,
         val deviceModelName: String,
         val deviceHardwareCode: String
+)
+
+data class PolarFirmwareAvailableInfo(
+        val uri: String?,
+        val availableFwVersion: String?,
+        val mandatoryUpdate: Boolean?,
+        val status: FirmwareUpdateStatus?
 )

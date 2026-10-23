@@ -12,40 +12,71 @@ struct OfflineExerciseV2View: View {
     @State private var shareFileURL: URL?
     @State private var isSharePresented = false
 
+    private enum ExerciseRunState {
+        case stopped, running, paused
+    }
+
+    private var runState: ExerciseRunState {
+        guard bleSdkManager.isOfflineExcerciseV2Ongoing else { return .stopped }
+        return bleSdkManager.isOfflineExerciseV2Paused ? .paused : .running
+    }
+
+    private var startButtonText: String {
+        runState == .stopped ? "Start exercise" : "Stop exercise"
+    }
+
+    private var pauseButtonText: String {
+        runState == .paused ? "Resume exercise" : "Pause exercise"
+    }
 
     var body: some View {
 
         VStack(spacing: 10) {
-
-            Button("Start Exercise") {
-                statusHeader = "Start Exercise"
-                statusDetail = "Starting..."
-
+            Button(startButtonText) {
                 Task { @MainActor in
-                    do {
-                        let result = try await bleSdkManager.startOfflineExerciseV2()
-                        statusDetail = result.result == .success ? "Exercise started" : "Start failed: \(result.result)"
-                    } catch {
-                        statusDetail = "Start failed: \(error.localizedDescription)"
+                    if (runState == .stopped) {
+                        do {
+                            let result = try await bleSdkManager.startOfflineExerciseV2()
+                            statusHeader = "Exercise status"
+                            statusDetail = result.result == .success ? "Exercise started" : "Start failed: \(result.result)"
+                        } catch {
+                            statusDetail = "Start failed: \(error.localizedDescription)"
+                        }
+                    } else {
+                        do {
+                            try await bleSdkManager.stopOfflineExerciseV2()
+                            statusHeader = "Exercise status"
+                            statusDetail = "Exercise stopped"
+                        } catch {
+                            statusDetail = "Stop failed: \(error.localizedDescription)"
+                        }
                     }
                 }
             }
             .buttonStyle(SecondaryButtonStyle(buttonState: getDefaultButtonState()))
 
-            Button("Stop Exercise") {
-                statusHeader = "Stop Exercise"
-                statusDetail = "Stopping..."
-
-                Task { @MainActor in
-                    do {
-                        try await bleSdkManager.stopOfflineExerciseV2()
-                        statusDetail = "Exercise stopped"
-                    } catch {
-                        statusDetail = "Stop failed: \(error.localizedDescription)"
+            if (runState != .stopped) {
+                Button(pauseButtonText) {
+                    statusHeader = "Exercise status"
+                    statusDetail = runState == .paused ? "Resuming exercise..." : "Pausing exercise..."
+                    Task { @MainActor in
+                        do {
+                            if (runState == .running) {
+                                try await bleSdkManager.pauseOfflineExerciseV2()
+                                statusDetail = "Exercise paused"
+                            } else {
+                                try await bleSdkManager.resumeOfflineExerciseV2()
+                                statusDetail = "Exercise resumed"
+                            }
+                        } catch {
+                            statusDetail = runState == .paused
+                                ? "Resume failed: \(error.localizedDescription)"
+                                : "Pause failed: \(error.localizedDescription)"
+                        }
                     }
                 }
+                .buttonStyle(SecondaryButtonStyle(buttonState: getDefaultButtonState()))
             }
-            .buttonStyle(SecondaryButtonStyle(buttonState: getDefaultButtonState()))
 
             Button("Check Exercise") {
                 statusHeader = "Check Exercise"
@@ -58,9 +89,10 @@ struct OfflineExerciseV2View: View {
                     let running = bleSdkManager.isOfflineExcerciseV2Ongoing
                     let hasEntries = !bleSdkManager.offlineExerciseV2Entries.isEmpty
 
+                    statusHeader = "Exercise check"
                     statusDetail = ""
                     if running {
-                        statusDetail = "Exercise is running"
+                        statusDetail = runState == .paused ? "Exercise paused" : "Exercise is running"
                     } else {
                         statusDetail = "No exercise running"
                         if hasEntries {
@@ -79,14 +111,13 @@ struct OfflineExerciseV2View: View {
 
                 Task {
                     do {
+                        await bleSdkManager.listOfflineExercisesV2()
                         shareFileURL = try await bleSdkManager.fetchAndExportOfflineExerciseV2()
                         isSharePresented = true
                         statusDetail = "Opening share dialog..."
                     } catch {
                         statusDetail = "Fetch failed: \(error.localizedDescription)"
                     }
-                    statusHeader = ""
-                    statusDetail = ""
                 }
             }
             .buttonStyle(SecondaryButtonStyle(buttonState: getDefaultButtonState()))
@@ -129,11 +160,18 @@ struct OfflineExerciseV2View: View {
         }
         .padding()
         .navigationTitle("Offline Exercise V2")
-        .sheet(isPresented: $isSharePresented) {
-            if let url = shareFileURL {
-                ShareView(fileURL: url)
-            }
-        }
+        .sheet(isPresented: $isSharePresented, onDismiss: {
+              statusHeader = ""
+              statusDetail = ""
+          }) {
+              if let url = shareFileURL {
+                  ShareView(fileURL: url)
+              }
+          }.onAppear {
+              Task {
+                  await bleSdkManager.getOfflineExerciseStatusV2()
+              }
+          }
     }
 
     private func getDefaultButtonState() -> ButtonState {

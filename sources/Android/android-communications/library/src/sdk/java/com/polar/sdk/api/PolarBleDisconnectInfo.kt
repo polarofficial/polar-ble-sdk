@@ -19,7 +19,11 @@ enum class PolarBleDisconnectReason {
     // The remote device actively terminated the link, as opposed to the connection timing out.
     PEER_TERMINATED,
     // Disconnect is the expected outcome of a device-control command (restart, factory reset,
-    // warehouse sleep, hibernate, turn off) that already reached its success path.
+    // warehouse sleep, hibernate, turn off) that already reached its success path. Check
+    // [PolarBleDisconnectInfo.recoveryAction]: commands that erase device-side pairing
+    // (factory reset without preserving pairing, warehouse sleep) surface
+    // [PolarBleRecoveryAction.REMOVE_PAIRING_AND_PAIR_AGAIN]; the rest surface
+    // [PolarBleRecoveryAction.NONE].
     DEVICE_COMMAND,
     UNKNOWN
 }

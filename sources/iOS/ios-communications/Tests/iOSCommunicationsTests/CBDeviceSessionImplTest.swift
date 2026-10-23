@@ -133,6 +133,32 @@ final class CBDeviceSessionImplTest: XCTestCase {
         XCTAssertEqual(logs.count, 1)
     }
 
+    // MARK: - System-connected peripheral recognition
+
+    func testSystemConnectedPeripheralRecognitionMatchesIdentifierInsteadOfObjectIdentity() {
+        let peripheralIdentifier = UUID()
+
+        XCTAssertTrue(
+            CBDeviceSessionImpl.matchesSystemConnectedPeripheral(
+                peripheralIdentifier,
+                connectedPeripheralIdentifiers: [UUID(), peripheralIdentifier]
+            )
+        )
+        XCTAssertFalse(
+            CBDeviceSessionImpl.matchesSystemConnectedPeripheral(
+                peripheralIdentifier,
+                connectedPeripheralIdentifiers: [UUID()]
+            )
+        )
+    }
+
+    func testSystemConnectedPeripheralQueryUsesHeartRateService() {
+        XCTAssertEqual(
+            CBDeviceSessionImpl.systemConnectionService,
+            BleHrClient.HR_SERVICE
+        )
+    }
+
     // MARK: - CBATTError cases
 
     func testIndicatesBLEPairingProblem_CBATTError_insufficientEncryption_returnsTrue() {

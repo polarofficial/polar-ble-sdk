@@ -1,7 +1,7 @@
 //  Copyright © 2021 Polar. All rights reserved.
 
 import XCTest
-import iOSCommunications
+@testable import iOSCommunications
 import CoreBluetooth
 
 private struct TimeoutError: Error {}
@@ -28,6 +28,15 @@ private class ResponseInjectingTransmitter: MockGattServiceTransmitterImpl {
         }
     }
 }
+private final class NeverAcknowledgingTransmitter: MockGattServiceTransmitterImpl, @unchecked Sendable {
+    override func transmitMessage(
+        _ parent: BleGattClientBase,
+        serviceUuid: CBUUID,
+        characteristicUuid: CBUUID,
+        packet: Data,
+        withResponse: Bool
+    ) throws {}
+}
 
 // MARK: - Test class
 
@@ -48,9 +57,16 @@ class BlePsFtpClientTest: XCTestCase {
 
     // MARK: - RFC76 frame helpers
 
-    /// RFC76 LAST frame: status=LAST, next=0, seq=seqNum.  Header = 0x02 | (seqNum << 4).
-    private func makeLASTFrame(seqNum: Int = 0, payload: Data = Data()) -> Data {
-        var frame = Data([UInt8(0x02 | (seqNum << 4))])
+    /// RFC76 LAST frame: status=LAST, seq=seqNum. Header = 0x02 | next | (seqNum << 4).
+    private func makeLASTFrame(seqNum: Int = 0, next: Int = 0, payload: Data = Data()) -> Data {
+        var frame = Data([UInt8(0x02 | next | (seqNum << 4))])
+        frame.append(payload)
+        return frame
+    }
+
+    /// RFC76 MORE frame: status=MORE, seq=seqNum. Header = 0x06 | next | (seqNum << 4).
+    private func makeMOREFrame(seqNum: Int = 0, next: Int = 0, payload: Data = Data()) -> Data {
+        var frame = Data([UInt8(0x06 | next | (seqNum << 4))])
         frame.append(payload)
         return frame
     }
@@ -59,6 +75,22 @@ class BlePsFtpClientTest: XCTestCase {
     /// Header = 0x00, followed by two zero bytes for the error code field.
     private func makeSuccessResponseFrame() -> Data {
         return Data([0x00, 0x00, 0x00])
+    }
+
+    func testWaitPacketsWritten_doesNotReportLinkLostWhenAckArrivesInRaceWindow() throws {
+        let racingCounter = RaceInjectingAtomicInteger(initialValue: 0) {
+            self.mockGattServiceTransmitterImpl.mockConnectionStatus = false
+        }
+
+        XCTAssertNoThrow(
+            try blePsFtpClient.waitPacketsWritten(
+                racingCounter,
+                canceled: BlockOperation(),
+                count: 1,
+                timeout: 1.0
+            )
+        )
+        XCTAssertEqual(racingCounter.get(), 0)
     }
 
     // MARK: - waitNotification helper
@@ -87,21 +119,56 @@ class BlePsFtpClientTest: XCTestCase {
         }
     }
 
+    private func awaitTaskError<T>(
+        _ task: Task<T, Error>,
+        timeout: TimeInterval = 2.0
+    ) async -> Error? {
+        let lock = NSLock()
+        var result: Error?
+        var completed = false
+        Task {
+            do {
+                _ = try await task.value
+            } catch {
+                lock.lock()
+                result = error
+                lock.unlock()
+            }
+            lock.lock()
+            completed = true
+            lock.unlock()
+        }
+
+        let deadline = Date().addingTimeInterval(timeout)
+        while Date() < deadline {
+            lock.lock()
+            let isCompleted = completed
+            let error = result
+            lock.unlock()
+            if isCompleted { return error }
+            try? await Task.sleep(nanoseconds: 10_000_000)
+        }
+        return TimeoutError()
+    }
+
     // MARK: - request() + PFTP_AIR_PACKET_LOST_ERROR tests
 
     // GIVEN the device returns a response whose RFC76 sequence number does not match
     //       what the client expects (simulating an air-packet loss / reorder)
-    // WHEN  request() is awaited
+    // WHEN  request() receives the final packet of the ongoing response
     // THEN  it throws BlePsFtpException.responseError(PFTP_AIR_PACKET_LOST_ERROR = 303)
-    //       and does NOT hang
-    func testRequest_whenResponseSequenceNumberMismatches_throwsAirPacketLostError() async throws {
+    //       only after completing that read
+    func testRequest_whenResponseSequenceNumberMismatches_reportsAirPacketLostAfterOngoingReadCompletes() async throws {
         let transmitter = ResponseInjectingTransmitter()
         let client = BlePsFtpClient(gattServiceTransmitter: transmitter)
         defer { client.disconnected() }
 
-        // Inject a LAST frame with seq=1 — client expects seq=0, triggering the mismatch.
-        // Header: 0x02 (LAST) | (1 << 4) = 0x12
-        transmitter.responseQueue = [makeLASTFrame(seqNum: 1, payload: Data([0x00]))]
+        // The mismatched MORE frame starts the packet-loss handling. The following LAST
+        // frame finishes the ongoing read before the loss is reported.
+        transmitter.responseQueue = [
+            makeMOREFrame(seqNum: 1, payload: Data([0x00])),
+            makeLASTFrame(seqNum: 1, next: 1, payload: Data([0x01]))
+        ]
 
         do {
             _ = try await client.request(Data([0x00]))
@@ -129,8 +196,8 @@ class BlePsFtpClientTest: XCTestCase {
         let client = BlePsFtpClient(gattServiceTransmitter: transmitter)
         defer { client.disconnected() }
 
-        // First request — wrong seq → fails
-        transmitter.responseQueue = [makeLASTFrame(seqNum: 1, payload: Data([0x00]))]
+        // First request — mismatched MORE followed by LAST → fails after the ongoing read.
+        transmitter.responseQueue = [makeMOREFrame(seqNum: 1), makeLASTFrame(seqNum: 1, next: 1)]
         _ = try? await client.request(Data([0x00]))
 
         // Second request — valid ERROR_OR_RESPONSE frame with error=0
@@ -154,8 +221,8 @@ class BlePsFtpClientTest: XCTestCase {
         let client = BlePsFtpClient(gattServiceTransmitter: transmitter)
         defer { client.disconnected() }
 
-        // First request fails
-        transmitter.responseQueue = [makeLASTFrame(seqNum: 1, payload: Data([0x00]))]
+        // First request fails after its ongoing response is completed.
+        transmitter.responseQueue = [makeMOREFrame(seqNum: 1), makeLASTFrame(seqNum: 1, next: 1)]
         _ = try? await client.request(Data([0x00]))
 
         // Stale device frames arrive after the error (device still sending before cancel is honoured)
@@ -493,6 +560,91 @@ class BlePsFtpClientTest: XCTestCase {
 
     // MARK: - sendMtuCancelPacket cancellation fix tests
 
+    func testQueuedQueryThrowsGattDisconnectedWhenDisconnected() async throws {
+        let transmitter = NeverAcknowledgingTransmitter()
+        let client = BlePsFtpClient(gattServiceTransmitter: transmitter)
+        defer { client.disconnected() }
+
+        let active = Task<NSData, Error> { try await client.query(1, parameters: nil) }
+        try await Task.sleep(nanoseconds: 100_000_000)
+        let queued = Task<NSData, Error> { try await client.query(1, parameters: nil) }
+        transmitter.mockConnectionStatus = false
+        await Task { client.disconnected() }.value
+
+        let error = await awaitTaskError(queued)
+        guard let error = error as? BleGattException,
+              case .gattDisconnected = error else {
+            return XCTFail("Expected gattDisconnected, got \(String(describing: error))")
+        }
+        active.cancel()
+        _ = await awaitTaskError(active)
+    }
+
+    func testQueuedNotificationThrowsGattDisconnectedWhenDisconnected() async throws {
+        let transmitter = NeverAcknowledgingTransmitter()
+        let client = BlePsFtpClient(gattServiceTransmitter: transmitter)
+        defer { client.disconnected() }
+
+        let active = Task<Void, Error> { try await client.sendNotification(1, parameters: nil) }
+        try await Task.sleep(nanoseconds: 100_000_000)
+        let queued = Task<Void, Error> { try await client.sendNotification(1, parameters: nil) }
+        transmitter.mockConnectionStatus = false
+        await Task { client.disconnected() }.value
+
+        let error = await awaitTaskError(queued)
+        guard let error = error as? BleGattException,
+              case .gattDisconnected = error else {
+            return XCTFail("Expected gattDisconnected, got \(String(describing: error))")
+        }
+        active.cancel()
+        _ = await awaitTaskError(active)
+    }
+
+    func testCancelledQueryThrowsOperationCanceled() async throws {
+        let transmitter = NeverAcknowledgingTransmitter()
+        let client = BlePsFtpClient(gattServiceTransmitter: transmitter)
+        defer { client.disconnected() }
+
+        let task = Task<NSData, Error> { try await client.query(1, parameters: nil) }
+        try await Task.sleep(nanoseconds: 100_000_000)
+        task.cancel()
+
+        guard let error = await awaitTaskError(task) as? BlePsFtpException,
+              case .operationCanceled = error else {
+            return XCTFail("Expected operationCanceled")
+        }
+    }
+
+    func testCancelledRequestThrowsOperationCanceled() async throws {
+        let transmitter = NeverAcknowledgingTransmitter()
+        let client = BlePsFtpClient(gattServiceTransmitter: transmitter)
+        defer { client.disconnected() }
+
+        let task = Task<NSData, Error> { try await client.request(Data([0x00])) }
+        try await Task.sleep(nanoseconds: 100_000_000)
+        task.cancel()
+
+        guard let error = await awaitTaskError(task) as? BlePsFtpException,
+              case .operationCanceled = error else {
+            return XCTFail("Expected operationCanceled")
+        }
+    }
+
+    func testCancelledNotificationThrowsOperationCanceled() async throws {
+        let transmitter = NeverAcknowledgingTransmitter()
+        let client = BlePsFtpClient(gattServiceTransmitter: transmitter)
+        defer { client.disconnected() }
+
+        let task = Task<Void, Error> { try await client.sendNotification(1, parameters: nil) }
+        try await Task.sleep(nanoseconds: 100_000_000)
+        task.cancel()
+
+        guard let error = await awaitTaskError(task) as? BlePsFtpException,
+              case .operationCanceled = error else {
+            return XCTFail("Expected operationCanceled")
+        }
+    }
+
     // GIVEN request() throws PFTP_AIR_PACKET_LOST_ERROR during a multi-frame response
     //   AND the BLE stack never ACKs the cancel packet (congested/dead link)
     // WHEN disconnected() is called
@@ -749,5 +901,67 @@ class BlePsFtpClientTest: XCTestCase {
         } catch {
             XCTFail("New client request failed after recovery — device still stuck: \(error)")
         }
+    }
+
+    func testRequest_clientDeallocatedImmediatelyAfterCall_neverCrashesOrHangs() async throws {
+        for _ in 0..<50 {
+            let transmitter = MockGattServiceTransmitterImpl()
+            var client: BlePsFtpClient? = BlePsFtpClient(gattServiceTransmitter: transmitter)
+
+            // Capture only weakly so dropping `client` below is the sole strong reference.
+            let task = Task { [weak client] in
+                _ = try? await client?.request(Data([0x00]))
+            }
+            client = nil // race the operation queue's background execution of the enqueued block
+
+            _ = await task.value // must complete (not hang); must not crash the process
+        }
+    }
+
+    func testWrite_clientDeallocatedImmediatelyAfterCall_neverCrashesOrHangs() async throws {
+        for _ in 0..<50 {
+            let transmitter = MockGattServiceTransmitterImpl()
+            var client: BlePsFtpClient? = BlePsFtpClient(gattServiceTransmitter: transmitter)
+
+            let header = NSData(data: Data([0x00]))
+            let task = Task { [weak client] in
+                guard let client else { return }
+                let stream = client.write(header, data: InputStream(data: Data()))
+                do {
+                    for try await _ in stream {}
+                } catch {
+                    // Expected: either a real transport error or .operationCanceled from the
+                    // deallocation race — either way, no crash and no hang is what matters here.
+                }
+            }
+            client = nil
+
+            _ = await task.value
+        }
+    }
+}
+
+private final class RaceInjectingAtomicInteger: AtomicInteger {
+    private var getCallCount = 0
+    private let onAcknowledged: () -> Void
+
+    init(initialValue: Int, onAcknowledged: @escaping () -> Void) {
+        self.onAcknowledged = onAcknowledged
+        super.init(initialValue: initialValue)
+    }
+
+    override func checkAndWait(_ waited: Int, secs: TimeInterval, canceled: BlockOperation, canceledError: Error, timeoutCall: () -> Void) throws {
+        // Simulate a wait that has just completed, with the acknowledgement arriving immediately
+        // before the caller checks the connection state.
+    }
+
+    override func get() -> Int {
+        getCallCount += 1
+        let currentValue = super.get()
+        if getCallCount == 2 {
+            super.set(currentValue + 1)
+            onAcknowledged()
+        }
+        return currentValue
     }
 }

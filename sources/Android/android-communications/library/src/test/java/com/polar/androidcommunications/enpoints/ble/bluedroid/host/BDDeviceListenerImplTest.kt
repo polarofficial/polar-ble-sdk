@@ -2,6 +2,7 @@ package com.polar.androidcommunications.enpoints.ble.bluedroid.host
 
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
+import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothManager
 import android.bluetooth.BluetoothProfile
 import android.bluetooth.le.ScanFilter
@@ -16,6 +17,7 @@ import com.polar.androidcommunications.api.ble.model.gatt.BleGattBase
 import com.polar.androidcommunications.common.ble.AtomicSet
 import com.polar.androidcommunications.common.ble.BleUtils
 import com.polar.androidcommunications.enpoints.ble.bluedroid.host.connection.ConnectionHandler
+import com.polar.androidcommunications.enpoints.ble.bluedroid.host.connection.ConnectionInterface
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -29,6 +31,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -651,10 +654,46 @@ class BDDeviceListenerImplTest {
     }
 
     @Test
+    fun getIndicatesPairingProblem_whenSessionIsNullAndCachedDeviceCommandRemovedPairing_returnsPairingLost() {
+        // Arrange – the session is already gone, but the listener kept the disconnect reason for recovery mapping.
+        val sut = createSut(emptyList(), emptySet(), mockk(relaxed = true))
+        val address = "AA:BB:CC:00:FF:05"
+        val cacheField = sut.javaClass.getDeclaredField("deviceDisconnectReasonCache")
+            .also { it.isAccessible = true }
+        val cache = cacheField.get(sut) as MutableMap<String, kotlin.Pair<BleDeviceSession.DisconnectReason, Boolean>>
+        cache[address] = kotlin.Pair(BleDeviceSession.DisconnectReason.DEVICE_COMMAND, false)
+
+        // Act
+        val result = sut.getIndicatesPairingProblem(address)
+
+        // Assert – command disconnect with pairing erased is still treated as pairing loss even without a live session.
+        assertEquals(true, result.first)
+        assertEquals(1, result.second)
+    }
+
+    @Test
+    fun getIndicatesPairingProblem_whenSessionIsNullAndCachedDeviceCommandPreservesPairing_doesNotReportPairingLost() {
+        // Arrange – preserved pairing prevents the cached device-command disconnect from being treated as pairing loss.
+        val sut = createSut(emptyList(), emptySet(), mockk(relaxed = true))
+        val address = "AA:BB:CC:00:FF:06"
+        val cacheField = sut.javaClass.getDeclaredField("deviceDisconnectReasonCache")
+            .also { it.isAccessible = true }
+        val cache = cacheField.get(sut) as MutableMap<String, kotlin.Pair<BleDeviceSession.DisconnectReason, Boolean>>
+        cache[address] = kotlin.Pair(BleDeviceSession.DisconnectReason.DEVICE_COMMAND, true)
+
+        // Act
+        val result = sut.getIndicatesPairingProblem(address)
+
+        // Assert
+        assertEquals(false, result.first)
+        assertEquals(-1, result.second)
+    }
+
+    @Test
     fun getIndicatesPairingProblem_whenSessionIsNull_andGattReportsNoProblem_returnsFallbackDefault() {
         // Arrange – use an address that has no session in the list
         val sut = createSut(emptyList(), emptySet(), mockk(relaxed = true))
-        val nonExistingAddress = "AA:BB:CC:00:FF:05"
+        val nonExistingAddress = "AA:BB:CC:00:FF:07"
 
         // Act
         val result = sut.getIndicatesPairingProblem(nonExistingAddress)
@@ -688,6 +727,33 @@ class BDDeviceListenerImplTest {
         // Generic GATT failures are not confirmed pairing loss.
         assertEquals(false, result.first)
         assertEquals(-1, result.second)
+        searchJob.cancel()
+    }
+
+    @Test
+    fun startServiceDiscovery_whenDiscoveryCompletesBeforeItReturns_leavesNoTimeoutRunning() = runTest {
+        // Arrange
+        val address = "AA:BB:CC:00:FF:07"
+        val device = mockBluetoothDevice(address, BluetoothDevice.DEVICE_TYPE_LE)
+        val sut = createSut(listOf(device), emptySet(), mockk(relaxed = true))
+        val searchJob = launch { sut.search(true).collect { } }
+        testScheduler.advanceUntilIdle()
+        val session = sut.sessionByAddress(address) as BDDeviceSessionImpl
+        val gattCallback = getPrivateField(sut, "gattCallback") as GattCallback
+        val gatt = mockk<BluetoothGatt>(relaxed = true)
+        // A cached discovery: Android calls back before discoverServices() returns
+        every { gatt.discoverServices() } answers {
+            gattCallback.onServicesDiscovered(gatt, BluetoothGatt.GATT_SUCCESS)
+            true
+        }
+        session.gatt = gatt
+        val connectionInterface = getPrivateField(sut, "connectionInterface") as ConnectionInterface
+
+        // Act
+        connectionInterface.startServiceDiscovery(session)
+
+        // Assert – a timeout left running would disconnect the open session 10 s later
+        assertNull(session.serviceDiscovery)
         searchJob.cancel()
     }
 
@@ -752,5 +818,15 @@ class BDDeviceListenerImplTest {
         every { device.connectGatt(any(), any(), any(), any()) } returns mockk(relaxed = true)
         every { device.connectGatt(any(), any(), any(), any(), any()) } returns mockk(relaxed = true)
         return device
+    }
+
+    @Test
+    fun `direct reconnect delay grows exponentially and is capped`() {
+        assertEquals(5_000L, BDDeviceListenerImpl.directReconnectDelayMs(1))
+        assertEquals(10_000L, BDDeviceListenerImpl.directReconnectDelayMs(2))
+        assertEquals(20_000L, BDDeviceListenerImpl.directReconnectDelayMs(3))
+        assertEquals(40_000L, BDDeviceListenerImpl.directReconnectDelayMs(4))
+        assertEquals(60_000L, BDDeviceListenerImpl.directReconnectDelayMs(5))
+        assertEquals(60_000L, BDDeviceListenerImpl.directReconnectDelayMs(6))
     }
 }

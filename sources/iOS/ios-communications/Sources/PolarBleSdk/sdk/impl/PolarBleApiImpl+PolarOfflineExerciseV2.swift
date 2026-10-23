@@ -13,6 +13,8 @@ extension PolarBleApiImpl: PolarOfflineExerciseV2Api {
         sportProfile: PolarExerciseSession.SportProfile
     ) async throws -> OfflineExerciseStartResult {
         logApiCall("startOfflineExerciseV2", ("identifier", identifier))
+        let guardToken = try apiCallGuard.acquire("startOfflineExerciseV2", identifier)
+        defer { apiCallGuard.release(guardToken) }
         do {
             let session = try serviceClientUtils.sessionFtpClientReady(identifier)
             guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
@@ -41,6 +43,8 @@ extension PolarBleApiImpl: PolarOfflineExerciseV2Api {
 
     func stopOfflineExerciseV2(identifier: String) async throws {
         logApiCall("stopOfflineExerciseV2", ("identifier", identifier))
+        let guardToken = try apiCallGuard.acquire("stopOfflineExerciseV2", identifier)
+        defer { apiCallGuard.release(guardToken) }
         do {
             let session = try serviceClientUtils.sessionFtpClientReady(identifier)
             guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
@@ -56,6 +60,8 @@ extension PolarBleApiImpl: PolarOfflineExerciseV2Api {
 
     func getOfflineExerciseStatusV2(identifier: String) async throws -> Bool {
         logApiCall("getOfflineExerciseStatusV2", ("identifier", identifier))
+        let guardToken = try apiCallGuard.acquire("getOfflineExerciseStatusV2", identifier)
+        defer { apiCallGuard.release(guardToken) }
         do {
             let session = try serviceClientUtils.sessionFtpClientReady(identifier)
             guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
@@ -73,7 +79,7 @@ extension PolarBleApiImpl: PolarOfflineExerciseV2Api {
         logApiCall("listOfflineExercisesV2", ("identifier", identifier))
         let fileUtilsLocal = PolarFileUtils(listener: listener, serviceClientUtils: serviceClientUtils)
         return AsyncThrowingStream { continuation in
-            Task {
+            self.apiCallGuard.streamTask("listOfflineExercisesV2", identifier, continuation) {
                 do {
                     for try await path in fileUtilsLocal.listFiles(identifier: identifier, folderPath: directoryPath, condition: { $0.hasSuffix(Self.samplesFile) }, recurseDeep: true) {
                         continuation.yield((path: path, date: Date(), entryId: URL(fileURLWithPath: path).lastPathComponent))
@@ -91,6 +97,8 @@ extension PolarBleApiImpl: PolarOfflineExerciseV2Api {
 
     func fetchOfflineExerciseV2(identifier: String, entry: PolarExerciseEntry) async throws -> PolarExerciseData {
         logApiCall("fetchOfflineExerciseV2", ("identifier", identifier))
+        let guardToken = try apiCallGuard.acquire("fetchOfflineExerciseV2", identifier)
+        defer { apiCallGuard.release(guardToken) }
         do {
             let session = try serviceClientUtils.sessionFtpClientReady(identifier)
             guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
@@ -116,6 +124,8 @@ extension PolarBleApiImpl: PolarOfflineExerciseV2Api {
 
     func removeOfflineExerciseV2(identifier: String, entry: PolarExerciseEntry) async throws {
         logApiCall("removeOfflineExerciseV2", ("identifier", identifier))
+        let guardToken = try apiCallGuard.acquire("removeOfflineExerciseV2", identifier)
+        defer { apiCallGuard.release(guardToken) }
         do {
             let session = try serviceClientUtils.sessionFtpClientReady(identifier)
             guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else {
@@ -132,6 +142,7 @@ extension PolarBleApiImpl: PolarOfflineExerciseV2Api {
 
     func isOfflineExerciseV2Supported(identifier: String) async throws -> Bool {
         logApiCall("isOfflineExerciseV2Supported", ("identifier", identifier))
+        // Not guarded: this polls up to 10 s for the PS-FTP session and must not block other calls meanwhile.
         // Wait for PFTP session to be ready (up to 10 seconds, polling every 5s)
         let timeoutAt = Date().addingTimeInterval(10)
         while Date() < timeoutAt {
@@ -147,7 +158,7 @@ extension PolarBleApiImpl: PolarOfflineExerciseV2Api {
         throw PolarErrors.timeout(description: "Timeout while waiting for device session, deviceId: \(identifier)")
     }
 
-    private func checkDmExerciseSupport(_ client: BlePsFtpClient) async throws -> Bool {
+    func checkDmExerciseSupport(_ client: BlePsFtpClient) async throws -> Bool {
         var operation = Protocol_PbPFtpOperation()
         operation.command = .get
         operation.path = "/DEVICE.BPB"
@@ -156,8 +167,34 @@ extension PolarBleApiImpl: PolarOfflineExerciseV2Api {
             let deviceInfo = try Data_PbDeviceInfo(serializedBytes: Data(response))
             return deviceInfo.capabilities.contains("dm_exercise")
         } catch {
+            if isSystemBusy(error) {
+                BleLogger.trace("DEVICE.BPB read returned SYSTEM_BUSY, checking exercise status instead")
+                do {
+                    return try await isDmExerciseRunning(client)
+                } catch {
+                    BleLogger.error("Exercise status query failed, dm_exercise support could not be determined: \(error)")
+                    throw error
+                }
+            }
             BleLogger.error("Failed to check dm_exercise capability: \(error)")
             return false
         }
+    }
+
+    func isDmExerciseRunning(_ client: BlePsFtpClient) async throws -> Bool {
+        let response = try await client.query(
+            Protocol_PbPFtpQuery.getExerciseStatus.rawValue,
+            parameters: Data() as NSData
+        )
+        let status = try Protocol_PbPftpGetExerciseStatusResult(serializedBytes: Data(response))
+        return status.exerciseType == .exerciseTypeDataMerge && status.exerciseState == .exerciseStateRunning
+    }
+
+    func isSystemBusy(_ error: Error) -> Bool {
+        guard let psFtpError = error as? BlePsFtpException,
+              case .responseError(let code) = psFtpError else {
+            return false
+        }
+        return code == 202
     }
 }

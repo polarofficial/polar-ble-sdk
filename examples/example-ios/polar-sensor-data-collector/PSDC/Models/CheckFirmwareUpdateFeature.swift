@@ -8,5 +8,6 @@ struct CheckFirmwareUpdateFeature {
     var status: String = "Not started"
     var inProgress: Bool = false
     var polarDeviceInfo: PolarDeviceInfo?
-    var firmwareVersionAvailable: String?
+    var firmwareVersionAvailable: (String, Bool?)?
+
 }

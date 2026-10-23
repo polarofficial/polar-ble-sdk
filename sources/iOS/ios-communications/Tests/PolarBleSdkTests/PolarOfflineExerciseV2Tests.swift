@@ -176,6 +176,68 @@ final class PolarOfflineExerciseV2Tests: XCTestCase {
         XCTAssertFalse(proto.exerciseType == .exerciseTypeDataMerge && proto.exerciseState == .exerciseStateRunning)
     }
 
+    func test_checkDmExerciseSupport_returnsTrue_whenDeviceIsBusyWithRunningExercise() async throws {
+        // DEVICE.BPB cannot be read while the exercise is running, but its status query can.
+        mockClient.requestReturnValue = .failure(BlePsFtpException.responseError(errorCode: 202))
+        let status = Protocol_PbPftpGetExerciseStatusResult.with {
+            $0.exerciseType = .exerciseTypeDataMerge
+            $0.exerciseState = .exerciseStateRunning
+        }
+        mockClient.queryReturnValue = .success(try status.serializedData())
+        let api = PolarBleApiImpl(DispatchQueue(label: "test"), features: [], restoreIdentifier: nil)
+
+        let supported = try await api.checkDmExerciseSupport(mockClient)
+
+        XCTAssertTrue(supported)
+        XCTAssertEqual(mockClient.queryCalls.map(\.id), [Protocol_PbPFtpQuery.getExerciseStatus.rawValue])
+    }
+
+    func test_checkDmExerciseSupport_returnsFalse_whenBusyDeviceHasNoDataMergeExercise() async throws {
+        mockClient.requestReturnValue = .failure(BlePsFtpException.responseError(errorCode: 202))
+        let status = Protocol_PbPftpGetExerciseStatusResult.with {
+            $0.exerciseType = .exerciseTypeNormal
+            $0.exerciseState = .exerciseStateRunning
+        }
+        mockClient.queryReturnValue = .success(try status.serializedData())
+        let api = PolarBleApiImpl(DispatchQueue(label: "test"), features: [], restoreIdentifier: nil)
+
+        let supported = try await api.checkDmExerciseSupport(mockClient)
+
+        XCTAssertFalse(supported)
+    }
+
+    func test_checkDmExerciseSupport_throws_whenBothBusyDeviceProbesAreBusy() async throws {
+        mockClient.requestReturnValue = .failure(BlePsFtpException.responseError(errorCode: 202))
+        mockClient.queryReturnValue = .failure(BlePsFtpException.responseError(errorCode: 202))
+        let api = PolarBleApiImpl(DispatchQueue(label: "test"), features: [], restoreIdentifier: nil)
+
+        do {
+            _ = try await api.checkDmExerciseSupport(mockClient)
+            XCTFail("Expected the indeterminate busy state to be reported as an error")
+        } catch let BlePsFtpException.responseError(code) {
+            XCTAssertEqual(code, 202)
+        } catch {
+            XCTFail("Expected SYSTEM_BUSY, got \(error)")
+        }
+    }
+
+    func test_checkDmExerciseSupport_throws_whenExerciseStatusFallbackFails() async throws {
+        mockClient.requestReturnValue = .failure(BlePsFtpException.responseError(errorCode: 202))
+        mockClient.queryReturnValue = .failure(BlePsFtpException.operationTimeout)
+        let api = PolarBleApiImpl(DispatchQueue(label: "test"), features: [], restoreIdentifier: nil)
+
+        do {
+            _ = try await api.checkDmExerciseSupport(mockClient)
+            XCTFail("Expected the indeterminate capability state to be reported as an error")
+        } catch let error as BlePsFtpException {
+            guard case .operationTimeout = error else {
+                return XCTFail("Expected the fallback error, got \(error)")
+            }
+        } catch {
+            XCTFail("Expected the fallback error, got \(error)")
+        }
+    }
+
     func test_fetchExercise_request_creation() throws {
         // Arrange
         var operation = Protocol_PbPFtpOperation()

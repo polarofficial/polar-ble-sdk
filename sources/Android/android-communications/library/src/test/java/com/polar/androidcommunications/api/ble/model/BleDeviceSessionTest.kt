@@ -31,7 +31,7 @@ class BleDeviceSessionTest {
         var authenticated: Boolean = false
         var mockAddress: String? = "AA:BB:CC:DD:EE:FF"
         var mockBluetoothDevice: BluetoothDevice? = mockk(relaxed = true)
-        var pairingProblem: Pair<Boolean, Int> = Pair(false, -1)
+        var pairingProblem: Triple<Boolean, Int, Boolean> = Triple(false, -1, false)
 
         init {
             clients = emptySet()
@@ -55,7 +55,7 @@ class BleDeviceSessionTest {
 
         override fun readRssiValue(): Deferred<Int> = CompletableDeferred(-70)
 
-        override fun getIndicatesPairingProblem(): Pair<Boolean, Int> = pairingProblem
+        override fun getIndicatesPairingProblem(): Triple<Boolean, Int, Boolean> = pairingProblem
 
         override val bluetoothDevice: BluetoothDevice?
             get() = mockBluetoothDevice

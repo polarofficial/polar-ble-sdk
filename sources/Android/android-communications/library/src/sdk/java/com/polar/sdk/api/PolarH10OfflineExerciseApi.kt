@@ -2,7 +2,6 @@
 package com.polar.sdk.api
 
 import androidx.annotation.Size
-import androidx.core.util.Pair
 import com.polar.sdk.api.model.PolarExerciseData
 import com.polar.sdk.api.model.PolarExerciseEntry
 import kotlinx.coroutines.flow.Flow

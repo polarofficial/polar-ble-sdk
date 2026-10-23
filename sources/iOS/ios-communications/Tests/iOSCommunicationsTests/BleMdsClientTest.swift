@@ -84,36 +84,48 @@ final class BleMdsClientTest: XCTestCase {
     // MARK: - disconnected()
 
     func testDisconnected_cancelsPendingReadsAndFinishesStreamWithGattDisconnected() async {
-        let exp = expectation(description: "stream disconnected")
-        var streamError: Error?
-        var readError: Error?
+        let readStarted = expectation(description: "supported features read started")
+        let streamFinished = expectation(description: "stream disconnected")
+        let readFinished = expectation(description: "read disconnected")
+        transmitter.readValueHandler = { chr in
+            if chr == BleMdsClient.MDS_SUPPORTED_FEATURES {
+                readStarted.fulfill()
+            }
+        }
+        let stream = client.observeMemfaultChunks(checkConnection: false)
+        let localClient = client!
 
-        // Start a stream
-        Task {
+        let streamTask = Task<Error?, Never> {
+            defer { streamFinished.fulfill() }
             do {
-                for try await _ in client.observeMemfaultChunks(checkConnection: false) { }
+                for try await _ in stream { }
+                return nil
             } catch {
-                streamError = error
+                return error
             }
         }
 
-        // Start a pending read
-        Task {
+        let readTask = Task<Error?, Never> {
+            defer { readFinished.fulfill() }
             do {
-                _ = try await client.readSupportedFeatures()
+                _ = try await localClient.readSupportedFeatures()
+                return nil
             } catch {
-                readError = error
-                exp.fulfill()
+                return error
             }
         }
+        defer {
+            streamTask.cancel()
+            readTask.cancel()
+        }
 
-        // Give tasks time to start
-        try? await Task.sleep(nanoseconds: 50_000_000)
-        
-        // Disconnect
+        await fulfillment(of: [readStarted], timeout: 2.0)
         client.disconnected()
 
-        await fulfillment(of: [exp], timeout: 2.0)
+        await fulfillment(of: [readFinished, streamFinished], timeout: 2.0)
+        streamTask.cancel()
+        let readError = await readTask.value
+        let streamError = await streamTask.value
 
         // Verify both pending read and stream were cancelled with gattDisconnected
         if let e = readError as? BleGattException, case .gattDisconnected = e {

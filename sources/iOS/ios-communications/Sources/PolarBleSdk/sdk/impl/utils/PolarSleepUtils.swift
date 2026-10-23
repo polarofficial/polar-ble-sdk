@@ -18,10 +18,28 @@ private let TAG = "PolarSleepUtils"
 
 internal class PolarSleepUtils {
 
-    static func readSleepFromDayDirectory(client: BlePsFtpClient, date: Date) async throws -> PolarSleepData.PolarSleepAnalysisResult {
-        var result = try await readSleepData(client: client, date: date)
-        result = try await readSleepSkinTemperatureResult(client: client, date: date, sleepAnalysisResult: result)
-        return result
+    /// Reads a date's sleep data, retrying on transient failures with exponential backoff.
+    static func readSleepFromDayDirectory(
+        client: BlePsFtpClient,
+        date: Date,
+        maxAttempts: Int = 3,
+        baseRetryDelayMs: UInt64 = 500
+    ) async throws -> PolarSleepData.PolarSleepAnalysisResult {
+        var lastError: Error!
+        for attempt in 1...max(maxAttempts, 1) {
+            do {
+                var result = try await readSleepData(client: client, date: date)
+                result = try await readSleepSkinTemperatureResult(client: client, date: date, sleepAnalysisResult: result)
+                return result
+            } catch {
+                lastError = error
+                guard attempt < maxAttempts else { break }
+                let delayMs = baseRetryDelayMs << (attempt - 1) // 1x, 2x, 4x, ... of the base delay
+                BleLogger.error(TAG, "readSleepFromDayDirectory failed for date \(date) on attempt \(attempt)/\(maxAttempts), retrying in \(delayMs)ms: \(error)")
+                try? await Task.sleep(nanoseconds: delayMs * 1_000_000)
+            }
+        }
+        throw lastError
     }
 
     static func readSleepData(client: BlePsFtpClient, date: Date) async throws -> PolarSleepData.PolarSleepAnalysisResult {

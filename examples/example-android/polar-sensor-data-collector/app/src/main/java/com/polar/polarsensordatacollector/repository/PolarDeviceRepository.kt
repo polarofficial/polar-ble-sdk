@@ -22,9 +22,9 @@ import com.polar.sdk.api.PolarBleApi
 import com.polar.sdk.api.PolarBleApiCallback
 import com.polar.sdk.api.PolarBleApiDefaultImpl
 import com.polar.sdk.api.PolarBleDisconnectInfo
-import com.polar.sdk.api.PolarBleDisconnectReason
 import com.polar.sdk.api.PolarBleRecoveryAction
 import com.polar.sdk.api.PolarDeviceTelemetryType
+import com.polar.sdk.api.errors.PolarOperationNotSupported
 import com.polar.sdk.api.model.*
 import com.polar.sdk.api.model.activity.PolarStepsData
 import com.polar.sdk.api.model.sleep.PolarSleepData
@@ -45,6 +45,7 @@ import com.polar.sdk.api.model.activity.PolarActivitySamplesDayData
 import com.polar.sdk.api.model.activity.PolarDailySummaryData
 import com.polar.sdk.api.model.trainingsession.PolarTrainingSessionFetchResult
 import com.polar.sdk.api.model.PolarSpo2TestData
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -539,9 +540,12 @@ class PolarDeviceRepository @Inject constructor(
             return
         }
         if (terminalRecoveryDevices.contains(polarDeviceInfo.deviceId)) {
-            Log.w(TAG, "Ignoring late deviceConnected after terminal pairing recovery for ${polarDeviceInfo.deviceId}")
-            return
+            // The device was in a terminal recovery state (for example, a pairing failure).
+            // A new connection starts, initiated by the user or the device starts advertising and SDK grasps the advertisement head and initializes a connection process. Accept it.
+            // Clear the state, so later disconnects are handled normally.
+            terminalRecoveryDevices.remove(polarDeviceInfo.deviceId)
         }
+
         expectedDisconnects.remove(polarDeviceInfo.deviceId)
         reportedRecoveryGuidance.removeIf { it.startsWith("${polarDeviceInfo.deviceId}:") }
         pendingRecoveryGuidance.remove(polarDeviceInfo.deviceId)?.cancel()
@@ -568,10 +572,6 @@ class PolarDeviceRepository @Inject constructor(
     override fun deviceConnecting(polarDeviceInfo: PolarDeviceInfo) {
         if (firmwareUpdatingDevices.contains(polarDeviceInfo.deviceId)) {
             Log.d(TAG, "Device ${polarDeviceInfo.deviceId} reconnecting during firmware update; leaving connection state untouched")
-            return
-        }
-        if (terminalRecoveryDevices.contains(polarDeviceInfo.deviceId)) {
-            Log.w(TAG, "Ignoring late deviceConnecting after terminal pairing recovery for ${polarDeviceInfo.deviceId}")
             return
         }
         pendingConnectedDevices.putIfAbsent(polarDeviceInfo.deviceId, polarDeviceInfo)
@@ -611,50 +611,29 @@ class PolarDeviceRepository @Inject constructor(
         pendingConnectedDevices.remove(polarDeviceInfo.deviceId)
         pendingReadinessTimeouts.remove(polarDeviceInfo.deviceId)?.cancel()
         val wasExpected = expectedDisconnects.remove(polarDeviceInfo.deviceId)
-        val effectiveInfo = reclassifyIfPairingRemoved(polarDeviceInfo.deviceId, info)
-        val guidanceKey = "${polarDeviceInfo.deviceId}:${effectiveInfo.reason}:${effectiveInfo.recoveryAction}"
+        val guidanceKey = "${polarDeviceInfo.deviceId}:${info.reason}:${info.recoveryAction}"
         // While phone Bluetooth is off, any status the OS reports is noise (e.g. a locally
         // terminated link can be misreported as a pairing failure); the BLE-off banner already
         // tells the user what happened, so no recovery alert is warranted here.
-        if (!wasExpected && _isPhoneBlePowerOn.value && effectiveInfo.recoveryAction != PolarBleRecoveryAction.NONE) {
-            val isTerminal = effectiveInfo.recoveryAction == PolarBleRecoveryAction.REMOVE_PAIRING_AND_PAIR_AGAIN ||
-                effectiveInfo.recoveryAction == PolarBleRecoveryAction.RETRY_PAIRING
+        if (!wasExpected && _isPhoneBlePowerOn.value && info.recoveryAction != PolarBleRecoveryAction.NONE) {
+            val isTerminal = info.recoveryAction == PolarBleRecoveryAction.REMOVE_PAIRING_AND_PAIR_AGAIN ||
+                    info.recoveryAction == PolarBleRecoveryAction.RETRY_PAIRING
             if (isTerminal) {
                 terminalRecoveryDevices.add(polarDeviceInfo.deviceId)
                 pendingRecoveryGuidance.remove(polarDeviceInfo.deviceId)?.cancel()
-                emitRecoveryGuidanceOnce(polarDeviceInfo.deviceId, guidanceKey, effectiveInfo)
+                emitRecoveryGuidanceOnce(polarDeviceInfo.deviceId, guidanceKey, info)
             } else if (!terminalRecoveryDevices.contains(polarDeviceInfo.deviceId)) {
                 pendingRecoveryGuidance.remove(polarDeviceInfo.deviceId)?.cancel()
                 pendingRecoveryGuidance[polarDeviceInfo.deviceId] = repositoryScope.launch {
                     delay(750L)
                     pendingRecoveryGuidance.remove(polarDeviceInfo.deviceId)
                     if (!terminalRecoveryDevices.contains(polarDeviceInfo.deviceId)) {
-                        emitRecoveryGuidanceOnce(polarDeviceInfo.deviceId, guidanceKey, effectiveInfo)
+                        emitRecoveryGuidanceOnce(polarDeviceInfo.deviceId, guidanceKey, info)
                     }
                 }
             }
         }
         handleDeviceDisconnected(polarDeviceInfo)
-    }
-
-    // A forgotten bond can surface as a plain connection-lost disconnect with no specific
-    // error, so double-check before treating it as a silent, auto-recoverable link loss
-    // (mirrors iOS PSDC's PolarBleSdkManager.pairingRecoveryInfo).
-    private fun reclassifyIfPairingRemoved(deviceId: String, fallback: PolarBleDisconnectInfo): PolarBleDisconnectInfo {
-        if (fallback.reason != PolarBleDisconnectReason.CONNECTION_LOST) return fallback
-        return try {
-            val (disconnectedDueRemovedPairing, _) = api.checkIfDeviceDisconnectedDueRemovedPairing(deviceId)
-            if (disconnectedDueRemovedPairing) {
-                PolarBleDisconnectInfo(
-                    PolarBleDisconnectReason.PAIRING_INFORMATION_REMOVED,
-                    PolarBleRecoveryAction.REMOVE_PAIRING_AND_PAIR_AGAIN,
-                    fallback.gattStatus
-                )
-            } else fallback
-        } catch (e: Exception) {
-            Log.w(TAG, "Failed to check if $deviceId disconnected due to removed pairing", e)
-            fallback
-        }
     }
 
     private fun emitRecoveryGuidanceOnce(
@@ -1007,24 +986,59 @@ class PolarDeviceRepository @Inject constructor(
         }
     }
 
-    suspend fun doRestart(identifier: String) = withContext(Dispatchers.IO) {
-        api.doRestart(identifier)
+    /**
+     * Runs a device command that disconnects or resets the device (restart, factory reset,
+     * warehouse sleep, hibernate). These commands are always followed by the caller tearing
+     * down the device's UI (its ViewModel's coroutine scope included), which would otherwise
+     * cancel the command mid-flight and misreport a successful write as a failure. Running the
+     * command in [repositoryScope] instead keeps it alive independent of that UI teardown.
+     *
+     * @param operationName Logical name of the command, used for diagnostics only.
+     * @param identifier The Polar device ID or BT address the command targets.
+     * @param onResult Optional callback with the outcome. Runs on [Dispatchers.IO]. May run after the caller's own scope
+     *                 is gone; treat it as best-effort UI feedback, not a guarantee of delivery.
+     * @param block The suspend device command to run.
+     */
+    private fun runDeviceLifecycleCommand(
+        operationName: String,
+        identifier: String,
+        onResult: (Result<Unit>) -> Unit,
+        block: suspend () -> Unit
+    ) {
+        repositoryScope.launch {
+            try {
+                block()
+                Log.d(TAG, "$operationName succeeded for device $identifier")
+                onResult(Result.success(Unit))
+            } catch (error: CancellationException) {
+                throw error
+            } catch (error: Exception) {
+                Log.e(TAG, "$operationName failed for device $identifier: $error")
+                onResult(Result.failure(error))
+            }
+        }
     }
 
-    suspend fun doFactoryReset(identifier: String, preservePairingInformation: Boolean = false) = withContext(Dispatchers.IO) {
-        api.doFactoryReset(identifier, preservePairingInformation)
+    fun doRestart(identifier: String, onResult: (Result<Unit>) -> Unit = {}) {
+        runDeviceLifecycleCommand("doRestart", identifier, onResult) { api.doRestart(identifier) }
     }
 
-    suspend fun setWarehouseSleep(identifier: String) = withContext(Dispatchers.IO) {
-        api.setWarehouseSleep(identifier)
+    fun doFactoryReset(identifier: String, preservePairingInformation: Boolean = false, onResult: (Result<Unit>) -> Unit = {}) {
+        runDeviceLifecycleCommand("doFactoryReset", identifier, onResult) {
+            api.doFactoryReset(identifier, preservePairingInformation)
+        }
     }
 
-    suspend fun setHibernateMode(identifier: String) = withContext(Dispatchers.IO) {
-        api.setHibernateMode(identifier)
+    fun setWarehouseSleep(identifier: String, onResult: (Result<Unit>) -> Unit = {}) {
+        runDeviceLifecycleCommand("setWarehouseSleep", identifier, onResult) { api.setWarehouseSleep(identifier) }
     }
 
-    suspend fun turnDeviceOff(identifier: String) = withContext(Dispatchers.IO) {
-        api.turnDeviceOff(identifier)
+    fun setHibernateMode(identifier: String, onResult: (Result<Unit>) -> Unit = {}) {
+        runDeviceLifecycleCommand("setHibernateMode", identifier, onResult) { api.setHibernateMode(identifier) }
+    }
+
+    fun turnDeviceOff(identifier: String, onResult: (Result<Unit>) -> Unit = {}) {
+        runDeviceLifecycleCommand("turnDeviceOff", identifier, onResult) { api.turnDeviceOff(identifier) }
     }
 
     fun observeDeviceToHostNotifications(identifier: String): Flow<com.polar.sdk.api.PolarD2HNotificationData> {
@@ -1478,6 +1492,9 @@ class PolarDeviceRepository @Inject constructor(
             val result = api.getSensorInitiatedSecurityMode(identifier)
             _isSensorInitiatedSecurityModeEnabled.update { result }
             result
+        } catch (e: CancellationException) {
+            // The coroutine owner stopped this request. Pass the cancellation on.
+            throw e
         } catch (e: Exception) {
             Log.e(TAG, "getSensorInitiatedSecurityMode failed. Error $e")
             null
@@ -1579,29 +1596,14 @@ class PolarDeviceRepository @Inject constructor(
     suspend fun isOfflineExerciseV2Supported(identifier: String): Boolean =
         withContext(Dispatchers.IO) {
             try {
-                val supported = (api as? com.polar.sdk.api.PolarOfflineExerciseV2Api)?.let { exerciseApi ->
-                    try {
-                        val result = exerciseApi.isOfflineExerciseV2Supported(identifier)
-                        Log.d(TAG, "Offline Exercise V2 support check SUCCESS (immediate): $result")
-                        result
-                    } catch (e: Exception) {
-                        Log.w(TAG, "Immediate check failed (PFTP not ready), retrying after 3s delay...")
-                        delay(3000)
-                        try {
-                            val result = exerciseApi.isOfflineExerciseV2Supported(identifier)
-                            Log.d(TAG, "Offline Exercise V2 support check SUCCESS (after retry): $result")
-                            result
-                        } catch (retryError: Exception) {
-                            Log.e(TAG, "Offline Exercise V2 support check failed even after retry: ${retryError.message}")
-                            false
-                        }
-                    }
-                } ?: false
+                val supported = api.isOfflineExerciseV2Supported(identifier)
                 _offlineExerciseV2Supported.update { current ->
                     current.toMutableMap().also { it[identifier] = supported }
                 }
-
                 supported
+            } catch (e: PolarOperationNotSupported) {
+                Log.d(TAG, "Device $identifier does not support offline exercise V2.")
+                false
             } catch (e: Exception) {
                 Log.e(TAG, "Offline Exercise V2 support check failed for $identifier", e)
                 false
@@ -1656,3 +1658,5 @@ class PolarDeviceRepository @Inject constructor(
             }
         }
 }
+
+

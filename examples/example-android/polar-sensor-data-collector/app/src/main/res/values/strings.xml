@@ -213,6 +213,8 @@
     <string name="cancel">Cancel</string>
     <string name="firmware_update_available">Firmware update available: %1$s</string>
     <string name="firmware_update_check_failed">Firmware update check failed</string>
+    <string name="firmware_update_mandatory">This is mandatory update</string>
+    <string name="firmware_update_optional">This is optional update</string>
 
     <!-- Battery status -->
     <string name="charging">Charging</string>
@@ -441,6 +443,8 @@
 
     <string name="exercise_v2_status_exercise_started">Exercise started</string>
     <string name="exercise_v2_status_exercise_stopped">Exercise stopped</string>
+    <string name="exercise_v2_status_exercise_paused">Exercise paused</string>
+    <string name="exercise_v2_status_exercise_resumed">Exercise resumed</string>
     <string name="exercise_v2_status_running">Exercise is running</string>
     <string name="exercise_v2_status_not_running">No exercise running</string>
     <string name="exercise_v2_status_fetching_exercise">Fetching exercise…</string>
@@ -451,7 +455,10 @@
 
     <string name="exercise_v2_status_failed_to_start">Failed to start: %1$s</string>
     <string name="exercise_v2_status_failed_to_stop">Failed to stop: %1$s</string>
+    <string name="exercise_v2_status_failed_to_pause">Failed to pause: %1$s</string>
+    <string name="exercise_v2_status_failed_to_resume">Failed to resume: %1$s</string>
     <string name="exercise_v2_status_failed_to_get_status">Failed to get status: %1$s</string>
+    <string name="exercise_v2_status_failed_to_get_exercise_list">Failed to get exercise list: %1$s</string>
     <string name="exercise_v2_status_failed_to_fetch">Failed to fetch: %1$s</string>
     <string name="exercise_v2_status_failed_to_remove">Failed to remove: %1$s</string>
 

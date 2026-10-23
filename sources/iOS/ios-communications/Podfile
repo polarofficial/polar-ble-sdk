@@ -1,6 +1,6 @@
 source 'https://github.com/CocoaPods/Specs.git'
 
-platform :ios, '14.0'
+platform :ios, '15.0'
 use_frameworks!
 
 def swift_protobuf_pod
@@ -30,4 +30,24 @@ target 'iOSCommunicationsTests' do
 end
 
 target 'PolarBleSdkTests' do
+end
+
+def xcode_major_version
+  `xcodebuild -version`[/Xcode (\d+)/, 1].to_i
+end
+
+# Xcode 27 simulators refuse deployment targets below iOS 15.0. The SDK's
+# published minimum stays 14.0 in the podspec; on Xcode 27+ this only raises
+# the local Pods project floor so `xcodebuild test` can run on this machine.
+post_install do |installer|
+  next unless xcode_major_version >= 27
+
+  installer.pods_project.targets.each do |target|
+    target.build_configurations.each do |config|
+      deployment_target = config.build_settings['IPHONEOS_DEPLOYMENT_TARGET']
+      if deployment_target && deployment_target.to_f < 15.0
+        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
+      end
+    end
+  end
 end

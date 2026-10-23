@@ -346,7 +346,7 @@ open class BlePmdClient: BleGattClientBase, @unchecked Sendable {
         }
     }
 
-    func stopMeasurement(_ type: PmdMeasurementType) async throws {
+    public func stopMeasurement(_ type: PmdMeasurementType) async throws {
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
             baseSerialDispatchQueue.async {
                 do {
@@ -370,7 +370,11 @@ open class BlePmdClient: BleGattClientBase, @unchecked Sendable {
 
     func readMeasurementStatus() async throws -> [(PmdMeasurementType, PmdActiveMeasurement)] {
         return try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<[(PmdMeasurementType, PmdActiveMeasurement)], Error>) in
-            baseSerialDispatchQueue.async {
+            baseSerialDispatchQueue.async { [weak self] in
+                guard let self = self else {
+                    continuation.resume(throwing: BleClientError.clientDeallocated)
+                    return
+                }
                 do {
                     let response = try self.sendControlPointCommand(Data([PmdControlPointCommandClientToService.GET_MEASUREMENT_STATUS]))
                     if response.errorCode == .success {
@@ -398,7 +402,11 @@ open class BlePmdClient: BleGattClientBase, @unchecked Sendable {
 
     func querySettings(_ type: PmdMeasurementType, _ recordingType: PmdRecordingType) async throws -> PmdSetting {
         return try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<PmdSetting, Error>) in
-            baseSerialDispatchQueue.async {
+            baseSerialDispatchQueue.async { [weak self] in
+                guard let self = self else {
+                    continuation.resume(throwing: BleClientError.clientDeallocated)
+                    return
+                }
                 do {
                     let requestByte = recordingType.asBitField() | type.rawValue
                     let response = try self.sendControlPointCommand(Data([PmdControlPointCommandClientToService.GET_MEASUREMENT_SETTINGS, requestByte]))
@@ -435,7 +443,11 @@ open class BlePmdClient: BleGattClientBase, @unchecked Sendable {
 
     func queryFullSettings(_ type: PmdMeasurementType, _ recordingType: PmdRecordingType) async throws -> PmdSetting {
         return try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<PmdSetting, Error>) in
-            baseSerialDispatchQueue.async {
+            baseSerialDispatchQueue.async { [weak self] in
+                guard let self = self else {
+                    continuation.resume(throwing: BleClientError.clientDeallocated)
+                    return
+                }
                 do {
                     let requestByte = recordingType.asBitField() | type.rawValue
                     let response = try self.sendControlPointCommand(Data([PmdControlPointCommandClientToService.GET_SDK_MODE_SETTINGS, requestByte]))
@@ -484,7 +496,11 @@ open class BlePmdClient: BleGattClientBase, @unchecked Sendable {
 
     func isSdkModeEnabled() async throws -> PmdSdkMode {
         return try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<PmdSdkMode, Error>) in
-            baseSerialDispatchQueue.async {
+            baseSerialDispatchQueue.async { [weak self] in
+                guard let self = self else {
+                    continuation.resume(throwing: BleClientError.clientDeallocated)
+                    return
+                }
                 do {
                     let response = try self.sendControlPointCommand(Data([PmdControlPointCommandClientToService.GET_SDK_MODE_STATUS]))
                     if response.errorCode == .success {
@@ -531,7 +547,11 @@ open class BlePmdClient: BleGattClientBase, @unchecked Sendable {
 
     func getOfflineRecordingTriggerStatus() async throws -> PmdOfflineTrigger {
         return try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<PmdOfflineTrigger, Error>) in
-            baseSerialDispatchQueue.async {
+            baseSerialDispatchQueue.async { [weak self] in
+                guard let self = self else {
+                    continuation.resume(throwing: BleClientError.clientDeallocated)
+                    return
+                }
                 do {
                     let response = try self.sendControlPointCommand(Data([PmdControlPointCommandClientToService.GET_OFFLINE_RECORDING_TRIGGER_STATUS]))
                     if response.errorCode == .success {

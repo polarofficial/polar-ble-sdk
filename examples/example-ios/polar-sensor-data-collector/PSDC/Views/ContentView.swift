@@ -335,6 +335,7 @@ struct OperationModesTabView: View {
                     .environmentObject(bleSdkManager)
             case .exerciseV2:
                 OfflineExerciseV2View()
+                    .id(bleSdkManager.deviceConnectionState.get().deviceId)
                     .environmentObject(bleSdkManager)
             }
         }

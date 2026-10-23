@@ -8,6 +8,7 @@ import com.polar.androidcommunications.api.ble.exceptions.BleCharacteristicNotFo
 import com.polar.androidcommunications.api.ble.exceptions.BleDisconnected
 import com.polar.androidcommunications.common.ble.AtomicSet
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runInterruptible
 import kotlinx.coroutines.withContext
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicBoolean
@@ -343,7 +344,9 @@ abstract class BleGattBase {
      * @throws BleAttributeError if the notification/indication setup failed
      * @throws BleCharacteristicNotFound if the characteristic is not registered
      */
-    suspend fun waitNotificationEnabled(uuid: UUID, checkConnection: Boolean, timeoutMs: Long) = withContext(Dispatchers.IO) {
+    suspend fun waitNotificationEnabled(uuid: UUID, checkConnection: Boolean, timeoutMs: Long) = runInterruptible(Dispatchers.IO) {
+        // Consumer cancellation must interrupt this blocking wait rather than retaining callers
+        // until the characteristic-notification timeout expires.
         val integer = getNotificationAtomicInteger(uuid)
             ?: throw BleCharacteristicNotFound()
 
@@ -353,17 +356,22 @@ abstract class BleGattBase {
 
         val initialValue = integer.get()
         when {
-            initialValue == ATT_SUCCESS -> return@withContext
+            initialValue == ATT_SUCCESS -> return@runInterruptible
             initialValue != -1 -> throw BleAttributeError(
                 "Failed to set characteristic notification or indication ", initialValue
             )
             else -> {
                 synchronized(integer) {
                     if (integer.get() == -1) {
-                        if (timeoutMs > 0) {
-                            (integer as Object).wait(timeoutMs)
-                        } else {
-                            (integer as Object).wait()
+                        try {
+                            if (timeoutMs > 0) {
+                                (integer as Object).wait(timeoutMs)
+                            } else {
+                                (integer as Object).wait()
+                            }
+                        } catch (ex: InterruptedException) {
+                            d(TAG, "waitNotificationEnabled interrupted (cancelled) for $uuid")
+                            throw ex
                         }
                     }
                 }

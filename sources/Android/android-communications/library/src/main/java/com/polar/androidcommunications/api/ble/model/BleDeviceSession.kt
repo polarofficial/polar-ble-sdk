@@ -63,6 +63,11 @@ protected constructor() {
         protected set
     var pendingDeviceCommand: DeviceCommand? = null
         protected set
+    // Whether the pending device command preserves device-side pairing. FACTORY_RESET
+    // (without preserving pairing) and WAREHOUSE_SLEEP erase pairing on the device; the
+    // recovery action surfaced to the application must then ask for re-pairing + FTU.
+    var pendingDeviceCommandPreservesPairing: Boolean = true
+        protected set
     var wasBondedAtConnection: Boolean = false
         protected set
     var hasEstablishedBond: Boolean = false
@@ -97,8 +102,19 @@ protected constructor() {
         markDisconnect(DisconnectReason.CONNECTION_LOST)
     }
 
-    /** Call right after a device-control command's success path (e.g. GATT write acked) to mark the disconnect that is expected to follow as non-actionable. */
-    fun markExpectedDeviceCommandDisconnect(command: DeviceCommand, validForMs: Long = 60_000L) {
+    /**
+     * Call right after a device-control command's success path (e.g. GATT write acked) to mark
+     * the disconnect that is expected to follow as non-actionable.
+     *
+     * @param preservesPairing whether this command leaves device-side pairing intact. Pass
+     * `false` for commands that erase pairing on the device (FACTORY_RESET without preserving
+     * pairing, WAREHOUSE_SLEEP) so the app can be told it must re-pair and perform FTU.
+     */
+    fun markExpectedDeviceCommandDisconnect(
+        command: DeviceCommand,
+        preservesPairing: Boolean = true,
+        validForMs: Long = 60_000L
+    ) {
         // Once accepted, a reset-family command already has the device on its way out; a second
         // such command issued before that disconnect arrives is unlikely to be the real cause, so
         // keep attributing the upcoming disconnect to whichever command was marked first.
@@ -106,6 +122,7 @@ protected constructor() {
             return
         }
         pendingDeviceCommand = command
+        pendingDeviceCommandPreservesPairing = preservesPairing
         deviceCommandDisconnectDeadlineMs = System.currentTimeMillis() + validForMs
         markDisconnect(DisconnectReason.DEVICE_COMMAND)
     }
@@ -119,6 +136,7 @@ protected constructor() {
         isIntentionalDisconnect = false
         deviceCommandDisconnectDeadlineMs = 0L
         pendingDeviceCommand = null
+        pendingDeviceCommandPreservesPairing = true
     }
 
     /**
@@ -278,7 +296,7 @@ protected constructor() {
      * @return Boolean indicating if the session indicates a pairing problem.
      * True if there are indications of a pairing problem, false otherwise. Int value contains Bluetooth error code if there is a pairing problem, otherwise it is -1 (not set).
      */
-    abstract fun getIndicatesPairingProblem():  Pair<Boolean, Int>
+    abstract fun getIndicatesPairingProblem(): Triple<Boolean, Int, Boolean>
 
     /**
      * @param uuid service uuid

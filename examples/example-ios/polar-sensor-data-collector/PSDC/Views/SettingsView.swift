@@ -146,8 +146,26 @@ struct SettingsView: View {
                     }
                 }
             })
-            .onAppear { restorePreviousDerivedSettings() }
+            .onAppear {
+                restorePreviousSettings()
+                restorePreviousDerivedSettings()
+            }
         }
+    }
+
+    /// Selection comes from the controller's saved settings; the view holds no defaults of its own.
+    private func restorePreviousSettings() {
+        guard !isOfflineSettings,
+              let saved = bleSdkManager.savedOnlineStreamSettings[streamedFeature] else { return }
+        func index(for type: PolarSensorSetting.SettingType) -> Int? {
+            guard let value = saved.settings.first(where: { $0.type == type })?.values.first,
+                  let available = streamSettings.sortedSettings.first(where: { $0.type == type }) else { return nil }
+            return available.sortedValues.firstIndex(of: value)
+        }
+        if let i = index(for: .sampleRate) { selectedSampleRate = i }
+        if let i = index(for: .range) { selectedRange = i }
+        if let i = index(for: .resolution) { selectedResolution = i }
+        if let i = index(for: .channels) { selectedChannels = i }
     }
 
     private func restorePreviousDerivedSettings() {
@@ -250,6 +268,7 @@ struct SettingsView: View {
         if(isOfflineSettings) {
             bleSdkManager.offlineRecordingStart(feature: streamedFeature, settings: selectedSettings)
         } else {
+            bleSdkManager.saveOnlineStreamSettings(feature: streamedFeature, settings: selectedSettings)
             bleSdkManager.onlineStreamStart(feature: streamedFeature, settings: selectedSettings)
         }
     }

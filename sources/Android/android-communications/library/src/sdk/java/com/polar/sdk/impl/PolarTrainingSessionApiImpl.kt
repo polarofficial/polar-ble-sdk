@@ -42,7 +42,8 @@ import java.util.concurrent.atomic.AtomicLong
  * Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_TRAINING_DATA].
  */
 internal class PolarTrainingSessionApiImpl(
-    private val listener: BleDeviceListener
+    private val listener: BleDeviceListener,
+    private val apiCallGuard: PolarApiCallGuard = PolarApiCallGuard()
 ) : PolarTrainingSessionApi {
 
     companion object {
@@ -55,7 +56,7 @@ internal class PolarTrainingSessionApiImpl(
         fromDate: LocalDate?,
         toDate: LocalDate?
     ): Flow<PolarTrainingSessionReference> {
-        return flow {
+        return apiCallGuard.guardFlow("getTrainingSessionReferences", identifier) {
             val session = PolarServiceClientUtils.sessionPsFtpClientReady(identifier, listener)
             val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
                 ?: throw PolarServiceNotAvailable()
@@ -67,17 +68,19 @@ internal class PolarTrainingSessionApiImpl(
         identifier: String,
         trainingSessionReference: PolarTrainingSessionReference
     ): PolarTrainingSession {
-        val session = PolarServiceClientUtils.sessionPsFtpClientReady(identifier, listener)
-        val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
-            ?: throw PolarServiceNotAvailable()
-        return PolarTrainingSessionUtils.readTrainingSession(client, trainingSessionReference)
+        return apiCallGuard.guardSuspend("getTrainingSession", identifier) {
+            val session = PolarServiceClientUtils.sessionPsFtpClientReady(identifier, listener)
+            val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
+                ?: throw PolarServiceNotAvailable()
+            PolarTrainingSessionUtils.readTrainingSession(client, trainingSessionReference)
+        }
     }
 
     override fun getTrainingSessionWithProgress(
         identifier: String,
         trainingSessionReference: PolarTrainingSessionReference
     ): Flow<PolarTrainingSessionFetchResult> {
-        return flow {
+        return apiCallGuard.guardFlow("getTrainingSessionWithProgress", identifier) {
             val totalBytes = trainingSessionReference.fileSize
             val accumulatedBytes = AtomicLong(0L)
             emit(
@@ -109,91 +112,104 @@ internal class PolarTrainingSessionApiImpl(
         identifier: String,
         reference: PolarTrainingSessionReference
     ) {
-        val session = PolarServiceClientUtils.sessionPsFtpClientReady(identifier, listener)
-        val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
-            ?: throw PolarServiceNotAvailable()
-        PolarTrainingSessionUtils.deleteTrainingSession(client, reference)
+        apiCallGuard.guardSuspend("deleteTrainingSession", identifier) {
+            val session = PolarServiceClientUtils.sessionPsFtpClientReady(identifier, listener)
+            val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
+                ?: throw PolarServiceNotAvailable()
+            PolarTrainingSessionUtils.deleteTrainingSession(client, reference)
+        }
     }
 
     override suspend fun startExercise(identifier: String, profile: PolarExerciseSession.SportProfile) {
-        BleLogger.d(TAG, "Start exercise pressed for $identifier with profile=$profile")
-        val session = PolarServiceClientUtils.sessionPsFtpClientReady(identifier, listener)
-        val client = (session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as? BlePsFtpClient)
-            ?: throw PolarServiceNotAvailable()
-        try {
-            val params = PftpRequest.PbPFtpStartExerciseParams.newBuilder()
-                .setSportIdentifier(Structures.PbSportIdentifier.newBuilder().setValue(profile.id.toLong()).build())
-                .build()
-            client.query(PftpRequest.PbPFtpQuery.START_EXERCISE_VALUE, params.toByteArray())
-            BleLogger.d(TAG, "Start exercise succeeded for $identifier")
-        } catch (t: Throwable) {
-            BleLogger.e(TAG, "Start exercise failed for $identifier: ${t.message ?: "unknown error"}")
-            throw handleError(t)
+        apiCallGuard.guardSuspend("startExercise", identifier) {
+            BleLogger.d(TAG, "Start exercise pressed for $identifier with profile=$profile")
+            val session = PolarServiceClientUtils.sessionPsFtpClientReady(identifier, listener)
+            val client = (session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as? BlePsFtpClient)
+                ?: throw PolarServiceNotAvailable()
+            try {
+                val params = PftpRequest.PbPFtpStartExerciseParams.newBuilder()
+                    .setSportIdentifier(Structures.PbSportIdentifier.newBuilder().setValue(profile.id.toLong()).build())
+                    .build()
+                client.query(PftpRequest.PbPFtpQuery.START_EXERCISE_VALUE, params.toByteArray())
+                BleLogger.d(TAG, "Start exercise succeeded for $identifier")
+            } catch (t: Throwable) {
+                BleLogger.e(TAG, "Start exercise failed for $identifier: ${t.message ?: "unknown error"}")
+                throw handleError(t)
+            }
         }
     }
 
     override suspend fun pauseExercise(identifier: String) {
-        BleLogger.d(TAG, "Pause exercise pressed for $identifier")
-        val session = PolarServiceClientUtils.sessionPsFtpClientReady(identifier, listener)
-        val client = (session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as? BlePsFtpClient)
-            ?: throw PolarServiceNotAvailable()
-        try {
-            client.query(PftpRequest.PbPFtpQuery.PAUSE_EXERCISE_VALUE, byteArrayOf())
-            BleLogger.d(TAG, "Pause exercise succeeded for $identifier")
-        } catch (t: Throwable) {
-            BleLogger.e(TAG, "Pause exercise failed for $identifier: ${t.message ?: "unknown error"}")
-            throw handleError(t)
+        apiCallGuard.guardSuspend("pauseExercise", identifier) {
+            BleLogger.d(TAG, "Pause exercise pressed for $identifier")
+            val session = PolarServiceClientUtils.sessionPsFtpClientReady(identifier, listener)
+            val client = (session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as? BlePsFtpClient)
+                ?: throw PolarServiceNotAvailable()
+            try {
+                client.query(PftpRequest.PbPFtpQuery.PAUSE_EXERCISE_VALUE, byteArrayOf())
+                BleLogger.d(TAG, "Pause exercise succeeded for $identifier")
+            } catch (t: Throwable) {
+                BleLogger.e(TAG, "Pause exercise failed for $identifier: ${t.message ?: "unknown error"}")
+                throw handleError(t)
+            }
         }
     }
 
     override suspend fun resumeExercise(identifier: String) {
-        BleLogger.d(TAG, "Resume exercise pressed for $identifier")
-        val session = PolarServiceClientUtils.sessionPsFtpClientReady(identifier, listener)
-        val client = (session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as? BlePsFtpClient)
-            ?: throw PolarServiceNotAvailable()
-        try {
-            client.query(PftpRequest.PbPFtpQuery.RESUME_EXERCISE_VALUE, byteArrayOf())
-            BleLogger.d(TAG, "Resume exercise succeeded for $identifier")
-        } catch (t: Throwable) {
-            BleLogger.e(TAG, "Resume exercise failed for $identifier: ${t.message ?: "unknown error"}")
-            throw handleError(t)
+        apiCallGuard.guardSuspend("resumeExercise", identifier) {
+            BleLogger.d(TAG, "Resume exercise pressed for $identifier")
+            val session = PolarServiceClientUtils.sessionPsFtpClientReady(identifier, listener)
+            val client = (session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as? BlePsFtpClient)
+                ?: throw PolarServiceNotAvailable()
+            try {
+                client.query(PftpRequest.PbPFtpQuery.RESUME_EXERCISE_VALUE, byteArrayOf())
+                BleLogger.d(TAG, "Resume exercise succeeded for $identifier")
+            } catch (t: Throwable) {
+                BleLogger.e(TAG, "Resume exercise failed for $identifier: ${t.message ?: "unknown error"}")
+                throw handleError(t)
+            }
         }
     }
 
     override suspend fun stopExercise(identifier: String, save: Boolean) {
-        BleLogger.d(TAG, "Stop exercise pressed for $identifier (save=$save)")
-        val session = PolarServiceClientUtils.sessionPsFtpClientReady(identifier, listener)
-        val client = (session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as? BlePsFtpClient)
-            ?: throw PolarServiceNotAvailable()
-        try {
-            val params = PftpRequest.PbPFtpStopExerciseParams.newBuilder().setSave(save).build()
-            client.query(PftpRequest.PbPFtpQuery.STOP_EXERCISE_VALUE, params.toByteArray())
-            BleLogger.d(TAG, "Stop exercise succeeded for $identifier")
-        } catch (t: Throwable) {
-            BleLogger.e(TAG, "Stop exercise failed for $identifier: ${t.message ?: "unknown error"}")
-            throw handleError(t)
+        apiCallGuard.guardSuspend("stopExercise", identifier) {
+            BleLogger.d(TAG, "Stop exercise pressed for $identifier (save=$save)")
+            val session = PolarServiceClientUtils.sessionPsFtpClientReady(identifier, listener)
+            val client = (session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as? BlePsFtpClient)
+                ?: throw PolarServiceNotAvailable()
+            try {
+                val params = PftpRequest.PbPFtpStopExerciseParams.newBuilder().setSave(save).build()
+                client.query(PftpRequest.PbPFtpQuery.STOP_EXERCISE_VALUE, params.toByteArray())
+                BleLogger.d(TAG, "Stop exercise succeeded for $identifier")
+            } catch (t: Throwable) {
+                BleLogger.e(TAG, "Stop exercise failed for $identifier: ${t.message ?: "unknown error"}")
+                throw handleError(t)
+            }
         }
     }
 
     override suspend fun getExerciseStatus(identifier: String): PolarExerciseSession.ExerciseInfo {
-        BleLogger.d(TAG, "Get exercise status pressed for $identifier")
-        val session = PolarServiceClientUtils.sessionPsFtpClientReady(identifier, listener)
-        val client = (session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as? BlePsFtpClient)
-            ?: throw PolarServiceNotAvailable()
-        return try {
-            val out = client.query(PftpRequest.PbPFtpQuery.GET_EXERCISE_STATUS_VALUE, byteArrayOf())
-            val info = parseExerciseStatus(out.toByteArray())
-            BleLogger.d(TAG, "Get exercise status succeeded for $identifier: $info")
-            info
-        } catch (t: Throwable) {
-            BleLogger.e(TAG, "Get exercise status failed for $identifier: ${t.message ?: "unknown error"}")
-            throw handleError(t)
+        return apiCallGuard.guardSuspend("getExerciseStatus", identifier) {
+            BleLogger.d(TAG, "Get exercise status pressed for $identifier")
+            val session = PolarServiceClientUtils.sessionPsFtpClientReady(identifier, listener)
+            val client = (session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as? BlePsFtpClient)
+                ?: throw PolarServiceNotAvailable()
+            try {
+                val out = client.query(PftpRequest.PbPFtpQuery.GET_EXERCISE_STATUS_VALUE, byteArrayOf())
+                val info = parseExerciseStatus(out.toByteArray())
+                BleLogger.d(TAG, "Get exercise status succeeded for $identifier: $info")
+                info
+            } catch (t: Throwable) {
+                BleLogger.e(TAG, "Get exercise status failed for $identifier: ${t.message ?: "unknown error"}")
+                throw handleError(t)
+            }
         }
     }
 
     override fun observeExerciseStatus(identifier: String): Flow<PolarExerciseSession.ExerciseInfo> {
         BleLogger.d(TAG, "Start observing exercise status for $identifier")
-        return flow {
+        // Long-lived notification stream; must not hold the exclusive call lock.
+        return apiCallGuard.guardFlow("observeExerciseStatus", identifier, allowConcurrent = true) {
             val session = PolarServiceClientUtils.sessionPsFtpClientReady(identifier, listener)
             val client = (session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as? BlePsFtpClient)
                 ?: throw PolarServiceNotAvailable()
@@ -254,4 +270,3 @@ internal class PolarTrainingSessionApiImpl(
         }
     }
 }
-

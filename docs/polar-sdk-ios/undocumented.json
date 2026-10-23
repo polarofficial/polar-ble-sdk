@@ -871,7 +871,7 @@
     {
       "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/api/model/PolarFirmwareUpdateModels.swift",
       "line": 6,
-      "symbol": "CheckFirmwareUpdateStatus.checkFwUpdateAvailable(version:)",
+      "symbol": "CheckFirmwareUpdateStatus.checkFwUpdateAvailable(version:mandatory:)",
       "symbol_kind": "source.lang.swift.decl.enumelement",
       "warning": "undocumented"
     },
@@ -4020,7 +4020,7 @@
     },
     {
       "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/impl/PolarBleApiImpl+OfflineRecording.swift",
-      "line": 240,
+      "line": 268,
       "symbol": "PolarBleApiImpl.getOfflineRecordWithProgress(_:entry:secret:)",
       "symbol_kind": "source.lang.swift.decl.function.method.instance",
       "warning": "undocumented"
@@ -4260,6 +4260,20 @@
       "file": "/Users/rkangast/repos/ios-communications/Sources/iOSCommunications/communications_pftp_error.pb.swift",
       "line": 53,
       "symbol": "Communications_PbPFtpError.waitForIdling",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/rkangast/repos/ios-communications/Sources/iOSCommunications/communications_pftp_error.pb.swift",
+      "line": 54,
+      "symbol": "Communications_PbPFtpError.batteryTooLow",
+      "symbol_kind": "source.lang.swift.decl.enumelement",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/rkangast/repos/ios-communications/Sources/iOSCommunications/communications_pftp_error.pb.swift",
+      "line": 55,
+      "symbol": "Communications_PbPFtpError.waitForPairing",
       "symbol_kind": "source.lang.swift.decl.enumelement",
       "warning": "undocumented"
     }
