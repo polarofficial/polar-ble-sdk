@@ -258,6 +258,25 @@ final class PolarBleApiImplSleepTests: XCTestCase {
         XCTAssertEqual(mockClient.requestCalls.count, 6)
     }
 
+    // GIVEN a date's read fails once for a real (non-"no such file") reason, then succeeds
+    // WHEN getSleep reads that date (nights were permanently lost after a degraded session,
+    //      even though the device did have the file)
+    // THEN getSleep must retry internally and include the night in its result, instead of
+    //      permanently excluding it the first time a transient read failure is hit
+    func test_getSleep_transientPerDateReadFailure_retriesAndIncludesTheNight() async throws {
+        let day = makeUtcDate(year: 2026, month: 7, day: 1)
+        mockClient.requestReturnValues.append(.failure(BlePsFtpException.responseError(errorCode: 500)))
+        mockClient.requestReturnValues.append(.success(try PolarSleepUtilsTests.minimalValidSleepProtoData()))
+        mockClient.requestReturnValues.append(
+            .failure(BlePsFtpException.responseError(errorCode: Protocol_PbPFtpError.noSuchFileOrDirectory.rawValue))
+        )
+
+        let result = try await api.getSleep(identifier: deviceId, fromDate: day, toDate: day)
+
+        XCTAssertEqual(result.count, 1, "Expected the retried read to succeed and be included")
+        XCTAssertEqual(mockClient.requestCalls.count, 3, "Expected: failing sleep GET, retried sleep GET, then skin-temp GET")
+    }
+
     // MARK: - getSleepData (deprecated alias)
     func test_getSleepData_deprecatedAlias_behavesLikeGetSleep() async throws {
         let day = makeUtcDate(year: 2026, month: 7, day: 6)

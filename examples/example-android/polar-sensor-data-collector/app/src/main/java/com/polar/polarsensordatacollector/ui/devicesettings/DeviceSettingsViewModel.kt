@@ -359,28 +359,30 @@ internal class DeviceSettingsViewModel @Inject constructor(
         }
     }
 
+    // Fire-and-forget: the device command runs in the repository's own long-lived scope so that
+    // it isn't cancelled when this ViewModel's scope is torn down. The caller (DeviceSettingsFragment)
+    // immediately removes the device's UI after triggering this, which would otherwise race with
+    // and cancel the command mid-flight, misreporting a successful write as "failed".
     fun doRestart() {
-        viewModelScope.launch {
-            try {
-                polarDeviceStreamingRepository.doRestart(identifier)
+        polarDeviceStreamingRepository.doRestart(identifier) { result ->
+            result.onSuccess {
                 Log.d(TAG, "Device is restarting")
-            } catch (error: Exception) {
+            }.onFailure { error ->
                 Log.e(TAG, "Device restart failed: $error")
             }
         }
     }
 
     fun doFactoryReset(preservePairingInformation: Boolean = false) {
-        viewModelScope.launch {
-            try {
-                polarDeviceStreamingRepository.doFactoryReset(identifier, preservePairingInformation)
+        polarDeviceStreamingRepository.doFactoryReset(identifier, preservePairingInformation) { result ->
+            result.onSuccess {
                 Log.d(TAG, "Factory reset on device $identifier is ongoing. preservePairingInformation=$preservePairingInformation")
                 showInfo(
                     "Factory reset",
                     "Factory reset triggered on device $identifier." +
                             if (preservePairingInformation) " Pairing information will be preserved." else ""
                 )
-            } catch (error: Exception) {
+            }.onFailure { error ->
                 Log.e(TAG, "Factory reset failed: $error")
                 showError("Factory reset failed", error.message ?: error.toString())
             }
@@ -472,9 +474,13 @@ internal class DeviceSettingsViewModel @Inject constructor(
                     when (status) {
                         is CheckFirmwareUpdateStatus.CheckFwUpdateAvailable -> {
                             _uiFirmwareUpdateStatus.value = application.getString(
-                                R.string.firmware_update_available,
+                                R.string.firmware_update_available ,
                                 status.version
-                            )
+                            ) + if (status.mandatoryUpdate) {
+                                " " + application.getString(R.string.firmware_update_mandatory)
+                            } else {
+                                " " + application.getString(R.string.firmware_update_optional)
+                            }
                         }
                         is CheckFirmwareUpdateStatus.CheckFwUpdateNotAvailable -> {
                             _uiFirmwareUpdateStatus.value = status.details
@@ -645,34 +651,34 @@ internal class DeviceSettingsViewModel @Inject constructor(
         }
     }
 
+    // Fire-and-forget for the same reason as doRestart()/doFactoryReset() above: the caller tears
+    // down this screen's UI right after triggering this, which would cancel a viewModelScope-bound
+    // coroutine before the device command finishes.
     fun setWarehouseSleep() {
-        viewModelScope.launch {
-            try {
-                polarDeviceStreamingRepository.setWarehouseSleep(identifier)
+        polarDeviceStreamingRepository.setWarehouseSleep(identifier) { result ->
+            result.onSuccess {
                 Log.d(TAG, "Warehouse sleep mode set for device $identifier")
-            } catch (error: Exception) {
+            }.onFailure { error ->
                 Log.e(TAG, "Setting warehouse sleep failed: $error")
             }
         }
     }
 
     fun setHibernateMode() {
-        viewModelScope.launch {
-            try {
-                polarDeviceStreamingRepository.setHibernateMode(identifier)
+        polarDeviceStreamingRepository.setHibernateMode(identifier) { result ->
+            result.onSuccess {
                 Log.d(TAG, "Hibernate mode set for device $identifier")
-            } catch (error: Exception) {
+            }.onFailure { error ->
                 Log.e(TAG, "Setting hibernate mode failed: $error")
             }
         }
     }
 
     fun setTurnDeviceOff() {
-        viewModelScope.launch {
-            try {
-                polarDeviceStreamingRepository.turnDeviceOff(identifier)
+        polarDeviceStreamingRepository.turnDeviceOff(identifier) { result ->
+            result.onSuccess {
                 Log.d(TAG, "Device $identifier turn off succeeded")
-            } catch (error: Exception) {
+            }.onFailure { error ->
                 Log.e(TAG, "Device $identifier turn off failed: $error")
             }
         }

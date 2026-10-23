@@ -19,3 +19,10 @@ public enum BleGattException: Error {
     case gattDataError(description: String = "")
     case gattSecurityError(description: String = "")
 }
+
+/// Errors caused by the client's own lifecycle, separate from transport or protocol level errors
+public enum BleClientError: Error {
+    /// The client was deallocated before a queued operation could run. Not caused by GATT disconnection alone.
+    case clientDeallocated
+}
+

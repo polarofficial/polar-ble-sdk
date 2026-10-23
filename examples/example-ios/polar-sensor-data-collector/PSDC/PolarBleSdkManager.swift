@@ -128,6 +128,7 @@ class PolarBleSdkManager : ObservableObject {
     @Published var offlineExerciseV2Supported: Bool = false
     @Published var offlineExerciseV2Entries: [PolarExerciseEntry] = []
     @Published var isOfflineExcerciseV2Ongoing: Bool = false
+    @Published var isOfflineExerciseV2Paused: Bool = false
     
     @Published var fileTransferFeature = FeatureSupported()
     @Published var activityDataFeature = FeatureSupported()
@@ -1583,8 +1584,59 @@ extension PolarBleSdkManager {
         offlineExerciseV2Feature.isSupported = isReady
     }
 
-    func listH10Exercises() async {
-        guard case .connected(let device) = deviceConnectionState else { return }
+    static let h10CapabilitiesConfigHint =
+        "The SDK reports that this device does not support H10 exercise recording. " +
+        "This is usually caused by an outdated or edited device capabilities file. " +
+        "Delete Files > On My iPhone > PSDC > PolarConfig > polar_device_capabilities.json. " +
+        "Then restart the app and reconnect the device."
+
+    var isH10RecordingDisabledByCapabilitiesConfig: Bool {
+        guard case .connected(let device) = deviceConnectionState,
+              device.name.contains("H10") else {
+            return false
+        }
+        let deviceType = PolarAdvDataUtility.getDeviceNameFromAdvLocalName(advLocalName: device.name)
+        return !BlePolarDeviceCapabilitiesUtility.isRecordingSupported(deviceType.isEmpty ? "H10" : deviceType)
+    }
+
+    private func describeH10Error(_ operation: String, _ error: Error) -> String {
+        if let polarError = error as? PolarErrors {
+            switch polarError {
+            case .operationNotSupported:
+                return "\(operation) failed: operation not supported. \(Self.h10CapabilitiesConfigHint)"
+            case .deviceNotConnected, .deviceNotFound:
+                return "\(operation) failed: device is not connected. Reconnect the device and try again."
+            case .serviceNotFound:
+                return "\(operation) failed: file transfer service not found on device. Reconnect the device and try again."
+            case .timeout(let description):
+                return "\(operation) failed: operation timed out\(description.isEmpty ? "" : " (\(description))"). Keep the device close to the phone and try again."
+            case .deviceError(let description):
+                if description.contains("operationNotSupported") {
+                    return "\(operation) failed: H10 exercise recording is not supported. \(Self.h10CapabilitiesConfigHint)"
+                }
+                return "\(operation) failed: device error\(description.isEmpty ? "" : ": \(description)")."
+            default:
+                break
+            }
+        }
+        return "\(operation) failed: \(error)"
+    }
+
+    private func ensureH10RecordingSupported(_ operation: String) -> Bool {
+        guard h10RecordingFeature.isSupported else {
+            somethingFailed(text: "\(operation): H10 exercise recording is not supported. \(Self.h10CapabilitiesConfigHint)")
+            return false
+        }
+        return true
+    }
+
+    @discardableResult
+    func listH10Exercises() async -> Bool {
+        guard case .connected(let device) = deviceConnectionState else {
+            somethingFailed(text: "List exercises failed: no device connected.")
+            return false
+        }
+        guard ensureH10RecordingSupported("List exercises") else { return false }
         h10ExerciseEntry = nil
         do {
             for try await entry in api.listExercises(device.deviceId) {
@@ -1592,42 +1644,53 @@ extension PolarBleSdkManager {
                 h10ExerciseEntry = entry
             }
             AppLogger.log("list exercises completed")
+            return true
         } catch {
-            AppLogger.log("failed to list exercises: \(error)")
+            somethingFailed(text: describeH10Error("List exercises", error))
+            return false
         }
     }
     
-    func h10ReadExercise() async {
-        if case .connected(let device) = deviceConnectionState {
-            guard let e = h10ExerciseEntry else {
-                somethingFailed(text: "No exercise to read, please list the exercises first")
-                return
+    @discardableResult
+    func h10ReadExercise() async -> Bool {
+        guard case .connected(let device) = deviceConnectionState else {
+            somethingFailed(text: "Read exercise failed: no device connected.")
+            return false
+        }
+        guard ensureH10RecordingSupported("Read exercise") else { return false }
+        guard let e = h10ExerciseEntry else {
+            somethingFailed(text: "No exercise selected. Press \"List exercises\" first to find an exercise on the device.")
+            return false
+        }
+
+        do {
+            Task { @MainActor in
+                self.h10RecordingFeature.isFetchingRecording = true
             }
-            
-            do {
-                Task { @MainActor in
-                    self.h10RecordingFeature.isFetchingRecording = true
-                }
-                
-                exerciseData = try await api.fetchExercise(device.deviceId, entry: e)
-                AppLogger.log("exercise data count: \(String(describing: exerciseData?.samples.count)) samples: \(String(describing: exerciseData?.samples))")
-                Task { @MainActor in
-                    self.h10RecordingFeature.isFetchingRecording = false
-                }
-                
-            } catch let err {
-                Task { @MainActor in
-                    self.h10RecordingFeature.isFetchingRecording = false
-                    self.somethingFailed(text: "read H10 exercise failed: \(err)")
-                }
+
+            exerciseData = try await api.fetchExercise(device.deviceId, entry: e)
+            AppLogger.log("exercise data count: \(String(describing: exerciseData?.samples.count)) samples: \(String(describing: exerciseData?.samples))")
+            Task { @MainActor in
+                self.h10RecordingFeature.isFetchingRecording = false
             }
+            return true
+        } catch let err {
+            Task { @MainActor in
+                self.h10RecordingFeature.isFetchingRecording = false
+                self.somethingFailed(text: self.describeH10Error("Read exercise", err))
+            }
+            return false
         }
     }
     
     func h10RemoveExercise() {
-        guard case .connected(let device) = deviceConnectionState else { return }
+        guard case .connected(let device) = deviceConnectionState else {
+            somethingFailed(text: "Remove exercise failed: no device connected.")
+            return
+        }
+        guard ensureH10RecordingSupported("Remove exercise") else { return }
         guard let entry = h10ExerciseEntry else {
-            somethingFailed(text: "No exercise to read, please list the exercises first")
+            somethingFailed(text: "No exercise to remove. Press \"List exercises\" first to find an exercise on the device.")
             return
         }
         Task { @MainActor [weak self] in
@@ -1638,7 +1701,7 @@ extension PolarBleSdkManager {
                 AppLogger.log("remove completed")
                 self.generalMessage = Message(text: "Exercise removed")
             } catch {
-                AppLogger.log("failed to remove exercise: \(error)")
+                somethingFailed(text: describeH10Error("Remove exercise", error))
             }
         }
     }
@@ -1665,8 +1728,11 @@ extension PolarBleSdkManager {
         guard case .connected(let device) = deviceConnectionState else {
             AppLogger.log("Device is not connected \(deviceConnectionState)")
             Task { @MainActor in self.h10RecordingFeature.isEnabled = false }
+            somethingFailed(text: "H10 recording failed: no device connected.")
             return
         }
+        let operation = h10RecordingFeature.isEnabled ? "Stop H10 recording" : "Start H10 recording"
+        guard ensureH10RecordingSupported(operation) else { return }
         Task { @MainActor [weak self] in
             guard let self else { return }
             do {
@@ -1682,7 +1748,7 @@ extension PolarBleSdkManager {
                     h10RecordingFeature.isEnabled = true
                 }
             } catch {
-                somethingFailed(text: "recording toggle failed: \(error)")
+                somethingFailed(text: describeH10Error(operation, error))
             }
         }
     }
@@ -1707,7 +1773,7 @@ extension PolarBleSdkManager {
                 }
                 AppLogger.log(recordingStatus)
             } catch {
-                somethingFailed(text: "H10 recording status request failed: \(error)")
+                somethingFailed(text: describeH10Error("H10 recording status request", error))
             }
         }
     }
@@ -2041,9 +2107,9 @@ extension PolarBleSdkManager {
                         await MainActor.run { [weak self] in
                             guard let self else { return }
                             switch status {
-                            case .checkFwUpdateAvailable(let version):
-                                checkFirmwareUpdateFeature.firmwareVersionAvailable = version
-                                checkFirmwareUpdateFeature.status = "checkFwUpdateAvailable: \(version)"
+                            case .checkFwUpdateAvailable(let version, let mandatory):
+                                checkFirmwareUpdateFeature.firmwareVersionAvailable = (version, mandatory)
+                                checkFirmwareUpdateFeature.status = "checkFwUpdateAvailable: \(version), mandatoryUpdate: \(String(describing: mandatory))"
                             case .checkFwUpdateFailed(let details):
                                 checkFirmwareUpdateFeature.status = "checkFwUpdateFailed: \(details)"
                             case .checkFwUpdateNotAvailable(let details):
@@ -3540,6 +3606,7 @@ extension PolarBleSdkManager {
             throw NSError(domain: "Device not connected", code: -1)
         }
         isOfflineExcerciseV2Ongoing = false
+        isOfflineExerciseV2Paused = false
         do {
             let result = try await api.startOfflineExerciseV2(identifier: device.deviceId)
             isOfflineExcerciseV2Ongoing = (result.result == .success)
@@ -3557,8 +3624,52 @@ extension PolarBleSdkManager {
         do {
             try await api.stopOfflineExerciseV2(identifier: device.deviceId)
             isOfflineExcerciseV2Ongoing = false
+            isOfflineExerciseV2Paused = false
         } catch {
             AppLogger.log("Stop Offline Exercise V2 failed: \(error)")
+            throw error
+        }
+    }
+
+    func pauseOfflineExerciseV2() async throws {
+        guard case .connected(let device) = deviceConnectionState else {
+            throw PolarErrors.deviceNotConnected
+        }
+        AppLogger.log("Pause offline exercise V2 pressed for \(device.deviceId)")
+        do {
+            try await api.pauseExercise(identifier: device.deviceId)
+            // After a successful pause the device reports "not actively running".
+            // If it's still reporting "ongoing", the pause did not take effect.
+            let isRunning = try await api.getOfflineExerciseStatusV2(identifier: device.deviceId)
+            guard !isRunning else {
+                throw NSError(domain: "Pause command did not take effect, exercise is still running", code: -3)
+            }
+            // A paused exercise is still an active session; only stop ends it.
+            isOfflineExcerciseV2Ongoing = true
+            isOfflineExerciseV2Paused = true
+            AppLogger.log("Pause offline exercise V2 succeeded for \(device.deviceId)")
+        } catch {
+            AppLogger.log("Pause offline exercise V2 failed for \(device.deviceId): \(error)")
+            throw error
+        }
+    }
+
+    func resumeOfflineExerciseV2() async throws {
+        guard case .connected(let device) = deviceConnectionState else {
+            throw PolarErrors.deviceNotConnected
+        }
+        AppLogger.log("Resume offline exercise V2 pressed for \(device.deviceId)")
+        do {
+            try await api.resumeExercise(identifier: device.deviceId)
+            let isRunning = try await api.getOfflineExerciseStatusV2(identifier: device.deviceId)
+            guard isRunning else {
+                throw NSError(domain: "Resume command did not take effect, exercise is no longer ongoing", code: -4)
+            }
+            isOfflineExcerciseV2Ongoing = true
+            isOfflineExerciseV2Paused = false
+            AppLogger.log("Resume offline exercise V2 succeeded for \(device.deviceId)")
+        } catch {
+            AppLogger.log("Resume offline exercise V2 failed for \(device.deviceId): \(error)")
             throw error
         }
     }
@@ -3575,7 +3686,7 @@ extension PolarBleSdkManager {
         } catch {
             if isSystemBusy(error: error) {
                 AppLogger.log("listOfflineExercisesV2(), device busy (exercise running)")
-            } else {
+            } else { 
                 AppLogger.log("listOfflineExercisesV2 failed: \(error)")
             }
         }
@@ -3622,7 +3733,13 @@ extension PolarBleSdkManager {
         }
         do {
             let isRunning = try await api.getOfflineExerciseStatusV2(identifier: device.deviceId)
-            isOfflineExcerciseV2Ongoing = isRunning
+            if isRunning {
+                isOfflineExcerciseV2Ongoing = true
+                isOfflineExerciseV2Paused = false
+            } else if !isOfflineExerciseV2Paused {
+                // While paused the device reports "not running" but the session is still active.
+                isOfflineExcerciseV2Ongoing = false
+            }
         } catch {
             if isSystemBusy(error: error) {
                 isOfflineExcerciseV2Ongoing = true
@@ -3645,6 +3762,7 @@ extension PolarBleSdkManager {
             entryId: URL(fileURLWithPath: entryPath).lastPathComponent
         )
         isOfflineExcerciseV2Ongoing = false
+        isOfflineExerciseV2Paused = false
         do {
             try await api.removeOfflineExerciseV2(identifier: device.deviceId, entry: entry)
             genericApiFileList.removeAll()

@@ -15,6 +15,8 @@ import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -564,4 +566,110 @@ internal class ConnectionHandlerTest {
 
         verify(exactly = 1) { mockConnectionInterface.connectDevice(session) }
     }
+
+    /** Connect [session] in the foreground, then lose the link so the session is parked. */
+    private fun parkAfterLinkLoss(session: BDDeviceSessionImpl) {
+        every { mockConnectionInterface.connectDevice(session) } just runs
+        every { mockConnectionInterface.startServiceDiscovery(session) } answers {
+            connectionHandler.servicesDiscovered(session)
+            true
+        }
+        every { mockConnectionInterface.setPhy(session) } answers { connectionHandler.phyUpdated(session) }
+        every { mockConnectionInterface.setMtu(session) } answers {
+            connectionHandler.mtuUpdated(session)
+            true
+        }
+        connectionHandler.connectDevice(session, true)
+        connectionHandler.deviceDisconnected(session)
+        assertEquals(BleDeviceSession.DeviceSessionState.SESSION_OPEN_PARK, session.sessionState)
+    }
+
+    @Test
+    fun `parked session gets a background link that is adopted without a new connect`() = runTest {
+        val session = newSession("33:33:33:33:33:33")
+        parkAfterLinkLoss(session)
+
+        verify(exactly = 1) { mockConnectionInterface.connectDeviceInBackground(session) }
+        assertTrue(connectionHandler.hasBackgroundLink(session))
+        assertEquals(ConnectionHandler.ConnectionHandlerState.FREE, connectionHandler.state)
+
+        // Act: the Bluetooth stack connects the background link when the device is reachable.
+        connectionHandler.connectionInitialized(session)
+
+        // Assert: negotiation continued on the existing link; no extra GATT connect, no cancel.
+        verify(exactly = 1) { mockConnectionInterface.connectDevice(session) }
+        verify(exactly = 0) { mockConnectionInterface.cancelDeviceConnection(session) }
+        assertEquals(BleDeviceSession.DeviceSessionState.SESSION_OPEN, session.sessionState)
+        assertEquals(ConnectionHandler.ConnectionHandlerState.FREE, connectionHandler.state)
+        assertFalse(connectionHandler.hasBackgroundLink(session))
+    }
+
+    @Test
+    fun `foreground connect of a parked session closes its background link`() = runTest {
+        val session = newSession("44:44:44:44:44:44")
+        parkAfterLinkLoss(session)
+
+        connectionHandler.connectDevice(session, true)
+
+        verify(exactly = 1) { mockConnectionInterface.cancelDeviceConnection(session) }
+        verify(exactly = 2) { mockConnectionInterface.connectDevice(session) }
+        assertFalse(connectionHandler.hasBackgroundLink(session))
+    }
+
+    @Test
+    fun `failed background link is requested again after a delay`() = runTest {
+        val session = newSession("55:55:55:55:55:55")
+        parkAfterLinkLoss(session)
+
+        connectionHandler.deviceDisconnected(session)
+        assertFalse(connectionHandler.hasBackgroundLink(session))
+        verify(exactly = 1) { mockConnectionInterface.connectDeviceInBackground(session) }
+
+        testScope.advanceTimeBy(ConnectionHandler.BACKGROUND_LINK_RETRY_DELAY_MS + 10)
+        testScope.runCurrent()
+
+        verify(exactly = 2) { mockConnectionInterface.connectDeviceInBackground(session) }
+        assertTrue(connectionHandler.hasBackgroundLink(session))
+    }
+
+    @Test
+    fun `disabling automatic reconnection or closing the session ends the background link`() = runTest {
+        val session = newSession("66:66:66:66:66:66")
+        parkAfterLinkLoss(session)
+
+        connectionHandler.setAutomaticReconnection(false)
+        verify(exactly = 1) { mockConnectionInterface.cancelDeviceConnection(session) }
+        assertFalse(connectionHandler.hasBackgroundLink(session))
+
+        connectionHandler.setAutomaticReconnection(true)
+        assertTrue(connectionHandler.hasBackgroundLink(session))
+
+        connectionHandler.disconnectDevice(session)
+        verify(exactly = 2) { mockConnectionInterface.cancelDeviceConnection(session) }
+        assertEquals(BleDeviceSession.DeviceSessionState.SESSION_CLOSED, session.sessionState)
+        assertFalse(connectionHandler.hasBackgroundLink(session))
+    }
+
+    @Test
+    fun `background link connecting while busy is adopted once the handler is free`() = runTest {
+        val session = newSession("77:77:77:77:77:77")
+        parkAfterLinkLoss(session)
+        val busy = newSession("88:88:88:88:88:88")
+        every { mockConnectionInterface.connectDevice(busy) } just runs
+        connectionHandler.connectDevice(busy, true)
+        assertEquals(ConnectionHandler.ConnectionHandlerState.CONNECTING, connectionHandler.state)
+
+        // Act: the parked device connects in the background while another one is being connected.
+        connectionHandler.connectionInitialized(session)
+        assertEquals(BleDeviceSession.DeviceSessionState.SESSION_OPEN_PARK, session.sessionState)
+
+        // The busy attempt fails, which frees the handler.
+        connectionHandler.deviceDisconnected(busy)
+
+        // Assert: the waiting background link was adopted and opened.
+        assertEquals(BleDeviceSession.DeviceSessionState.SESSION_OPEN, session.sessionState)
+        verify(exactly = 1) { mockConnectionInterface.connectDevice(session) }
+        verify(exactly = 0) { mockConnectionInterface.cancelDeviceConnection(session) }
+    }
 }
+

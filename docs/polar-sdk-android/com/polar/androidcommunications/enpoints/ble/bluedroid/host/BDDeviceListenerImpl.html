@@ -735,7 +735,7 @@ extends <a href=../../../../api/ble/BleDeviceListener.html>BleDeviceListener</a>
                                           >
                                     <li class="blockList">
                                         <h4>search</h4>
-                                        <pre class="methodSignature"> Flow&lt;<a href=../../../../api/ble/model/BleDeviceSession.html>BleDeviceSession</a>&gt; <a href=BDDeviceListenerImpl.html#search(java.lang.Boolean)>search</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> fetchKnownDevices)</pre>
+                                        <pre class="methodSignature">@<a href=https://developer.android.com/reference/kotlin/androidx/annotation/RequiresPermission.html>RequiresPermission</a>(value = &quot;android.permission.BLUETOOTH_CONNECT&quot;) Flow&lt;<a href=../../../../api/ble/model/BleDeviceSession.html>BleDeviceSession</a>&gt; <a href=BDDeviceListenerImpl.html#search(java.lang.Boolean)>search</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> fetchKnownDevices)</pre>
                                         <div class="block"><p>Produces: onNext:      When a advertisement has been detected &lt;BR&gt;&lt;/BR&gt; onError:     if scan start fails propagates BleStartScanError with error code &lt;BR&gt;&lt;/BR&gt; onCompleted: Non produced &lt;BR&gt;&lt;/BR&gt;</p></div>
 
                                         <dl>
@@ -1068,7 +1068,7 @@ extends <a href=../../../../api/ble/BleDeviceListener.html>BleDeviceListener</a>
                                           >
                                     <li class="blockList">
                                         <h4>openSessionDirect</h4>
-                                        <pre class="methodSignature"> <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a> <a href=BDDeviceListenerImpl.html#openSessionDirect(com.polar.androidcommunications.api.ble.model.BleDeviceSession)>openSessionDirect</a>(<a href=../../../../api/ble/model/BleDeviceSession.html>BleDeviceSession</a> session)</pre>
+                                        <pre class="methodSignature">@<a href=https://developer.android.com/reference/kotlin/androidx/annotation/RequiresPermission.html>RequiresPermission</a>(value = &quot;android.permission.BLUETOOTH_CONNECT&quot;) <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a> <a href=BDDeviceListenerImpl.html#openSessionDirect(com.polar.androidcommunications.api.ble.model.BleDeviceSession)>openSessionDirect</a>(<a href=../../../../api/ble/model/BleDeviceSession.html>BleDeviceSession</a> session)</pre>
                                         <div class="block"><p>Attempt connection establishment</p></div>
 
                                         <dl>

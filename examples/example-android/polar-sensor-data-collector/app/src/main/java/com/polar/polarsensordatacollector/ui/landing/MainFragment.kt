@@ -467,7 +467,9 @@ class MainFragment : Fragment() {
                 if (existingComponent == null) {
                     component.adapter.addOnlineRecordingFragment(deviceId)
                     component.adapter.addDeviceSettingsFragment(deviceId)
-                    if (selectedDevice?.name?.contains("H10") == true) component.adapter.addH10ExerciseFragment(deviceId)
+                    if (selectedDevice?.name?.contains("H10") == true ||
+                        viewModel.getDeviceName(deviceId)?.contains("H10") == true
+                    ) component.adapter.addH10ExerciseFragment(deviceId)
 
                     if (viewModel.isFeatureReady(deviceId, PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_ACTIVITY_DATA)) {
                         component.adapter.addLoggingFragment(deviceId)
@@ -475,6 +477,16 @@ class MainFragment : Fragment() {
                     }
                     val cachedEvent = viewModel.uiSdkFeaturesReadyState.value
                     if (cachedEvent.identifier == deviceId) sdkFeaturesReadyChange(cachedEvent)
+                }
+
+                offlineRecordingStateChange(viewModel.uiOfflineRecordingState.value)
+
+                val cachedV2 = viewModel.uiOfflineRecordingV2State.value
+                if (cachedV2.identifier == deviceId && cachedV2.isAvailable) {
+                    selectedDeviceSupportsV2OfflineExercise = true
+                    if (!component.adapter.hasExerciseV2Fragment()) {
+                        component.adapter.addExerciseV2Fragment(deviceId)
+                    }
                 }
 
                 showPager(deviceId)

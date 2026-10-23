@@ -1,5 +1,6 @@
 package com.polar.androidcommunications.enpoints.ble.bluedroid.host
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
@@ -10,6 +11,7 @@ import android.bluetooth.BluetoothStatusCodes
 import android.content.Context
 import android.os.Build
 import android.os.Handler
+import androidx.annotation.RequiresPermission
 import com.polar.androidcommunications.BuildConfig
 import com.polar.androidcommunications.api.ble.BleLogger.Companion.d
 import com.polar.androidcommunications.api.ble.BleLogger.Companion.e
@@ -83,6 +85,7 @@ class BDDeviceSessionImpl internal constructor(
         override val device: BluetoothDevice
             get() = bluetoothDevice
 
+        @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
         override fun bondStateChanged(state: Int, wasPreviouslyBonded: Boolean, pairingWasAttempted: Boolean) {
             when (state) {
                 BluetoothDevice.BOND_BONDED -> markBondedAtConnection(true)
@@ -268,14 +271,15 @@ class BDDeviceSessionImpl internal constructor(
         return deferred
     }
 
-    override fun getIndicatesPairingProblem(): Pair<Boolean, Int> {
+    override fun getIndicatesPairingProblem(): Triple<Boolean, Int, Boolean> {
         return if (disconnectReason == BleDeviceSession.DisconnectReason.PAIRING_INFORMATION_REMOVED) {
-            Pair(true, disconnectStatus ?: -1)
+            Triple(true, disconnectStatus ?: -1, pendingDeviceCommandPreservesPairing)
         } else {
-            Pair(false, -1)
+            Triple(false, -1, false)
         }
     }
 
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     internal fun pairingInformationWasRemoved(): Boolean {
         return bluetoothDevice.bondState == BluetoothDevice.BOND_NONE &&
             (hasEstablishedBond || bondingManager.hasPairingBeenRemoved(bluetoothDevice))
@@ -577,6 +581,7 @@ class BDDeviceSessionImpl internal constructor(
         }
     }
 
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun handleCharacteristicWrite(service: BluetoothGattService, characteristic: BluetoothGattCharacteristic, status: Int) {
         logIfError("handleCharacteristicWrite uuid: " + characteristic.uuid.toString(), status)
         when (status) {
@@ -584,17 +589,17 @@ class BDDeviceSessionImpl internal constructor(
                 e(TAG, "Attribute operation write failed due the reason: $status")
                 markDisconnect(
                     if (status == BleGattBase.ATT_INSUFFICIENT_AUTHENTICATION) {
-                        BleDeviceSession.DisconnectReason.INSUFFICIENT_AUTHENTICATION
+                        DisconnectReason.INSUFFICIENT_AUTHENTICATION
                     } else {
-                        BleDeviceSession.DisconnectReason.INSUFFICIENT_ENCRYPTION
+                        DisconnectReason.INSUFFICIENT_ENCRYPTION
                     },
                     status
                 )
                 if (pairingInformationWasRemoved()) {
-                    markDisconnect(BleDeviceSession.DisconnectReason.PAIRING_INFORMATION_REMOVED, status)
+                    markDisconnect(DisconnectReason.PAIRING_INFORMATION_REMOVED, status)
                     synchronized(gattMutex) { gatt?.disconnect() }
                 } else if (recordSecurityRecoveryAttempt()) {
-                    markDisconnect(BleDeviceSession.DisconnectReason.PAIRING_NEGOTIATION_FAILED, status)
+                    markDisconnect(DisconnectReason.PAIRING_NEGOTIATION_FAILED, status)
                     synchronized(gattMutex) { gatt?.disconnect() }
                 } else {
                     startAuthentication { this.handleAuthenticationComplete() }
@@ -622,6 +627,7 @@ class BDDeviceSessionImpl internal constructor(
         }
     }
 
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun handleCharacteristicRead(service: BluetoothGattService, characteristic: BluetoothGattCharacteristic, value: ByteArray, status: Int) {
         logIfError("handleCharacteristicRead uuid: " + characteristic.uuid.toString(), status)
         when (status) {
@@ -629,17 +635,17 @@ class BDDeviceSessionImpl internal constructor(
                 e(TAG, "Attribute operation read failed due the reason: $status")
                 markDisconnect(
                     if (status == BleGattBase.ATT_INSUFFICIENT_AUTHENTICATION) {
-                        BleDeviceSession.DisconnectReason.INSUFFICIENT_AUTHENTICATION
+                        DisconnectReason.INSUFFICIENT_AUTHENTICATION
                     } else {
-                        BleDeviceSession.DisconnectReason.INSUFFICIENT_ENCRYPTION
+                        DisconnectReason.INSUFFICIENT_ENCRYPTION
                     },
                     status
                 )
                 if (pairingInformationWasRemoved()) {
-                    markDisconnect(BleDeviceSession.DisconnectReason.PAIRING_INFORMATION_REMOVED, status)
+                    markDisconnect(DisconnectReason.PAIRING_INFORMATION_REMOVED, status)
                     synchronized(gattMutex) { gatt?.disconnect() }
                 } else if (recordSecurityRecoveryAttempt()) {
-                    markDisconnect(BleDeviceSession.DisconnectReason.PAIRING_NEGOTIATION_FAILED, status)
+                    markDisconnect(DisconnectReason.PAIRING_NEGOTIATION_FAILED, status)
                     synchronized(gattMutex) { gatt?.disconnect() }
                 } else {
                     startAuthentication { this.handleAuthenticationComplete() }
@@ -673,6 +679,7 @@ class BDDeviceSessionImpl internal constructor(
         processNextAttributeOperation(true)
     }
 
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun handleDescriptorWrite(service: BluetoothGattService, characteristic: BluetoothGattCharacteristic, value: ByteArray?, status: Int) {
         d(TAG, "onDescriptorWrite uuid: " + characteristic.uuid.toString() + " status: " + status)
         when (status) {
@@ -680,17 +687,17 @@ class BDDeviceSessionImpl internal constructor(
                 e(TAG, "Attribute operation descriptor write failed due the reason: $status")
                 markDisconnect(
                     if (status == BleGattBase.ATT_INSUFFICIENT_AUTHENTICATION) {
-                        BleDeviceSession.DisconnectReason.INSUFFICIENT_AUTHENTICATION
+                        DisconnectReason.INSUFFICIENT_AUTHENTICATION
                     } else {
-                        BleDeviceSession.DisconnectReason.INSUFFICIENT_ENCRYPTION
+                        DisconnectReason.INSUFFICIENT_ENCRYPTION
                     },
                     status
                 )
                 if (pairingInformationWasRemoved()) {
-                    markDisconnect(BleDeviceSession.DisconnectReason.PAIRING_INFORMATION_REMOVED, status)
+                    markDisconnect(DisconnectReason.PAIRING_INFORMATION_REMOVED, status)
                     synchronized(gattMutex) { gatt?.disconnect() }
                 } else if (recordSecurityRecoveryAttempt()) {
-                    markDisconnect(BleDeviceSession.DisconnectReason.PAIRING_NEGOTIATION_FAILED, status)
+                    markDisconnect(DisconnectReason.PAIRING_NEGOTIATION_FAILED, status)
                     synchronized(gattMutex) { gatt?.disconnect() }
                 } else {
                     startAuthentication { this.handleAuthenticationComplete() }
@@ -732,10 +739,11 @@ class BDDeviceSessionImpl internal constructor(
         }
     }
 
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     private fun handleAuthenticationFailed(e: Throwable) {
         if (disconnectReason != BleDeviceSession.DisconnectReason.PAIRING_INFORMATION_REMOVED &&
             (disconnectReason == BleDeviceSession.DisconnectReason.INSUFFICIENT_AUTHENTICATION ||
-                disconnectReason == BleDeviceSession.DisconnectReason.INSUFFICIENT_ENCRYPTION)
+                    disconnectReason == BleDeviceSession.DisconnectReason.INSUFFICIENT_ENCRYPTION)
         ) {
             markDisconnect(
                 BleDeviceSession.DisconnectReason.PAIRING_NEGOTIATION_FAILED,
@@ -784,6 +792,7 @@ class BDDeviceSessionImpl internal constructor(
         }
     }
 
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     private fun startAuthentication(complete: () -> Unit) {
         scope.launch {
             try {

@@ -89,6 +89,20 @@ final class AtomicListTests: XCTestCase {
         }
     }
 
+    func testPopOnEmptyListReleasesLock() {
+        let list = AtomicList<Int>()
+        let finished = expectation(description: "operations complete after empty pop")
+
+        DispatchQueue.global().async {
+            _ = try? list.pop()
+            list.push(1)
+            XCTAssertEqual(try? list.pop(), 1)
+            finished.fulfill()
+        }
+
+        wait(for: [finished], timeout: 1.0)
+    }
+
     func testPopIsFirstInFirstOut() throws {
         let list = AtomicList<Int>()
         list.pushItems([10, 20, 30])
@@ -199,6 +213,18 @@ final class AtomicListTests: XCTestCase {
         XCTAssertEqual(item, 99)
     }
 
+    func testPollWithTimeoutIgnoresSignalWithoutItem() throws {
+        let list = AtomicList<Int>()
+        DispatchQueue.global().asyncAfter(deadline: .now() + 0.05) {
+            list.removeAll()
+        }
+        DispatchQueue.global().asyncAfter(deadline: .now() + 0.15) {
+            list.push(99)
+        }
+
+        XCTAssertEqual(try list.poll(1.0), 99)
+    }
+
     func testPollWithTimeoutThrowsWaitTimeoutWhenEmpty() {
         let list = AtomicList<Int>()
         XCTAssertThrowsError(try list.poll(0.1)) { error in
@@ -239,6 +265,21 @@ final class AtomicListTests: XCTestCase {
                 XCTFail("Expected waitTimeout, got \(error)")
                 return
             }
+        }
+    }
+
+    func testPollWithCancelThrowsCancelErrorWhenCancelledWhileWaiting() {
+        let list = AtomicList<Int>()
+        let operation = BlockOperation()
+        let cancelError = NSError(domain: "test", code: 1)
+
+        DispatchQueue.global().asyncAfter(deadline: .now() + 0.05) {
+            operation.cancel()
+            list.removeAll()
+        }
+
+        XCTAssertThrowsError(try list.poll(1.0, canceled: operation, cancelError: cancelError)) { error in
+            XCTAssertEqual((error as NSError).domain, "test")
         }
     }
 

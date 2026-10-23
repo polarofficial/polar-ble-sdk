@@ -49,6 +49,29 @@ public enum BleDeviceCommand: Equatable {
     public var error: Error? = nil
     public var previousState = DeviceSessionState.sessionClosed
 
+    /// The error CoreBluetooth reported for the most recent failed connection attempt
+    /// or unexpected disconnect, if any. Cleared on a successful connect.
+    ///
+    /// This is written from the CoreBluetooth delegate queue and may be read from
+    /// unrelated threads (e.g. diagnostics on a connect timeout), so access is
+    /// guarded by a lock. Without synchronization a reader's retain of the stored
+    /// `Error` can race a concurrent writer releasing the previous value, crashing
+    /// in `objc_retain` on a freed object.
+    private let lastConnectionErrorLock = NSLock()
+    private var _lastConnectionError: Error?
+    public internal(set) var lastConnectionError: Error? {
+        get {
+            lastConnectionErrorLock.lock()
+            defer { lastConnectionErrorLock.unlock() }
+            return _lastConnectionError
+        }
+        set {
+            lastConnectionErrorLock.lock()
+            defer { lastConnectionErrorLock.unlock() }
+            _lastConnectionError = newValue
+        }
+    }
+
     /// by default connect only from adv head
     public var connectionType = ConnectionType.connectFromAdvertisementHead
     var gattClients = [BleGattClientBase]()

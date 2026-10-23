@@ -2801,4 +2801,203 @@ final class PolarBleApiImplTests: XCTestCase {
            }
            XCTAssertTrue(removed)
        }
+
+       // MARK: - FirmwareUpdateApi mandatory-flag parsing
+
+       /// Stub `URLProtocol` that lets tests control the response returned for `FirmwareUpdateApi`
+       /// network calls without hitting the real firmware-management endpoint.
+       private final class FirmwareMockURLProtocol: URLProtocol {
+           static var responseHandler: ((URLRequest) -> (HTTPURLResponse, Data?))?
+
+           override class func canInit(with request: URLRequest) -> Bool { true }
+           override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
+
+           override func startLoading() {
+               guard let handler = Self.responseHandler else {
+                   client?.urlProtocol(self, didFailWithError: URLError(.badServerResponse))
+                   return
+               }
+               let (response, data) = handler(request)
+               client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
+               if let data = data {
+                   client?.urlProtocol(self, didLoad: data)
+               }
+               client?.urlProtocolDidFinishLoading(self)
+           }
+
+           override func stopLoading() {}
+       }
+
+       private func makeMockedFirmwareUpdateApi() -> FirmwareUpdateApi {
+           let configuration = URLSessionConfiguration.ephemeral
+           configuration.protocolClasses = [FirmwareMockURLProtocol.self]
+           return FirmwareUpdateApi(session: URLSession(configuration: configuration))
+       }
+
+       private func checkFirmwareUpdate(
+           _ api: FirmwareUpdateApi,
+           hardwareCode: String = "HW123",
+           timeout: TimeInterval = 2
+       ) throws -> FirmwareUpdateResponse {
+           let request = FirmwareUpdateRequest(clientId: "test-client", uuid: UUID().uuidString, firmwareVersion: "1.0.0", hardwareCode: hardwareCode)
+           var result: Result<FirmwareUpdateResponse, Error>?
+           let exp = XCTestExpectation(description: "checkFirmwareUpdate")
+           api.checkFirmwareUpdate(firmwareUpdateRequest: request) {
+               result = $0
+               exp.fulfill()
+           }
+           wait(for: [exp], timeout: timeout)
+           return try XCTUnwrap(result).get()
+       }
+
+       func test_checkFirmwareUpdate_mandatoryTrue_whenHardwareCodeMatches() throws {
+           FirmwareMockURLProtocol.responseHandler = { request in
+               let json = """
+               {
+                 "version": "2.0.0",
+                 "fileUrl": "https://example.com/fw.zip",
+                 "hardwareVersions": [
+                   { "erpNumber": "HW123", "mandatory": true, "expired": false }
+                 ]
+               }
+               """
+               let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+               return (response, json.data(using: .utf8))
+           }
+
+           let response = try checkFirmwareUpdate(makeMockedFirmwareUpdateApi(), hardwareCode: "HW123")
+
+           XCTAssertEqual(response.version, "2.0.0")
+           XCTAssertEqual(response.fileUrl, "https://example.com/fw.zip")
+           XCTAssertEqual(response.mandatory, true)
+       }
+
+       func test_checkFirmwareUpdate_mandatoryNil_whenNoHardwareVersionMatchesRequestedCode() throws {
+           FirmwareMockURLProtocol.responseHandler = { request in
+               let json = """
+               {
+                 "version": "2.0.0",
+                 "fileUrl": "https://example.com/fw.zip",
+                 "hardwareVersions": [
+                   { "erpNumber": "OTHER-HW", "mandatory": true, "expired": false }
+                 ]
+               }
+               """
+               let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+               return (response, json.data(using: .utf8))
+           }
+
+           let response = try checkFirmwareUpdate(makeMockedFirmwareUpdateApi(), hardwareCode: "HW123")
+
+           XCTAssertNil(response.mandatory)
+       }
+
+       func test_checkFirmwareUpdate_mandatoryNil_whenHardwareVersionsMissing() throws {
+           FirmwareMockURLProtocol.responseHandler = { request in
+               let json = """
+               { "version": "2.0.0", "fileUrl": "https://example.com/fw.zip" }
+               """
+               let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+               return (response, json.data(using: .utf8))
+           }
+
+           let response = try checkFirmwareUpdate(makeMockedFirmwareUpdateApi())
+
+           XCTAssertNil(response.mandatory)
+       }
+
+       func test_checkFirmwareUpdate_statusCode204_returnsEmptyResponseWithNilMandatory() throws {
+           FirmwareMockURLProtocol.responseHandler = { request in
+               let response = HTTPURLResponse(url: request.url!, statusCode: 204, httpVersion: nil, headerFields: nil)!
+               return (response, nil)
+           }
+
+           let response = try checkFirmwareUpdate(makeMockedFirmwareUpdateApi())
+
+           XCTAssertNil(response.version)
+           XCTAssertNil(response.fileUrl)
+           XCTAssertNil(response.mandatory)
+           XCTAssertEqual(response.statusCode, 204)
+       }
+
+       func test_checkFirmwareUpdateFromFirmwareUrl_parsesMandatoryTrueHeader() throws {
+           let api = makeMockedFirmwareUpdateApi()
+           FirmwareMockURLProtocol.responseHandler = { request in
+               let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: ["mandatory": "true"])!
+               return (response, nil)
+           }
+
+           var result: Result<FirmwareUpdateResponse, Error>?
+           let exp = XCTestExpectation(description: "checkFirmwareUpdateFromFirmwareUrl")
+           api.checkFirmwareUpdateFromFirmwareUrl(URL(string: "https://example.com/fw.zip")!) {
+               result = $0
+               exp.fulfill()
+           }
+           wait(for: [exp], timeout: 2)
+
+           let response = try XCTUnwrap(result).get()
+           XCTAssertEqual(response.mandatory, true)
+           XCTAssertEqual(response.statusCode, 200)
+       }
+
+       func test_checkFirmwareUpdateFromFirmwareUrl_mandatoryNil_whenHeaderMissing() throws {
+           let api = makeMockedFirmwareUpdateApi()
+           FirmwareMockURLProtocol.responseHandler = { request in
+               let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+               return (response, nil)
+           }
+
+           var result: Result<FirmwareUpdateResponse, Error>?
+           let exp = XCTestExpectation(description: "checkFirmwareUpdateFromFirmwareUrl")
+           api.checkFirmwareUpdateFromFirmwareUrl(URL(string: "https://example.com/fw.zip")!) {
+               result = $0
+               exp.fulfill()
+           }
+           wait(for: [exp], timeout: 2)
+
+           let response = try XCTUnwrap(result).get()
+           XCTAssertNil(response.mandatory)
+       }
+
+       func test_checkFirmwareUpdateFromFirmwareUrl_mandatoryNil_whenHeaderIsNotABool() throws {
+           let api = makeMockedFirmwareUpdateApi()
+           FirmwareMockURLProtocol.responseHandler = { request in
+               let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: ["mandatory": "not-a-bool"])!
+               return (response, nil)
+           }
+
+           var result: Result<FirmwareUpdateResponse, Error>?
+           let exp = XCTestExpectation(description: "checkFirmwareUpdateFromFirmwareUrl")
+           api.checkFirmwareUpdateFromFirmwareUrl(URL(string: "https://example.com/fw.zip")!) {
+               result = $0
+               exp.fulfill()
+           }
+           wait(for: [exp], timeout: 2)
+
+           let response = try XCTUnwrap(result).get()
+           XCTAssertNil(response.mandatory)
+       }
+
+       func test_checkFirmwareUpdateFromFirmwareUrl_localFileUrl_returnsMandatoryNilWithoutNetworkCall() throws {
+           let api = makeMockedFirmwareUpdateApi()
+           FirmwareMockURLProtocol.responseHandler = { request in
+               XCTFail("Network should not be used for local file URLs")
+               return (HTTPURLResponse(url: request.url!, statusCode: 500, httpVersion: nil, headerFields: nil)!, nil)
+           }
+           let fileURL = FileManager.default.temporaryDirectory.appendingPathComponent("fw-\(UUID().uuidString).zip")
+           FileManager.default.createFile(atPath: fileURL.path, contents: Data())
+           defer { try? FileManager.default.removeItem(at: fileURL) }
+
+           var result: Result<FirmwareUpdateResponse, Error>?
+           let exp = XCTestExpectation(description: "checkFirmwareUpdateFromFirmwareUrl")
+           api.checkFirmwareUpdateFromFirmwareUrl(fileURL) {
+               result = $0
+               exp.fulfill()
+           }
+           wait(for: [exp], timeout: 2)
+
+           let response = try XCTUnwrap(result).get()
+           XCTAssertNil(response.mandatory)
+           XCTAssertEqual(response.statusCode, 200)
+       }
 }

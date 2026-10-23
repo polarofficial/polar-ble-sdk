@@ -51,4 +51,9 @@ public enum PolarErrors: Error {
     
     /// Error occurred while loading file data from device or while reading the the file data or while writing file data
     case fileError(description: String)
+
+    /// Another SDK device-side API call is already in progress for the same device.
+    /// The call is rejected immediately, not queued; callers must serialise calls to the same device.
+    /// Long-lived observers and telemetry APIs are not guarded. Note: switches over `PolarErrors` must handle this case.
+    case concurrentApiCall(description: String)
 }

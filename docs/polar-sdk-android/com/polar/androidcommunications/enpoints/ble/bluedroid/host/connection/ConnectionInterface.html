@@ -256,15 +256,15 @@ public interface <span class="typeNameLabel"><a href=ConnectionInterface.html>Co
                                         <tr id="i1" class="rowColor">
                                             <td class="colFirst"><code>abstract <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
                                             </td>
-                                            <th class="colSecond" scope="row"><code><a href=ConnectionInterface.html#disconnectDevice(com.polar.androidcommunications.enpoints.ble.bluedroid.host.BDDeviceSessionImpl)>disconnectDevice</a>(<a href=../BDDeviceSessionImpl.html>BDDeviceSessionImpl</a> session) </code>
+                                            <th class="colSecond" scope="row"><code><a href=ConnectionInterface.html#connectDeviceInBackground(com.polar.androidcommunications.enpoints.ble.bluedroid.host.BDDeviceSessionImpl)>connectDeviceInBackground</a>(<a href=../BDDeviceSessionImpl.html>BDDeviceSessionImpl</a> session) </code>
                                             </th>
-                                            <td class="colLast"></td>
+                                            <td class="colLast">Issue a background connection request (connectGatt with autoConnect = true).</td>
                                         </tr>
                                         
                                         <tr id="i2" class="altColor">
                                             <td class="colFirst"><code>abstract <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
                                             </td>
-                                            <th class="colSecond" scope="row"><code><a href=ConnectionInterface.html#cancelDeviceConnection(com.polar.androidcommunications.enpoints.ble.bluedroid.host.BDDeviceSessionImpl)>cancelDeviceConnection</a>(<a href=../BDDeviceSessionImpl.html>BDDeviceSessionImpl</a> session) </code>
+                                            <th class="colSecond" scope="row"><code><a href=ConnectionInterface.html#disconnectDevice(com.polar.androidcommunications.enpoints.ble.bluedroid.host.BDDeviceSessionImpl)>disconnectDevice</a>(<a href=../BDDeviceSessionImpl.html>BDDeviceSessionImpl</a> session) </code>
                                             </th>
                                             <td class="colLast"></td>
                                         </tr>
@@ -272,7 +272,7 @@ public interface <span class="typeNameLabel"><a href=ConnectionInterface.html>Co
                                         <tr id="i3" class="rowColor">
                                             <td class="colFirst"><code>abstract <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
                                             </td>
-                                            <th class="colSecond" scope="row"><code><a href=ConnectionInterface.html#setPhy(com.polar.androidcommunications.enpoints.ble.bluedroid.host.BDDeviceSessionImpl)>setPhy</a>(<a href=../BDDeviceSessionImpl.html>BDDeviceSessionImpl</a> session) </code>
+                                            <th class="colSecond" scope="row"><code><a href=ConnectionInterface.html#cancelDeviceConnection(com.polar.androidcommunications.enpoints.ble.bluedroid.host.BDDeviceSessionImpl)>cancelDeviceConnection</a>(<a href=../BDDeviceSessionImpl.html>BDDeviceSessionImpl</a> session) </code>
                                             </th>
                                             <td class="colLast"></td>
                                         </tr>
@@ -280,15 +280,15 @@ public interface <span class="typeNameLabel"><a href=ConnectionInterface.html>Co
                                         <tr id="i4" class="altColor">
                                             <td class="colFirst"><code>abstract <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
                                             </td>
-                                            <th class="colSecond" scope="row"><code><a href=ConnectionInterface.html#readPhy(com.polar.androidcommunications.enpoints.ble.bluedroid.host.BDDeviceSessionImpl)>readPhy</a>(<a href=../BDDeviceSessionImpl.html>BDDeviceSessionImpl</a> session) </code>
+                                            <th class="colSecond" scope="row"><code><a href=ConnectionInterface.html#setPhy(com.polar.androidcommunications.enpoints.ble.bluedroid.host.BDDeviceSessionImpl)>setPhy</a>(<a href=../BDDeviceSessionImpl.html>BDDeviceSessionImpl</a> session) </code>
                                             </th>
                                             <td class="colLast"></td>
                                         </tr>
                                         
                                         <tr id="i5" class="rowColor">
-                                            <td class="colFirst"><code>abstract <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a></code>
+                                            <td class="colFirst"><code>abstract <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
                                             </td>
-                                            <th class="colSecond" scope="row"><code><a href=ConnectionInterface.html#startServiceDiscovery(com.polar.androidcommunications.enpoints.ble.bluedroid.host.BDDeviceSessionImpl)>startServiceDiscovery</a>(<a href=../BDDeviceSessionImpl.html>BDDeviceSessionImpl</a> session) </code>
+                                            <th class="colSecond" scope="row"><code><a href=ConnectionInterface.html#readPhy(com.polar.androidcommunications.enpoints.ble.bluedroid.host.BDDeviceSessionImpl)>readPhy</a>(<a href=../BDDeviceSessionImpl.html>BDDeviceSessionImpl</a> session) </code>
                                             </th>
                                             <td class="colLast"></td>
                                         </tr>
@@ -296,12 +296,20 @@ public interface <span class="typeNameLabel"><a href=ConnectionInterface.html>Co
                                         <tr id="i6" class="altColor">
                                             <td class="colFirst"><code>abstract <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a></code>
                                             </td>
-                                            <th class="colSecond" scope="row"><code><a href=ConnectionInterface.html#setMtu(com.polar.androidcommunications.enpoints.ble.bluedroid.host.BDDeviceSessionImpl)>setMtu</a>(<a href=../BDDeviceSessionImpl.html>BDDeviceSessionImpl</a> session) </code>
+                                            <th class="colSecond" scope="row"><code><a href=ConnectionInterface.html#startServiceDiscovery(com.polar.androidcommunications.enpoints.ble.bluedroid.host.BDDeviceSessionImpl)>startServiceDiscovery</a>(<a href=../BDDeviceSessionImpl.html>BDDeviceSessionImpl</a> session) </code>
                                             </th>
                                             <td class="colLast"></td>
                                         </tr>
                                         
                                         <tr id="i7" class="rowColor">
+                                            <td class="colFirst"><code>abstract <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a></code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=ConnectionInterface.html#setMtu(com.polar.androidcommunications.enpoints.ble.bluedroid.host.BDDeviceSessionImpl)>setMtu</a>(<a href=../BDDeviceSessionImpl.html>BDDeviceSessionImpl</a> session) </code>
+                                            </th>
+                                            <td class="colLast"></td>
+                                        </tr>
+                                        
+                                        <tr id="i8" class="altColor">
                                             <td class="colFirst"><code>abstract <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a></code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=ConnectionInterface.html#isPowered()>isPowered</a>() </code>
@@ -363,6 +371,29 @@ public interface <span class="typeNameLabel"><a href=ConnectionInterface.html>Co
                                         <h4>connectDevice</h4>
                                         <pre class="methodSignature"> abstract <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a> <a href=ConnectionInterface.html#connectDevice(com.polar.androidcommunications.enpoints.ble.bluedroid.host.BDDeviceSessionImpl)>connectDevice</a>(<a href=../BDDeviceSessionImpl.html>BDDeviceSessionImpl</a> session)</pre>
                                         <div class="block"></div>
+
+                                        <dl>
+
+                                        
+
+                                        
+
+                                        
+
+                                        </dl>
+                                    </li>
+                                </ul>
+                                
+                                <a id="connectDeviceInBackground(com.polar.androidcommunications.enpoints.ble.bluedroid.host.BDDeviceSessionImpl)">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockList"
+                                          >
+                                    <li class="blockList">
+                                        <h4>connectDeviceInBackground</h4>
+                                        <pre class="methodSignature"> abstract <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a> <a href=ConnectionInterface.html#connectDeviceInBackground(com.polar.androidcommunications.enpoints.ble.bluedroid.host.BDDeviceSessionImpl)>connectDeviceInBackground</a>(<a href=../BDDeviceSessionImpl.html>BDDeviceSessionImpl</a> session)</pre>
+                                        <div class="block"><p>Issue a background connection request (connectGatt with autoConnect = true). The Bluetooth stack keeps the request open and connects when the device becomes reachable, without the app scanning, also while the screen is off or the process is in the background.</p></div>
 
                                         <dl>
 

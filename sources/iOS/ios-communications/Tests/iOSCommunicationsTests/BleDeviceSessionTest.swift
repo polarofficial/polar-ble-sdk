@@ -74,6 +74,54 @@ final class BleDeviceSessionTest: XCTestCase {
         XCTAssertTrue(session.hasEstablishedConnection)
     }
 
+    // MARK: - Last connection error diagnostics
+
+    func testLastConnectionError_startsNilAndReturnsMostRecentError() {
+        XCTAssertNil(session.lastConnectionError)
+
+        let error = NSError(domain: "BleDeviceSessionTest", code: 42)
+        session.lastConnectionError = error
+
+        let storedError = session.lastConnectionError as NSError?
+        XCTAssertEqual(storedError?.domain, error.domain)
+        XCTAssertEqual(storedError?.code, error.code)
+    }
+
+    func testLastConnectionError_canBeClearedAfterSuccessfulConnection() {
+        session.lastConnectionError = NSError(domain: "BleDeviceSessionTest", code: 42)
+
+        session.lastConnectionError = nil
+
+        XCTAssertNil(session.lastConnectionError)
+    }
+
+    func testLastConnectionError_supportsConcurrentReadsAndWrites() {
+        let queue = DispatchQueue(label: "BleDeviceSessionTest.lastConnectionError", attributes: .concurrent)
+        let group = DispatchGroup()
+
+        for writer in 0 ..< 4 {
+            group.enter()
+            queue.async {
+                for iteration in 0 ..< 1_000 {
+                    self.session.lastConnectionError = NSError(domain: "BleDeviceSessionTest", code: writer * 1_000 + iteration)
+                }
+                group.leave()
+            }
+        }
+
+        for _ in 0 ..< 4 {
+            group.enter()
+            queue.async {
+                for _ in 0 ..< 1_000 {
+                    _ = self.session.lastConnectionError
+                }
+                group.leave()
+            }
+        }
+
+        XCTAssertEqual(group.wait(timeout: .now() + 5), .success)
+    }
+
     // MARK: - Security recovery attempts
 
     func testRecordSecurityRecoveryAttempt_notExhaustedBeforeMaxAttempts() {

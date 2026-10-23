@@ -13,6 +13,9 @@ import com.polar.sdk.impl.utils.PolarServiceClientUtils
 import com.polar.sdk.impl.utils.PolarTelemetryMemfaultUtils
 import kotlinx.coroutines.flow.Flow
 
+/**
+ * Telemetry is intentionally not covered by [PolarApiCallGuard]: it uses a dedicated, long-lived BLE client.
+ */
 class PolarTelemetryApiImpl(val listener: BleDeviceListener): PolarBleTelemetryApi {
 
     companion object {

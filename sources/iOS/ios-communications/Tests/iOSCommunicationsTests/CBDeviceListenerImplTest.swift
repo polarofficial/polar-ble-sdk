@@ -11,6 +11,7 @@ final class CBDeviceListenerImplTest: XCTestCase {
     var cancellables = Set<AnyCancellable>()
 
     override func setUpWithError() throws {
+        UserDefaults.standard.removeObject(forKey: CBDeviceListenerImpl.knownPeripheralIdentifiersDefaultsKey)
         sut = CBDeviceListenerImpl(
             DispatchQueue(label: "com.polar.test.ble"),
             clients: [],
@@ -20,6 +21,7 @@ final class CBDeviceListenerImplTest: XCTestCase {
 
     override func tearDownWithError() throws {
         cancellables.removeAll()
+        UserDefaults.standard.removeObject(forKey: CBDeviceListenerImpl.knownPeripheralIdentifiersDefaultsKey)
         sut = nil
     }
 
@@ -59,6 +61,22 @@ final class CBDeviceListenerImplTest: XCTestCase {
 
         XCTAssertFalse(sut.removeSession(identifier))
         XCTAssertTrue(sut.allSessions().isEmpty)
+    }
+
+    func testKnownPeripheralIdentifierReturnsUUIDIdentifierDirectly() {
+        let identifier = UUID()
+
+        XCTAssertEqual(sut.knownPeripheralIdentifier(for: identifier.uuidString), identifier)
+    }
+
+    func testKnownPeripheralIdentifierReturnsRememberedPeripheralForPolarDeviceID() {
+        let peripheralIdentifier = UUID()
+        UserDefaults.standard.set(
+            ["ABCDEF01": peripheralIdentifier.uuidString],
+            forKey: CBDeviceListenerImpl.knownPeripheralIdentifiersDefaultsKey
+        )
+
+        XCTAssertEqual(sut.knownPeripheralIdentifier(for: "ABCDEF01"), peripheralIdentifier)
     }
 
     // MARK: - removeAllSessions

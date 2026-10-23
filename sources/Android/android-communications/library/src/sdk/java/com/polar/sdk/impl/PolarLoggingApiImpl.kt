@@ -23,7 +23,8 @@ import java.io.ByteArrayInputStream
  * management via the PFTP file transfer protocol.
  */
 internal class PolarLoggingApiImpl(
-    private val listener: BleDeviceListener
+    private val listener: BleDeviceListener,
+    private val apiCallGuard: PolarApiCallGuard = PolarApiCallGuard()
 ) : PolarLoggingApi {
 
     companion object {
@@ -39,60 +40,63 @@ internal class PolarLoggingApiImpl(
     // ---- PolarLoggingApi ----------------------------------------------------------------
 
     override suspend fun exportDeviceLogs(identifier: String): List<PolarDeviceLog> {
-        val results = mutableListOf<PolarDeviceLog>()
+        return apiCallGuard.guardSuspend("exportDeviceLogs", identifier) {
+            val results = mutableListOf<PolarDeviceLog>()
 
-        suspend fun tryFetch(path: String): Boolean {
-            return try {
-                val data = PolarFileUtils.getFile(identifier, path, listener, TAG)
-                results.add(PolarDeviceLog(path = path, data = data))
-                BleLogger.d(TAG, "exportDeviceLogs: fetched $path from $identifier")
-                true
-            } catch (throwable: Throwable) {
-                if (isFileNotFound(throwable)) {
-                    BleLogger.d(TAG, "exportDeviceLogs: $path not found on device, skipping")
-                } else {
-                    BleLogger.w(TAG, "exportDeviceLogs: $path skipped (${throwable.message})")
+            suspend fun tryFetch(path: String): Boolean {
+                return try {
+                    val data = PolarFileUtils.getFile(identifier, path, listener, TAG)
+                    results.add(PolarDeviceLog(path = path, data = data))
+                    BleLogger.d(TAG, "exportDeviceLogs: fetched $path from $identifier")
+                    true
+                } catch (throwable: Throwable) {
+                    if (isFileNotFound(throwable)) {
+                        BleLogger.d(TAG, "exportDeviceLogs: $path not found on device, skipping")
+                    } else {
+                        BleLogger.w(TAG, "exportDeviceLogs: $path skipped (${throwable.message})")
+                    }
+                    false
                 }
-                false
             }
+
+            for (path in listOf("/ERRORLOG.BPB", "/ERRORLO2.BPB", "/SYSLOG.TXT")) {
+                tryFetch(path)
+            }
+
+            var index = 1
+            while (tryFetch("/TRC$index.BIN")) { index++ }
+
+            index = 1
+            while (tryFetch("/DBGTRC$index.BIN")) { index++ }
+
+            BleLogger.d(TAG, "exportDeviceLogs: completed, fetched ${results.size} file(s) from $identifier")
+            results
         }
-
-        // Static log files
-        for (path in listOf("/ERRORLOG.BPB", "/ERRORLO2.BPB", "/SYSLOG.TXT")) {
-            tryFetch(path)
-        }
-
-        // Telemetry trace files: TRC1.BIN, TRC2.BIN, … stop at first missing index
-        var index = 1
-        while (tryFetch("/TRC$index.BIN")) { index++ }
-
-        // Debug trace files: DBGTRC1.BIN, DBGTRC2.BIN, … stop at first missing index
-        index = 1
-        while (tryFetch("/DBGTRC$index.BIN")) { index++ }
-
-        BleLogger.d(TAG, "exportDeviceLogs: completed, fetched ${results.size} file(s) from $identifier")
-        return results
     }
 
     override suspend fun getLogConfig(identifier: String): LogConfig {
-        val byteArray = PolarFileUtils.getFile(identifier, LogConfig.LOG_CONFIG_FILENAME, listener, TAG)
-        return try {
-            LogConfig.fromBytes(byteArray)
-        } catch (e: Exception) {
-            BleLogger.e(TAG, "Failed to get LogConfig: $e")
-            throw e
+        return apiCallGuard.guardSuspend("getLogConfig", identifier) {
+            val byteArray = PolarFileUtils.getFile(identifier, LogConfig.LOG_CONFIG_FILENAME, listener, TAG)
+            try {
+                LogConfig.fromBytes(byteArray)
+            } catch (e: Exception) {
+                BleLogger.e(TAG, "Failed to get LogConfig: $e")
+                throw e
+            }
         }
     }
 
     override suspend fun setLogConfig(identifier: String, logConfig: LogConfig) {
-        val session = PolarServiceClientUtils.sessionPsFtpClientReady(identifier, listener)
-        val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
-            ?: throw PolarServiceNotAvailable()
-        BleLogger.d(TAG, "setLogConfig: writing config to device $identifier path=${LogConfig.LOG_CONFIG_FILENAME}")
-        val builder = PftpRequest.PbPFtpOperation.newBuilder()
-        builder.command = PftpRequest.PbPFtpOperation.Command.PUT
-        builder.path = LogConfig.LOG_CONFIG_FILENAME
-        val data = ByteArrayInputStream(logConfig.toProto().toByteArray())
-        client.write(builder.build().toByteArray(), data).collect {}
+        apiCallGuard.guardSuspend("setLogConfig", identifier) {
+            val session = PolarServiceClientUtils.sessionPsFtpClientReady(identifier, listener)
+            val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
+                ?: throw PolarServiceNotAvailable()
+            BleLogger.d(TAG, "setLogConfig: writing config to device $identifier path=${LogConfig.LOG_CONFIG_FILENAME}")
+            val builder = PftpRequest.PbPFtpOperation.newBuilder()
+            builder.command = PftpRequest.PbPFtpOperation.Command.PUT
+            builder.path = LogConfig.LOG_CONFIG_FILENAME
+            val data = ByteArrayInputStream(logConfig.toProto().toByteArray())
+            client.write(builder.build().toByteArray(), data).collect {}
+        }
     }
 }

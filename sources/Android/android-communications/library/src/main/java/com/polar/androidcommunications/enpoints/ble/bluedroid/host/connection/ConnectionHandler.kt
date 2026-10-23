@@ -1,6 +1,5 @@
 package com.polar.androidcommunications.enpoints.ble.bluedroid.host.connection
 
-import androidx.annotation.VisibleForTesting
 import android.bluetooth.BluetoothGatt
 import com.polar.androidcommunications.api.ble.BleLogger
 import com.polar.androidcommunications.api.ble.model.BleDeviceSession.DeviceSessionState
@@ -25,8 +24,9 @@ class ConnectionHandler(
     companion object {
         private const val TAG = "ConnectionHandler"
 
-        @VisibleForTesting
-        const val GUARD_TIME_MS = 6000L
+        // internal (not public + @VisibleForTesting): AGP grants the unit test source set friend
+        // access to internal members, so this stays testable without a test-only public API.
+        internal const val GUARD_TIME_MS = 6000L
         private const val DISCONNECT_GUARD_TIME_MS = 15000L
         const val POLAR_PREFERRED_MTU = 512
         const val MTU_SKIP_NEGOTIATION = 0
@@ -40,21 +40,22 @@ class ConnectionHandler(
          * the session is forcibly cancelled and moved back to SESSION_OPEN_PARK for reconnection.
          * Normal connection flow completes in a few seconds; 30s gives ample margin.
          */
-        @VisibleForTesting
-        const val CONNECTION_WATCHDOG_TIMEOUT_MS = 30_000L
+        internal const val CONNECTION_WATCHDOG_TIMEOUT_MS = 30_000L
 
         /**
          * Base backoff delay between no-callback (watchdog-triggered) connection attempts.
          */
         private const val INITIAL_CONNECT_BACKOFF_MS = 5_000L    // 5 s
         private const val MAX_CONNECT_BACKOFF_MS     = 120_000L  // 2 min cap
+
+        /** Delay before a failed background (autoConnect) link request is issued again. */
+        internal const val BACKGROUND_LINK_RETRY_DELAY_MS = 5_000L
     }
 
     /**
      * Connection handler state's
      */
-    @VisibleForTesting
-    enum class ConnectionHandlerState {
+    internal enum class ConnectionHandlerState {
         FREE, CONNECTING
     }
 
@@ -83,8 +84,7 @@ class ConnectionHandler(
         ConnectionHandlerAction.MTU_UPDATED
     )
 
-    @VisibleForTesting
-    var state: ConnectionHandlerState = ConnectionHandlerState.FREE
+    internal var state: ConnectionHandlerState = ConnectionHandlerState.FREE
     private var current: BDDeviceSessionImpl? = null
     private var automaticReconnection = true
 
@@ -144,6 +144,24 @@ class ConnectionHandler(
      */
     private var poweredOff = false
 
+    /*
+     * Background links. A parked session (SESSION_OPEN_PARK) holds a connectGatt(autoConnect = true)
+     * request, so the Bluetooth stack reconnects it as soon as the device is reachable, without a
+     * scan, also with the screen off. The request lives outside the serial CONNECTING state, so it
+     * never blocks other connects and is not subject to the SESSION_OPENING watchdog. When the link
+     * comes up the handler adopts it and continues the normal negotiation from service discovery.
+     */
+    /** Sessions currently in SESSION_OPEN_PARK. */
+    private val parkedSessions = linkedSetOf<BDDeviceSessionImpl>()
+    /** Parked sessions with an outstanding background link request. */
+    private val backgroundLinks = linkedSetOf<BDDeviceSessionImpl>()
+    /** Background links that connected while the handler was busy; adopted once it is FREE. */
+    private val readyBackgroundLinks = linkedSetOf<BDDeviceSessionImpl>()
+    /** Delayed re-issue of failed background link requests. */
+    private val backgroundLinkRetryJobs = mutableMapOf<BDDeviceSessionImpl, Job>()
+    /** Set while CONNECTING is entered for an adopted background link: no new GATT connect is issued. */
+    private var adoptingBackgroundLink = false
+
     fun setAutomaticReconnection(automaticReconnection: Boolean) {
         synchronized(mutex) {
             this.automaticReconnection = automaticReconnection
@@ -158,6 +176,9 @@ class ConnectionHandler(
                         iterator.remove()
                     }
                 }
+                backgroundLinks.toList().forEach { cancelBackgroundLink(it) }
+            } else {
+                armBackgroundLinks()
             }
         }
     }
@@ -175,6 +196,8 @@ class ConnectionHandler(
             disconnectSafeGuardJobs.clear()
             retries.values.forEach { it.cancel() }
             retries.clear()
+            backgroundLinkRetryJobs.values.forEach { it.cancel() }
+            backgroundLinkRetryJobs.clear()
         }
         scope.cancel()
     }
@@ -301,6 +324,21 @@ class ConnectionHandler(
                 ) {
                     return@stateTransaction
                 }
+                // Events of a background link are handled before the negotiation ordering check,
+                // because the link belongs to a parked session, not to the current attempt.
+                if (bleDeviceSession in backgroundLinks) {
+                    when (action) {
+                        ConnectionHandlerAction.DEVICE_CONNECTION_INITIALIZED -> {
+                            backgroundLinkConnected(bleDeviceSession)
+                            return@stateTransaction
+                        }
+                        ConnectionHandlerAction.DEVICE_DISCONNECTED -> {
+                            backgroundLinkLost(bleDeviceSession)
+                            return@stateTransaction
+                        }
+                        else -> {}
+                    }
+                }
                 // Negotiation callbacks are only meaningful for the session currently being
                 // connected, and only when they are the stage we are actually waiting for. This
                 // rejects duplicates and stale guard timers that would otherwise skip a stage.
@@ -337,7 +375,10 @@ class ConnectionHandler(
             action()
         } finally {
             commandDepth--
-            if (commandDepth == 0) drainPendingConnects()
+            if (commandDepth == 0) {
+                drainPendingConnects()
+                armBackgroundLinks()
+            }
         }
     }
 
@@ -349,6 +390,15 @@ class ConnectionHandler(
 
     private fun updateSessionState(bleDeviceSession: BDDeviceSessionImpl, newState: DeviceSessionState) {
         BleLogger.d(TAG, " Session update from: " + bleDeviceSession.sessionState.toString() + " to: " + newState.toString())
+        synchronized(mutex) {
+            if (newState == DeviceSessionState.SESSION_OPEN_PARK) {
+                parkedSessions.add(bleDeviceSession)
+            } else {
+                parkedSessions.remove(bleDeviceSession)
+                // Leaving the parked state (foreground connect, close, ...) ends the background link.
+                cancelBackgroundLink(bleDeviceSession)
+            }
+        }
         bleDeviceSession.setSessionStates(newState)
         observer.deviceSessionStateChanged(bleDeviceSession)
     }
@@ -495,7 +545,9 @@ class ConnectionHandler(
                     // A queued request for this session is now being served.
                     retries.remove(session)?.cancel()
                     updateSessionState(session, DeviceSessionState.SESSION_OPENING)
-                    connectionInterface.connectDevice(session)
+                    if (!adoptingBackgroundLink) {
+                        connectionInterface.connectDevice(session)
+                    }
                     connectionWatchdogJob?.cancel()
                     connectionWatchdogJob = scope.launch {
                         delay(CONNECTION_WATCHDOG_TIMEOUT_MS)
@@ -789,6 +841,14 @@ class ConnectionHandler(
         drainingRetries = true
         try {
             while (state == ConnectionHandlerState.FREE && connectionInterface.isPowered) {
+                // An already established background link goes first: the device is connected
+                // and waiting, so finishing it is cheaper than starting a new attempt.
+                val readyLink = readyBackgroundLinks.firstOrNull()
+                if (readyLink != null) {
+                    readyBackgroundLinks.remove(readyLink)
+                    adoptBackgroundLink(readyLink)
+                    continue
+                }
                 val entry = retries.entries.firstOrNull { it.value.ready } ?: break
                 val session = entry.key
                 val request = entry.value
@@ -830,6 +890,8 @@ class ConnectionHandler(
         synchronized(mutex) {
             stateTransaction {
                 retries.remove(session)?.cancel()
+                cancelBackgroundLink(session)
+                parkedSessions.remove(session)
                 cancelFirstAttributeOperation(session)
                 cancelDisconnectSafeGuard(session)
                 reconnectAttempts.remove(session.address)
@@ -901,6 +963,11 @@ class ConnectionHandler(
             firstAttributeOperationJobs.clear()
             disconnectSafeGuardJobs.values.forEach { it.cancel() }
             disconnectSafeGuardJobs.clear()
+            // Every affected GATT, background links included, is closed below.
+            backgroundLinks.clear()
+            readyBackgroundLinks.clear()
+            backgroundLinkRetryJobs.values.forEach { it.cancel() }
+            backgroundLinkRetryJobs.clear()
 
             val affected = (trackedSessions + listOfNotNull(current)).distinct()
             val connecting = current
@@ -937,6 +1004,98 @@ class ConnectionHandler(
             for (session in trackedSessions) {
                 scheduleDirectReconnect(session, INITIAL_CONNECT_BACKOFF_MS)
             }
+            armBackgroundLinks()
         }
     }
+
+    /**
+     * Issue a background link request for every parked session that does not have one yet and is
+     * not being connected in the foreground right now.
+     */
+    private fun armBackgroundLinks() {
+        if (!automaticReconnection || poweredOff || !connectionInterface.isPowered) return
+        for (session in parkedSessions.toList()) {
+            if (session in backgroundLinks || backgroundLinkRetryJobs.containsKey(session)) continue
+            if (state == ConnectionHandlerState.CONNECTING && current === session) continue
+            if (session.sessionState != DeviceSessionState.SESSION_OPEN_PARK) {
+                parkedSessions.remove(session)
+                continue
+            }
+            BleLogger.d(TAG, "Requesting background link for parked session ${session.address}")
+            backgroundLinks.add(session)
+            connectionInterface.connectDeviceInBackground(session)
+        }
+    }
+
+    /** Close the background link of [session], if it has one. */
+    private fun cancelBackgroundLink(session: BDDeviceSessionImpl) {
+        backgroundLinkRetryJobs.remove(session)?.cancel()
+        readyBackgroundLinks.remove(session)
+        if (backgroundLinks.remove(session)) {
+            BleLogger.d(TAG, "Cancelling background link for ${session.address}")
+            connectionInterface.cancelDeviceConnection(session)
+        }
+    }
+
+    private fun backgroundLinkConnected(session: BDDeviceSessionImpl) {
+        if (session.sessionState != DeviceSessionState.SESSION_OPEN_PARK) {
+            cancelBackgroundLink(session)
+            return
+        }
+        if (state == ConnectionHandlerState.FREE) {
+            adoptBackgroundLink(session)
+        } else {
+            // Another session is being connected. Keep the link up and adopt it once FREE.
+            BleLogger.d(TAG, "Background link connected for ${session.address} while busy, adopting when free")
+            readyBackgroundLinks.add(session)
+        }
+    }
+
+    private fun backgroundLinkLost(session: BDDeviceSessionImpl) {
+        // The GATT has already been closed by the disconnect observer.
+        backgroundLinks.remove(session)
+        readyBackgroundLinks.remove(session)
+        BleLogger.d(TAG, "Background link request failed for ${session.address}, retrying in ${BACKGROUND_LINK_RETRY_DELAY_MS}ms")
+        backgroundLinkRetryJobs.remove(session)?.cancel()
+        backgroundLinkRetryJobs[session] = scope.launch {
+            delay(BACKGROUND_LINK_RETRY_DELAY_MS)
+            synchronized(mutex) {
+                backgroundLinkRetryJobs.remove(session)
+                armBackgroundLinks()
+            }
+        }
+    }
+
+    /**
+     * Take over a connected background link: enter CONNECTING without issuing a new GATT connect
+     * and continue the negotiation from DEVICE_CONNECTION_INITIALIZED.
+     */
+    private fun adoptBackgroundLink(session: BDDeviceSessionImpl) {
+        stateTransaction {
+            BleLogger.d(TAG, "Background link connected for ${session.address}, continuing connection setup")
+            backgroundLinks.remove(session)
+            readyBackgroundLinks.remove(session)
+            reconnectAttempts.remove(session.address)
+            reconnectNotBeforeMs.remove(session.address)
+            session.consecutiveNoCallbackConnects = 0
+            session.nextConnectAllowedTimeMs = 0L
+            adoptingBackgroundLink = true
+            try {
+                changeState(session, ConnectionHandlerState.CONNECTING)
+            } finally {
+                adoptingBackgroundLink = false
+            }
+            if (state == ConnectionHandlerState.CONNECTING && current === session &&
+                expectedConnectionEvent == ConnectionHandlerAction.DEVICE_CONNECTION_INITIALIZED
+            ) {
+                connecting(session, ConnectionHandlerAction.DEVICE_CONNECTION_INITIALIZED)
+            } else {
+                // Could not enter CONNECTING (e.g. adapter not powered); do not leave the link orphaned.
+                connectionInterface.cancelDeviceConnection(session)
+            }
+        }
+    }
+
+    internal fun hasBackgroundLink(session: BDDeviceSessionImpl): Boolean =
+        synchronized(mutex) { session in backgroundLinks }
 }

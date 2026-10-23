@@ -8,6 +8,8 @@ extension PolarBleApiImpl {
 
     func getSteps(identifier: String, fromDate: Date, toDate: Date) async throws -> [PolarStepsData] {
         logApiCall("getSteps", ("identifier", identifier), ("fromDate", fromDate), ("toDate", toDate))
+        let guardToken = try apiCallGuard.acquire("getSteps", identifier)
+        defer { apiCallGuard.release(guardToken) }
         guard toDate >= fromDate else {
             BleLogger.error("getSteps: Invalid date range: toDate \(toDate) is before fromDate \(fromDate)")
             throw PolarErrors.invalidArgument(description: "toDate must be greater than or equal to fromDate")
@@ -34,6 +36,8 @@ extension PolarBleApiImpl {
 
     func getDistance(identifier: String, fromDate: Date, toDate: Date) async throws -> [PolarDistanceData] {        
         logApiCall("getDistance", ("identifier", identifier), ("fromDate", fromDate), ("toDate", toDate))
+        let guardToken = try apiCallGuard.acquire("getDistance", identifier)
+        defer { apiCallGuard.release(guardToken) }
         
         guard toDate >= fromDate else {
             BleLogger.error("getDistance: Invalid date range: toDate \(toDate) is before fromDate \(fromDate)")
@@ -59,6 +63,8 @@ extension PolarBleApiImpl {
 
     func get247HrSamples(identifier: String, fromDate: Date, toDate: Date) async throws -> [Polar247HrSamplesData] {
         logApiCall("get247HrSamples", ("identifier", identifier), ("fromDate", fromDate), ("toDate", toDate))
+        let guardToken = try apiCallGuard.acquire("get247HrSamples", identifier)
+        defer { apiCallGuard.release(guardToken) }
         guard toDate >= fromDate else {
             BleLogger.error("get247HrSamples: Invalid date range: toDate \(toDate) is before fromDate \(fromDate)")
             throw PolarErrors.invalidArgument(description: "toDate must be greater than or equal to fromDate")
@@ -70,6 +76,8 @@ extension PolarBleApiImpl {
 
     func get247PPiSamples(identifier: String, fromDate: Date, toDate: Date) async throws -> [Polar247PPiSamplesData] {
         logApiCall("get247PPiSamples", ("identifier", identifier), ("fromDate", fromDate), ("toDate", toDate))
+        let guardToken = try apiCallGuard.acquire("get247PPiSamples", identifier)
+        defer { apiCallGuard.release(guardToken) }
         guard toDate >= fromDate else {
             BleLogger.error("get247PPiSamples: Invalid date range: toDate \(toDate) is before fromDate \(fromDate)")
             throw PolarErrors.invalidArgument(description: "toDate must be greater than or equal to fromDate")
@@ -81,6 +89,8 @@ extension PolarBleApiImpl {
 
     func getNightlyRecharge(identifier: String, fromDate: Date, toDate: Date) async throws -> [PolarNightlyRechargeData] {
         logApiCall("getNightlyRecharge", ("identifier", identifier), ("fromDate", fromDate), ("toDate", toDate))
+        let guardToken = try apiCallGuard.acquire("getNightlyRecharge", identifier)
+        defer { apiCallGuard.release(guardToken) }
         guard toDate >= fromDate else {
             BleLogger.error("getNightlyRecharge: Invalid date range: toDate \(toDate) is before fromDate \(fromDate)")
             throw PolarErrors.invalidArgument(description: "toDate must be greater than or equal to fromDate")
@@ -106,6 +116,8 @@ extension PolarBleApiImpl {
     
     func getCalories(identifier: String, fromDate: Date, toDate: Date, caloriesType: CaloriesType) async throws -> [PolarCaloriesData] {
         logApiCall("getCalories", ("identifier", identifier), ("fromDate", fromDate), ("toDate", toDate), ("caloriesType", caloriesType))
+        let guardToken = try apiCallGuard.acquire("getCalories", identifier)
+        defer { apiCallGuard.release(guardToken) }
         guard toDate >= fromDate else {
             BleLogger.error("getCalories: Invalid date range: toDate \(toDate) is before fromDate \(fromDate)")
             throw PolarErrors.invalidArgument(description: "toDate must be greater than or equal to fromDate")
@@ -129,6 +141,8 @@ extension PolarBleApiImpl {
 
     func getActivitySampleData(identifier: String, fromDate: Date, toDate: Date) async throws -> [PolarActivityDayData] {
         logApiCall("getActivitySampleData", ("identifier", identifier), ("fromDate", fromDate), ("toDate", toDate))
+        let guardToken = try apiCallGuard.acquire("getActivitySampleData", identifier)
+        defer { apiCallGuard.release(guardToken) }
         guard toDate >= fromDate else {
             BleLogger.error("getActivitySampleData: Invalid date range: toDate \(toDate) is before fromDate \(fromDate)")
             throw PolarErrors.invalidArgument(description: "toDate must be greater than or equal to fromDate")
@@ -152,6 +166,8 @@ extension PolarBleApiImpl {
 
     func getDailySummaryData(identifier: String, fromDate: Date, toDate: Date) async throws -> [PolarDailySummary] {
         logApiCall("getDailySummaryData", ("identifier", identifier), ("fromDate", fromDate), ("toDate", toDate))
+        let guardToken = try apiCallGuard.acquire("getDailySummaryData", identifier)
+        defer { apiCallGuard.release(guardToken) }
         guard toDate >= fromDate else {
             BleLogger.error("getDailySummaryData: Invalid date range: toDate \(toDate) is before fromDate \(fromDate)")
             throw PolarErrors.invalidArgument(description: "toDate must be greater than or equal to fromDate")
@@ -176,6 +192,8 @@ extension PolarBleApiImpl {
 
     func getActiveTime(identifier: String, fromDate: Date, toDate: Date) async throws -> [PolarActiveTimeData] {
         logApiCall("getActiveTime", ("identifier", identifier), ("fromDate", fromDate), ("toDate", toDate))
+        let guardToken = try apiCallGuard.acquire("getActiveTime", identifier)
+        defer { apiCallGuard.release(guardToken) }
         let session = try serviceClientUtils.sessionFtpClientReady(identifier)
         guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else { throw PolarErrors.serviceNotFound }
         let calendar = Calendar.current

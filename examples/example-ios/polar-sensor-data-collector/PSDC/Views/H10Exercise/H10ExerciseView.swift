@@ -26,9 +26,10 @@ struct H10ExerciseView: View {
             Button("List exercises",
                    action: {
                 Task {
-                    await bleSdkManager.listH10Exercises()
+                    // On failure the manager has already shown a descriptive error message.
+                    guard await bleSdkManager.listH10Exercises() else { return }
                     if (bleSdkManager.h10ExerciseEntry == nil) {
-                        bleSdkManager.generalMessage = Message(text: "No exercises to list in device")
+                        bleSdkManager.generalMessage = Message(text: "No exercises found on the device. Use \"Start H10 recording\" to record one.")
                     } else {
                         bleSdkManager.generalMessage = Message(text: "Exercise found for date: \(bleSdkManager.h10ExerciseEntry?.date.description ?? "unknown")")
                     }
@@ -40,9 +41,9 @@ struct H10ExerciseView: View {
                 Button(bleSdkManager.h10RecordingFeature.isFetchingRecording ? "Reading exercise" : "Read exercise",
                        action: {
                     Task {
-                        await bleSdkManager.h10ReadExercise()
+                        guard await bleSdkManager.h10ReadExercise() else { return }
                         if bleSdkManager.exerciseData == nil {
-                            bleSdkManager.generalMessage = Message(text: "No exercise data available")
+                            bleSdkManager.generalMessage = Message(text: "The exercise contained no data.")
                         }
                     }
                 })
@@ -92,6 +93,11 @@ struct H10ExerciseView: View {
             Button(bleSdkManager.h10RecordingFeature.isEnabled ? "Stop H10 recording" : "Start H10 recording",
                    action: { bleSdkManager.h10RecordingToggle() }
             ).buttonStyle(SecondaryButtonStyle(buttonState: getRecordingButtonState()))
+        }
+        .onAppear {
+            if bleSdkManager.isH10RecordingDisabledByCapabilitiesConfig {
+                bleSdkManager.generalMessage = Message(text: "H10 exercise recording is not supported. \(PolarBleSdkManager.h10CapabilitiesConfigHint)")
+            }
         }
     }
 
@@ -156,6 +162,23 @@ struct H10ExerciseView_Previews: PreviewProvider {
                 .previewDisplayName(deviceName)
                 .environmentObject(polarBleSdkManager)
         }
+    }
+}
+
+fileprivate struct H10CapabilitiesWarningBanner: View {
+    var body: some View {
+        HStack(alignment: .top, spacing: 8) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .foregroundColor(.orange)
+            Text("H10 exercise recording is disabled by the device capabilities configuration.")
+                .font(.footnote)
+        }
+        .padding(10)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.orange.opacity(0.15))
+        .cornerRadius(8)
+        .padding(.horizontal)
+        .accessibilityIdentifier("h10CapabilitiesWarning")
     }
 }
 

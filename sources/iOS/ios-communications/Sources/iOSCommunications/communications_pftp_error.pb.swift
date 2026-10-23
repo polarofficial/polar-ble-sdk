@@ -51,9 +51,10 @@ public enum Communications_PbPFtpError: SwiftProtobuf.Enum {
   case prerequisiteNotMet // = 206
   case insufficientBuffer // = 207
   case waitForIdling // = 208
+  case batteryTooLow // = 209
+  case waitForPairing // = 210
 
   /// 300-399 reserved for communication interface specific errors
-  case batteryTooLow // = 209
 
   public init() {
     self = .operationSucceeded
@@ -83,6 +84,7 @@ public enum Communications_PbPFtpError: SwiftProtobuf.Enum {
     case 207: self = .insufficientBuffer
     case 208: self = .waitForIdling
     case 209: self = .batteryTooLow
+    case 210: self = .waitForPairing
     default: return nil
     }
   }
@@ -111,6 +113,7 @@ public enum Communications_PbPFtpError: SwiftProtobuf.Enum {
     case .insufficientBuffer: return 207
     case .waitForIdling: return 208
     case .batteryTooLow: return 209
+    case .waitForPairing: return 210
     }
   }
 
@@ -150,5 +153,6 @@ extension Communications_PbPFtpError: SwiftProtobuf._ProtoNameProviding {
     207: .same(proto: "INSUFFICIENT_BUFFER"),
     208: .same(proto: "WAIT_FOR_IDLING"),
     209: .same(proto: "BATTERY_TOO_LOW"),
+    210: .same(proto: "WAIT_FOR_PAIRING"),
   ]
 }

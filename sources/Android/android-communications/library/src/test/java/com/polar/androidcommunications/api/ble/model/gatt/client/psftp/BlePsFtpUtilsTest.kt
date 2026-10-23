@@ -7,6 +7,7 @@ import com.polar.androidcommunications.testrules.BleLoggerTestRule
 import org.junit.Assert
 import org.junit.Rule
 import org.junit.Test
+import protocol.PftpError.PbPFtpError
 
 internal class BlePsFtpUtilsTest {
     @Rule
@@ -56,5 +57,46 @@ internal class BlePsFtpUtilsTest {
         Assert.assertEquals(12, header.sequenceNumber)
         Assert.assertEquals(data.size - 1, header.payload?.size)
         Assert.assertArrayEquals(data.copyOfRange(1, data.size), header.payload)
+    }
+
+    @Test
+    fun `PFTP response errors resolve all declared error codes`() {
+        val expectedErrors = listOf(
+            0 to PbPFtpError.OPERATION_SUCCEEDED,
+            1 to PbPFtpError.REBOOTING,
+            2 to PbPFtpError.TRY_AGAIN,
+            100 to PbPFtpError.UNIDENTIFIED_HOST_ERROR,
+            101 to PbPFtpError.INVALID_COMMAND,
+            102 to PbPFtpError.INVALID_PARAMETER,
+            103 to PbPFtpError.NO_SUCH_FILE_OR_DIRECTORY,
+            104 to PbPFtpError.DIRECTORY_EXISTS,
+            105 to PbPFtpError.FILE_EXISTS,
+            106 to PbPFtpError.OPERATION_NOT_PERMITTED,
+            107 to PbPFtpError.NO_SUCH_USER,
+            108 to PbPFtpError.TIMEOUT,
+            200 to PbPFtpError.UNIDENTIFIED_DEVICE_ERROR,
+            201 to PbPFtpError.NOT_IMPLEMENTED,
+            202 to PbPFtpError.SYSTEM_BUSY,
+            203 to PbPFtpError.INVALID_CONTENT,
+            204 to PbPFtpError.CHECKSUM_FAILURE,
+            205 to PbPFtpError.DISK_FULL,
+            206 to PbPFtpError.PREREQUISITE_NOT_MET,
+            207 to PbPFtpError.INSUFFICIENT_BUFFER,
+            208 to PbPFtpError.WAIT_FOR_IDLING,
+            209 to PbPFtpError.BATTERY_TOO_LOW,
+            210 to PbPFtpError.WAIT_FOR_PAIRING
+        )
+
+        expectedErrors.forEach { (expectedNumber, expectedError) ->
+            val responseError = BlePsFtpUtils.PftpResponseError("PFTP request failed", expectedNumber)
+
+            Assert.assertEquals(expectedNumber, expectedError.number)
+            Assert.assertEquals(expectedError, responseError.errorCode)
+            Assert.assertEquals(expectedError.name, responseError.errorName)
+            Assert.assertEquals(
+                "PFTP request failed Error: $expectedNumber (${expectedError.name})",
+                responseError.message
+            )
+        }
     }
 }

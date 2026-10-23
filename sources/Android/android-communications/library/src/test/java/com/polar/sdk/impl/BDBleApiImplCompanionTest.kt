@@ -141,6 +141,11 @@ class BDBleApiImplCompanionTest {
         val listener = mockk<BleDeviceListener>(relaxed = true)
         every { listener.monitorDeviceSessionState() } returns flowOf(androidx.core.util.Pair(session, DeviceSessionState.SESSION_OPEN))
         api.javaClass.getDeclaredField("listener").also { it.isAccessible = true }.set(api, listener)
+        // devicesStateMonitorJob is now started once, for the instance lifetime, against the
+        // listener that existed at construction time. Restart it here against the mock so the
+        // SESSION_OPEN event below is actually collected.
+        api.javaClass.getDeclaredMethod("startDevicesStateMonitor", BleDeviceListener::class.java)
+            .also { it.isAccessible = true }.invoke(api, listener)
 
         api.javaClass.getDeclaredMethod("openConnection", BleDeviceSession::class.java)
             .also { it.isAccessible = true }.invoke(api, session)

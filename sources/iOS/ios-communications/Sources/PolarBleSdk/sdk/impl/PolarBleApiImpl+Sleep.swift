@@ -23,6 +23,8 @@ extension PolarBleApiImpl: PolarSleepApi {
 
     func stopSleepRecording(identifier: String) async throws {
         logApiCall("stopSleepRecording", ("identifier", identifier))
+        let guardToken = try apiCallGuard.acquire("stopSleepRecording", identifier)
+        defer { apiCallGuard.release(guardToken) }
         do {
             _ = try await self.fileUtils.getFile(identifier: identifier, filePath: "/REST/SLEEP.API")
         } catch {
@@ -142,6 +144,8 @@ extension PolarBleApiImpl: PolarSleepApi {
 
     func getSleep(identifier: String, fromDate: Date, toDate: Date) async throws -> [PolarSleepData.PolarSleepAnalysisResult] {
         logApiCall("getSleep", ("identifier", identifier))
+        let guardToken = try apiCallGuard.acquire("getSleep", identifier)
+        defer { apiCallGuard.release(guardToken) }
         if fromDate > toDate {
             throw PolarErrors.invalidArgument(description: "toDate cannot be smaller than fromDate.")
         }
@@ -167,7 +171,7 @@ extension PolarBleApiImpl: PolarSleepApi {
                 let result = try await PolarSleepUtils.readSleepFromDayDirectory(client: client, date: date)
                 sleepDataList.append(result)
             } catch {
-                BleLogger.error("getSleep: per-date error for \(date): \(error)")
+                BleLogger.error("getSleep: giving up on date \(date) after retries, excluding it from the result: \(error)")
             }
         }
         // Filter out entries with nil sleepStartTime

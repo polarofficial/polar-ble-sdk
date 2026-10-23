@@ -9,6 +9,11 @@ import com.polar.androidcommunications.testrules.BleLoggerTestRule
 import io.mockk.*
 import io.mockk.impl.annotations.MockK
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.junit.*
@@ -206,5 +211,39 @@ internal class BlePsFtpClientTest {
         thread.join(5000)
         Assert.assertFalse("request() should have returned after reset()", thread.isAlive)
         Assert.assertNotNull("request() should have thrown after reset()", result.get()?.exceptionOrNull())
+    }
+
+    @Test
+    fun `waitNotificationEnabled cancellation does not wait for notification timeout`() = runBlocking {
+        val job = CoroutineScope(Dispatchers.Default).launch {
+            blePsFtpClient.waitNotificationEnabled(
+                RFC77_PFTP_MTU_CHARACTERISTIC,
+                checkConnection = true,
+                timeoutMs = BleGattBase.NOTIFICATION_ENABLE_TIMEOUT_MS
+            )
+        }
+        delay(200)
+
+        val elapsedMillis = kotlin.system.measureTimeMillis { job.cancelAndJoin() }
+
+        assertTrue(
+            "Notification-enable cancellation should not wait for the timeout, took ${elapsedMillis}ms",
+            elapsedMillis < 5_000L
+        )
+    }
+
+    @Test
+    fun `waitPsFtpClientReady cancellation does not wait for notification timeout`() = runBlocking {
+        val job = CoroutineScope(Dispatchers.Default).launch {
+            blePsFtpClient.waitPsFtpClientReady(checkConnection = true)
+        }
+        delay(200)
+
+        val elapsedMillis = kotlin.system.measureTimeMillis { job.cancelAndJoin() }
+
+        assertTrue(
+            "PFTP readiness cancellation should not wait for the notification timeout, took ${elapsedMillis}ms",
+            elapsedMillis < 5_000L
+        )
     }
 }
