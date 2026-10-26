@@ -1,0 +1,521 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0CEE7B4441F6D10228EB169D /* SyncFetchOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = C131963826E178E168D72D6E /* SyncFetchOperation.swift */; };
+		204196C59BEDDAB752BB52BC /* LogGraphData.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0915C6A9EECE3904A37B4AE /* LogGraphData.swift */; };
+		258D7DFA2762726B683C818F /* SyncableDataType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A7D831CA62308A5D90E6C03 /* SyncableDataType.swift */; };
+		295E9E3CE01FE93F522F17EB /* DataTypeFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D957E6E33331DD92B1932A1 /* DataTypeFetcher.swift */; };
+		327C5FC4E9F78E5B544229B3 /* SyncLogStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B287D5D7127D959D73C77AFF /* SyncLogStore.swift */; };
+		34B9C6D13527C47E15D71E47 /* BgSyncSampleApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 496ED85F924C08CECA7F33A9 /* BgSyncSampleApp.swift */; };
+		36BE1751EE1E25A0FADE72A4 /* DeviceDataDeleter.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2CB5DF8D74CCFECCC9891D0 /* DeviceDataDeleter.swift */; };
+		3C64EE3078EF43E7BB902774 /* LocalDataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C3FDBA2EEAECE79E63685AF /* LocalDataStore.swift */; };
+		46D675B7BBB4825086CB1C69 /* SyncDashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8FB8D7C65DF0FCF8A1E8129 /* SyncDashboardView.swift */; };
+		5CBA4CA585309C2D763E2CF3 /* SyncLogStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B287D5D7127D959D73C77AFF /* SyncLogStore.swift */; };
+		5EC65028E9DADE5737A970A6 /* BatteryLevelMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 210F4D9AB23F18FD0D878EB4 /* BatteryLevelMonitor.swift */; };
+		618C5BD2B3846604CFF01388 /* SyncModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BBBDDED6759932D42EF99E /* SyncModels.swift */; };
+		6A1F0E67FBD3388B63F187BC /* PolarBleSdk in Frameworks */ = {isa = PBXBuildFile; productRef = DF20494581A7C7040DE5B145 /* PolarBleSdk */; };
+		74A332FA69A5EB5BE97DFFB2 /* SyncModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6BBBDDED6759932D42EF99E /* SyncModels.swift */; };
+		93E91AE241535634E8857A7C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5EE16F276C9F037EFE2C6E79 /* Assets.xcassets */; };
+		A083FCDBEB1496365C6FA6DA /* BackgroundSyncApi.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5869C398E759BBF7CB45191E /* BackgroundSyncApi.swift */; };
+		A1294CC60061BD8ECEEA338F /* SyncLogStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C371019F6B91F8492DBB8E59 /* SyncLogStoreTests.swift */; };
+		B3A134AEF8A6F975131BB0DA /* SyncFetchOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = C131963826E178E168D72D6E /* SyncFetchOperation.swift */; };
+		B57D0E0D9EC4869C2D744C8A /* LocalDataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C3FDBA2EEAECE79E63685AF /* LocalDataStore.swift */; };
+		BCCA92D2780B9EBD2F5D349B /* SyncStateTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E04C296B2EEC7936B9194A6 /* SyncStateTracker.swift */; };
+		C76D843A91C937584D44CB07 /* LogGraphView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DEB4795F15B7D6B9FFDA453 /* LogGraphView.swift */; };
+		D058EE2883A379792073A873 /* PolarBackgroundSyncImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D1556F00EF3464233029D2B /* PolarBackgroundSyncImpl.swift */; };
+		DDFA87B7BD056434CD9FA242 /* SyncStateTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E04C296B2EEC7936B9194A6 /* SyncStateTracker.swift */; };
+		F071CBDE9650109FA12F9E35 /* DataBrowserView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 065ABBD39E6E980F414AD191 /* DataBrowserView.swift */; };
+		F621C77E9C3AD035C94E3676 /* SyncableDataType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A7D831CA62308A5D90E6C03 /* SyncableDataType.swift */; };
+		FEC70AB1C893E18118252BE2 /* SyncManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3A10DD88F269875FDC51A94 /* SyncManager.swift */; };
+		FEFBC33C5E18E58BB0CE7FD9 /* SyncFetchOperationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2783624637884A32CB914721 /* SyncFetchOperationTests.swift */; };
+		FFD43EFF92579065388D087F /* SyncCallbackDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0086B0451540A3781E9CD5B7 /* SyncCallbackDelegate.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		0086B0451540A3781E9CD5B7 /* SyncCallbackDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncCallbackDelegate.swift; sourceTree = "<group>"; };
+		065ABBD39E6E980F414AD191 /* DataBrowserView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataBrowserView.swift; sourceTree = "<group>"; };
+		0A7D831CA62308A5D90E6C03 /* SyncableDataType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncableDataType.swift; sourceTree = "<group>"; };
+		210F4D9AB23F18FD0D878EB4 /* BatteryLevelMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatteryLevelMonitor.swift; sourceTree = "<group>"; };
+		2783624637884A32CB914721 /* SyncFetchOperationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncFetchOperationTests.swift; sourceTree = "<group>"; };
+		42F8B27F2E4C4E075CDBF3B6 /* BgSyncSampleTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = BgSyncSampleTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		496ED85F924C08CECA7F33A9 /* BgSyncSampleApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BgSyncSampleApp.swift; sourceTree = "<group>"; };
+		4F999708B53E508E5FB8261F /* BgSyncSample.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = BgSyncSample.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		5869C398E759BBF7CB45191E /* BackgroundSyncApi.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundSyncApi.swift; sourceTree = "<group>"; };
+		5D1556F00EF3464233029D2B /* PolarBackgroundSyncImpl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarBackgroundSyncImpl.swift; sourceTree = "<group>"; };
+		5EE16F276C9F037EFE2C6E79 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		6C3FDBA2EEAECE79E63685AF /* LocalDataStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalDataStore.swift; sourceTree = "<group>"; };
+		748E344095D61E77A98547B0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		7DEB4795F15B7D6B9FFDA453 /* LogGraphView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogGraphView.swift; sourceTree = "<group>"; };
+		8E04C296B2EEC7936B9194A6 /* SyncStateTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncStateTracker.swift; sourceTree = "<group>"; };
+		9D957E6E33331DD92B1932A1 /* DataTypeFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataTypeFetcher.swift; sourceTree = "<group>"; };
+		A3A10DD88F269875FDC51A94 /* SyncManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncManager.swift; sourceTree = "<group>"; };
+		A5E4B0A7AEEEAC7413504FFC /* BgSyncSample.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = BgSyncSample.entitlements; sourceTree = "<group>"; };
+		A6BBBDDED6759932D42EF99E /* SyncModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncModels.swift; sourceTree = "<group>"; };
+		B0915C6A9EECE3904A37B4AE /* LogGraphData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogGraphData.swift; sourceTree = "<group>"; };
+		B287D5D7127D959D73C77AFF /* SyncLogStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncLogStore.swift; sourceTree = "<group>"; };
+		C131963826E178E168D72D6E /* SyncFetchOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncFetchOperation.swift; sourceTree = "<group>"; };
+		C2CB5DF8D74CCFECCC9891D0 /* DeviceDataDeleter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceDataDeleter.swift; sourceTree = "<group>"; };
+		C371019F6B91F8492DBB8E59 /* SyncLogStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncLogStoreTests.swift; sourceTree = "<group>"; };
+		E8FB8D7C65DF0FCF8A1E8129 /* SyncDashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncDashboardView.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		45824634CEEFE81271CDA570 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6A1F0E67FBD3388B63F187BC /* PolarBleSdk in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		1BD100ED5EE9B1D6BD4F18CC /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				4F999708B53E508E5FB8261F /* BgSyncSample.app */,
+				42F8B27F2E4C4E075CDBF3B6 /* BgSyncSampleTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		3D061FB2D4905C449E983210 /* BgSyncSample */ = {
+			isa = PBXGroup;
+			children = (
+				5EE16F276C9F037EFE2C6E79 /* Assets.xcassets */,
+				A5E4B0A7AEEEAC7413504FFC /* BgSyncSample.entitlements */,
+				496ED85F924C08CECA7F33A9 /* BgSyncSampleApp.swift */,
+				065ABBD39E6E980F414AD191 /* DataBrowserView.swift */,
+				748E344095D61E77A98547B0 /* Info.plist */,
+				B0915C6A9EECE3904A37B4AE /* LogGraphData.swift */,
+				7DEB4795F15B7D6B9FFDA453 /* LogGraphView.swift */,
+				E8FB8D7C65DF0FCF8A1E8129 /* SyncDashboardView.swift */,
+				B287D5D7127D959D73C77AFF /* SyncLogStore.swift */,
+				A3A10DD88F269875FDC51A94 /* SyncManager.swift */,
+				EA8FCA358016C6B0DCB3E357 /* PolarBgSync */,
+			);
+			path = BgSyncSample;
+			sourceTree = "<group>";
+		};
+		7F252821577701D612CD6B18 = {
+			isa = PBXGroup;
+			children = (
+				3D061FB2D4905C449E983210 /* BgSyncSample */,
+				84F55A31F3D8BEEB099F3FF6 /* Tests */,
+				1BD100ED5EE9B1D6BD4F18CC /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		84F55A31F3D8BEEB099F3FF6 /* Tests */ = {
+			isa = PBXGroup;
+			children = (
+				2783624637884A32CB914721 /* SyncFetchOperationTests.swift */,
+				C371019F6B91F8492DBB8E59 /* SyncLogStoreTests.swift */,
+			);
+			path = Tests;
+			sourceTree = "<group>";
+		};
+		EA8FCA358016C6B0DCB3E357 /* PolarBgSync */ = {
+			isa = PBXGroup;
+			children = (
+				5869C398E759BBF7CB45191E /* BackgroundSyncApi.swift */,
+				210F4D9AB23F18FD0D878EB4 /* BatteryLevelMonitor.swift */,
+				9D957E6E33331DD92B1932A1 /* DataTypeFetcher.swift */,
+				C2CB5DF8D74CCFECCC9891D0 /* DeviceDataDeleter.swift */,
+				6C3FDBA2EEAECE79E63685AF /* LocalDataStore.swift */,
+				5D1556F00EF3464233029D2B /* PolarBackgroundSyncImpl.swift */,
+				0A7D831CA62308A5D90E6C03 /* SyncableDataType.swift */,
+				0086B0451540A3781E9CD5B7 /* SyncCallbackDelegate.swift */,
+				C131963826E178E168D72D6E /* SyncFetchOperation.swift */,
+				A6BBBDDED6759932D42EF99E /* SyncModels.swift */,
+				8E04C296B2EEC7936B9194A6 /* SyncStateTracker.swift */,
+			);
+			path = PolarBgSync;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		19055A3B01CB8E6758E8C7BF /* BgSyncSampleTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 20AA99CFC7AC9CE5BAEB28BC /* Build configuration list for PBXNativeTarget "BgSyncSampleTests" */;
+			buildPhases = (
+				992CE61208D31C6CF223D6F9 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = BgSyncSampleTests;
+			packageProductDependencies = (
+			);
+			productName = BgSyncSampleTests;
+			productReference = 42F8B27F2E4C4E075CDBF3B6 /* BgSyncSampleTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		CBFD02ACE0C8A6363E8942BC /* BgSyncSample */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1EEB284328F3F771D0DA5C7C /* Build configuration list for PBXNativeTarget "BgSyncSample" */;
+			buildPhases = (
+				03546CB93314FAF106349EA7 /* Sources */,
+				5E8F41750AEF7E0089A44827 /* Resources */,
+				45824634CEEFE81271CDA570 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = BgSyncSample;
+			packageProductDependencies = (
+				DF20494581A7C7040DE5B145 /* PolarBleSdk */,
+			);
+			productName = BgSyncSample;
+			productReference = 4F999708B53E508E5FB8261F /* BgSyncSample.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		3860A7860CEB211A33205536 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					CBFD02ACE0C8A6363E8942BC = {
+						ProvisioningStyle = Automatic;
+						SystemCapabilities = "[\"com.apple.BackgroundModes\": [\"enabled\": true]]";
+					};
+				};
+			};
+			buildConfigurationList = 4DC2A6611DF6764AE48DDC3C /* Build configuration list for PBXProject "BgSyncSample" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 7F252821577701D612CD6B18;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				5E3CFA5E124A44F2A017CD9A /* XCRemoteSwiftPackageReference "polar-ble-sdk" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 1BD100ED5EE9B1D6BD4F18CC /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				CBFD02ACE0C8A6363E8942BC /* BgSyncSample */,
+				19055A3B01CB8E6758E8C7BF /* BgSyncSampleTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		5E8F41750AEF7E0089A44827 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				93E91AE241535634E8857A7C /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		03546CB93314FAF106349EA7 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A083FCDBEB1496365C6FA6DA /* BackgroundSyncApi.swift in Sources */,
+				5EC65028E9DADE5737A970A6 /* BatteryLevelMonitor.swift in Sources */,
+				34B9C6D13527C47E15D71E47 /* BgSyncSampleApp.swift in Sources */,
+				F071CBDE9650109FA12F9E35 /* DataBrowserView.swift in Sources */,
+				295E9E3CE01FE93F522F17EB /* DataTypeFetcher.swift in Sources */,
+				36BE1751EE1E25A0FADE72A4 /* DeviceDataDeleter.swift in Sources */,
+				3C64EE3078EF43E7BB902774 /* LocalDataStore.swift in Sources */,
+				204196C59BEDDAB752BB52BC /* LogGraphData.swift in Sources */,
+				C76D843A91C937584D44CB07 /* LogGraphView.swift in Sources */,
+				D058EE2883A379792073A873 /* PolarBackgroundSyncImpl.swift in Sources */,
+				FFD43EFF92579065388D087F /* SyncCallbackDelegate.swift in Sources */,
+				46D675B7BBB4825086CB1C69 /* SyncDashboardView.swift in Sources */,
+				B3A134AEF8A6F975131BB0DA /* SyncFetchOperation.swift in Sources */,
+				5CBA4CA585309C2D763E2CF3 /* SyncLogStore.swift in Sources */,
+				FEC70AB1C893E18118252BE2 /* SyncManager.swift in Sources */,
+				618C5BD2B3846604CFF01388 /* SyncModels.swift in Sources */,
+				DDFA87B7BD056434CD9FA242 /* SyncStateTracker.swift in Sources */,
+				F621C77E9C3AD035C94E3676 /* SyncableDataType.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		992CE61208D31C6CF223D6F9 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B57D0E0D9EC4869C2D744C8A /* LocalDataStore.swift in Sources */,
+				0CEE7B4441F6D10228EB169D /* SyncFetchOperation.swift in Sources */,
+				FEFBC33C5E18E58BB0CE7FD9 /* SyncFetchOperationTests.swift in Sources */,
+				327C5FC4E9F78E5B544229B3 /* SyncLogStore.swift in Sources */,
+				A1294CC60061BD8ECEEA338F /* SyncLogStoreTests.swift in Sources */,
+				74A332FA69A5EB5BE97DFFB2 /* SyncModels.swift in Sources */,
+				BCCA92D2780B9EBD2F5D349B /* SyncStateTracker.swift in Sources */,
+				258D7DFA2762726B683C818F /* SyncableDataType.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		06305EC9E23BF4FFE4AF765D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.polar.bgsyncsample.BgSyncSampleTests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		645B5BFCF1281B7FDA844D6F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = BgSyncSample/BgSyncSample.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				INFOPLIST_FILE = BgSyncSample/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.polar.bgsyncsample;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		6D9AEC020C0BC5232697364F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		734BA5CFF892FB2BB8F99E49 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.polar.bgsyncsample.BgSyncSampleTests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		A200D8A8DAC4BAA190A19D22 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = BgSyncSample/BgSyncSample.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				INFOPLIST_FILE = BgSyncSample/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.polar.bgsyncsample;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		F17FF2DDF2D7D687124FBB9D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1EEB284328F3F771D0DA5C7C /* Build configuration list for PBXNativeTarget "BgSyncSample" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A200D8A8DAC4BAA190A19D22 /* Debug */,
+				645B5BFCF1281B7FDA844D6F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		20AA99CFC7AC9CE5BAEB28BC /* Build configuration list for PBXNativeTarget "BgSyncSampleTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				06305EC9E23BF4FFE4AF765D /* Debug */,
+				734BA5CFF892FB2BB8F99E49 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		4DC2A6611DF6764AE48DDC3C /* Build configuration list for PBXProject "BgSyncSample" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6D9AEC020C0BC5232697364F /* Debug */,
+				F17FF2DDF2D7D687124FBB9D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		5E3CFA5E124A44F2A017CD9A /* XCRemoteSwiftPackageReference "polar-ble-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/polarofficial/polar-ble-sdk.git";
+			requirement = {
+				kind = exactVersion;
+				version = 8.5.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		DF20494581A7C7040DE5B145 /* PolarBleSdk */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 5E3CFA5E124A44F2A017CD9A /* XCRemoteSwiftPackageReference "polar-ble-sdk" */;
+			productName = PolarBleSdk;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 3860A7860CEB211A33205536 /* Project object */;
+}

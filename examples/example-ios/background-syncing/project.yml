@@ -1,0 +1,55 @@
+---
+name: BgSyncSample
+options:
+  bundleIdPrefix: com.polar.bgsyncsample
+  deploymentTarget:
+    iOS: '16.0'
+  xcodeVersion: '15.0'
+settings:
+  SWIFT_VERSION: '5.0'
+  TARGETED_DEVICE_FAMILY: '1,2'
+packages:
+  PolarBleSdk:
+    url: https://github.com/polarofficial/polar-ble-sdk.git
+    exactVersion: 8.5.0
+targets:
+  BgSyncSample:
+    type: application
+    platform: iOS
+    sources:
+    - path: BgSyncSample
+      type: group
+    dependencies:
+    - package: PolarBleSdk
+    settings:
+      INFOPLIST_FILE: BgSyncSample/Info.plist
+      PRODUCT_BUNDLE_IDENTIFIER: com.polar.bgsyncsample
+      CODE_SIGN_STYLE: Automatic
+      CODE_SIGN_ENTITLEMENTS: BgSyncSample/BgSyncSample.entitlements
+      ENABLE_USER_SCRIPT_SANDBOXING: false
+    attributes:
+      SystemCapabilities:
+        com.apple.BackgroundModes:
+          enabled: true
+  BgSyncSampleTests:
+    type: bundle.unit-test
+    platform: iOS
+    deploymentTarget: '17.0'
+    sources:
+    - path: Tests
+    - path: BgSyncSample/SyncLogStore.swift
+    - path: BgSyncSample/PolarBgSync/SyncFetchOperation.swift
+    - path: BgSyncSample/PolarBgSync/LocalDataStore.swift
+    - path: BgSyncSample/PolarBgSync/SyncStateTracker.swift
+    - path: BgSyncSample/PolarBgSync/SyncModels.swift
+    - path: BgSyncSample/PolarBgSync/SyncableDataType.swift
+    settings:
+      GENERATE_INFOPLIST_FILE: true
+schemes:
+  BgSyncSample:
+    build:
+      targets:
+        BgSyncSample: all
+    test:
+      targets:
+      - BgSyncSampleTests
