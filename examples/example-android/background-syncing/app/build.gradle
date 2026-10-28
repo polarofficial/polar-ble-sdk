@@ -1,0 +1,107 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+    id 'org.jetbrains.kotlin.plugin.compose'
+    id 'com.google.dagger.hilt.android' 
+    id 'kotlin-kapt'
+}
+
+def buildRepoCommit = (project.findProperty('bgsyncBuildRepoCommit') ?: 'unknown').toString()
+def sdkVersionInfo = (project.findProperty('bgsyncSdkVersion') ?: rootProject.ext.polar_sdk_version).toString()
+def sdkSourceInfo = (project.findProperty('bgsyncSdkSource') ?: (localSdk.toBoolean() ? 'Local (unknown)' : 'Remote')).toString()
+
+android {
+    namespace 'com.polar.bgsyncsample'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.polar.bgsyncsample"
+        minSdk 33
+        targetSdk 34
+    	versionCode 1800
+    	versionName "0.18.0"
+        buildConfigField "String", "BUILD_REPO_COMMIT", "\"${buildRepoCommit}\""
+        buildConfigField "String", "SDK_VERSION_INFO", "\"${sdkVersionInfo}\""
+        buildConfigField "String", "SDK_SOURCE_INFO", "\"${sdkSourceInfo}\""
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        vectorDrawables {
+            useSupportLibrary true
+        }
+        if (localSdk.toBoolean()) {
+            missingDimensionStrategy 'library', 'sdk'
+        }
+    }
+
+    buildTypes {
+        debug {
+            applicationIdSuffix (project.findProperty('bgsyncDebugApplicationIdSuffix') ?: '').toString()
+        }
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_21
+        targetCompatibility JavaVersion.VERSION_21
+    }
+    kotlinOptions {
+        jvmTarget = "21"
+    }
+    buildFeatures {
+        buildConfig true
+        compose true
+    }
+    packaging {
+        resources {
+            excludes += '/META-INF/{AL2.0,LGPL2.1}'
+        }
+    }
+}
+
+dependencies {
+    implementation project(':sync-library')
+
+    def useLocalAar = (project.findProperty('bgsyncUseLocalAar') ?: 'false').toString().toBoolean()
+    def localAarPath = (project.findProperty('bgsyncLocalAarPath') ?: "${rootDir}/../../android-communications/SdkBuild/polar-ble-sdk.aar").toString()
+
+    if (useLocalAar) {
+        implementation files(localAarPath)
+    } else if (localSdk.toBoolean()) {
+        implementation project(':polar-ble-sdk')
+    } else {
+        implementation "com.github.polarofficial:polar-ble-sdk:${rootProject.ext.polar_sdk_version}"
+    }
+
+    // Hilt
+    implementation "com.google.dagger:hilt-android:${rootProject.ext.hilt_version}"
+    kapt "com.google.dagger:hilt-android-compiler:${rootProject.ext.hilt_version}"
+    kapt "org.jetbrains.kotlin:kotlin-metadata-jvm:${rootProject.ext.kotlin_version}"
+    implementation 'androidx.hilt:hilt-navigation-compose:1.1.0'
+
+    // Compose
+    implementation platform("androidx.compose:compose-bom:${rootProject.ext.compose_bom_version}")
+    implementation 'androidx.compose.ui:ui'
+    implementation 'androidx.compose.ui:ui-graphics'
+    implementation 'androidx.compose.ui:ui-tooling-preview'
+    implementation 'androidx.compose.material3:material3'
+    implementation 'androidx.activity:activity-compose:1.8.2'
+    implementation 'androidx.lifecycle:lifecycle-runtime-compose:2.7.0'
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0'
+    implementation 'androidx.navigation:navigation-compose:2.7.7'
+
+    // Core
+    implementation 'androidx.core:core-ktx:1.12.0'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.7.0'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3'
+
+    debugImplementation 'androidx.compose.ui:ui-tooling'
+    debugImplementation 'androidx.compose.ui:ui-test-manifest'
+
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.mockito:mockito-core:5.18.0'
+}
+
+kapt {
+    correctErrorTypes true
+}

@@ -1,0 +1,35 @@
+pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+        maven { url 'https://jitpack.io' }
+    }
+}
+
+rootProject.name = "PolarBgSyncSample"
+include ':app'
+include ':sync-library'
+
+if (localSdk.toBoolean()) {
+    include ':polar-ble-sdk'
+    def sdkDir = new File(rootDir, '../../android-communications/library')
+    if (sdkDir.exists()) {
+        println("Using local SDK source: ${sdkDir.canonicalPath}")
+        project(':polar-ble-sdk').projectDir = sdkDir
+    } else {
+        throw new GradleException(
+            "localSdk=true but local SDK path not found: ${sdkDir.canonicalPath}"
+        )
+    }
+} else {
+    println("Using JitPack dependency for Polar BLE SDK.")
+}

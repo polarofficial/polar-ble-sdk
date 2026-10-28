@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Polar BG Sync Sample</string>
+    <string name="sync_notification_channel">Background Sync</string>
+    <string name="sync_notification_title">Polar Background Sync</string>
+    <string name="sync_notification_text">Syncing data with Polar device…</string>
+</resources>

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- ECG waveform (left portion) -->
+    <path
+        android:pathData="M25,56 L31,56 L34,56 L36,50 L39,62 L42,36 L45,72 L48,50 L51,56 L56,56"
+        android:strokeColor="#222222"
+        android:strokeWidth="5"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:fillColor="#00000000"/>
+
+    <!-- Dot connecting ECG to signal -->
+    <path
+        android:pathData="M59,52 A4,4,0,1,1,59,60 A4,4,0,1,1,59,52"
+        android:fillColor="#222222"/>
+
+    <!-- Wireless signal arcs (right portion) -->
+    <!-- Inner arc -->
+    <path
+        android:pathData="M66,47 A11,11,0,0,1,66,65"
+        android:strokeColor="#222222"
+        android:strokeWidth="5"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000"/>
+    <!-- Outer arc -->
+    <path
+        android:pathData="M74,40 A18,18,0,0,1,74,72"
+        android:strokeColor="#222222"
+        android:strokeWidth="5"
+        android:strokeLineCap="round"
+        android:fillColor="#00000000"/>
+</vector>
