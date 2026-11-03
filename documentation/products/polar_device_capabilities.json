@@ -63,6 +63,13 @@
       "activityDataSupported": true,
       "isDeviceSensor": false
     },
+    "vantage v2": {
+      "fileSystemType": "POLAR_FILE_SYSTEM_V2",
+      "recordingSupported": false,
+      "firmwareUpdateSupported": true,
+      "activityDataSupported": true,
+      "isDeviceSensor": false
+    },
     "vantage v3": {
       "fileSystemType": "POLAR_FILE_SYSTEM_V2",
       "recordingSupported": false,
