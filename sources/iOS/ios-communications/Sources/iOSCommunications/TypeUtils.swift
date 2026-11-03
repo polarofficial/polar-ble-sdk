@@ -25,13 +25,8 @@ class TypeUtils {
     
     static func convertArrayToUnsignedInt(_ data: Data) -> UInt {
         assert(data.count <= 4)
-        var value: UInt = 0
-        memcpy(&value, (data as NSData).bytes, data.count)
-        let mask = (UInt.max << ((data.count * 8) - 1))
-        if (value & mask) != 0 {
-            value |= mask
-        }
-        return value
+        // Decode little-endian bytes without sign extension.
+        return data.reversed().reduce(0) { ($0 << 8) + UInt($1) }
     }
 
     static func convertArrayToUnsignedInt64(_ data: Data, offset: Int, size: Int) -> UInt64 {
