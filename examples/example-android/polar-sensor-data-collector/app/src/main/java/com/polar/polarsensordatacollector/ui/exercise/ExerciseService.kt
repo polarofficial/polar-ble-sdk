@@ -14,7 +14,10 @@ import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.polar.polarsensordatacollector.R
+import com.polar.polarsensordatacollector.repository.DeviceApiCallSerializer
 import com.polar.sdk.api.model.PolarExerciseSession
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -22,7 +25,10 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 
+@AndroidEntryPoint
 class ExerciseService : Service() {
+
+    @Inject lateinit var apiCallSerializer: DeviceApiCallSerializer
 
     private val nm by lazy { getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager }
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
@@ -44,7 +50,7 @@ class ExerciseService : Service() {
 
         if (!::repo.isInitialized) {
             val prefs = applicationContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            repo = ExerciseRepository(api, bleApi, deviceId, prefs)
+            repo = ExerciseRepository(api, bleApi, deviceId, prefs, apiCallSerializer)
 
             autoRefreshJob?.cancel()
             autoRefreshJob = repo.startAutoRefresh(intervalMs = 5_000L)
@@ -82,12 +88,17 @@ class ExerciseService : Service() {
         stateJob = serviceScope.launch {
             try {
                 repo.state().collect { info ->
+                    val sportLabel = if (info.sportProfile == PolarExerciseSession.SportProfile.UNKNOWN && info.sportId > 0) {
+                        getString(R.string.exercise_sport_id, info.sportId)
+                    } else {
+                        info.sportProfile.toString()
+                    }
                     val title = when (info.status) {
                         PolarExerciseSession.ExerciseStatus.IN_PROGRESS,
                         PolarExerciseSession.ExerciseStatus.PAUSED,
                         PolarExerciseSession.ExerciseStatus.STOPPED,
                         PolarExerciseSession.ExerciseStatus.SYNC_REQUIRED ->
-                            getString(R.string.exercise_title_running, info.sportProfile.toString())
+                            getString(R.string.exercise_title_running, sportLabel)
                         else -> getString(R.string.exercise_title)
                     }
                     val notif = when (info.status) {
@@ -107,7 +118,7 @@ class ExerciseService : Service() {
                     } else {
                         Log.d(TAG, "Notification not posted: POST_NOTIFICATIONS not granted")
                     }
-                    Log.d(TAG, "UI state -> ${info.status} ${info.sportProfile}")
+                    Log.d(TAG, "UI state -> ${info.status} sportId=${info.sportId}")
                 }
             } catch (e: Exception) {
                 Log.w(TAG, "state observe failed: ${e.message}")

@@ -7,7 +7,7 @@ private let NIGHTLY_RECOVERY_DIRECTORY = "NR/"
 private let NIGHTLY_RECOVERY_PROTO = "NR.BPB"
 private let dateFormat: DateFormatter = {
     let formatter = DateFormatter()
-    formatter.dateFormat = "yyyyMMdd±hh:mm"
+    formatter.dateFormat = "yyyyMMdd±HH:mm"
     formatter.locale = Locale(identifier: "en_US_POSIX")
     formatter.timeZone = TimeZone.current
     return formatter
@@ -28,8 +28,11 @@ internal class PolarNightlyRechargeUtils {
             guard let recoveryDate = try? PolarTimeUtils.pbDateToDateComponents(pbDate: recoveryStatus.sleepResultDate) else {
                 throw PolarNightlyRechargeError.missingOrInvalidRecoveryDate
             }
-            let createdTimestamp = try PolarTimeUtils.pbSystemDateTimeToDate(pbSystemDateTime: recoveryStatus.createdTimestamp)
-            let modifiedTimestamp = recoveryStatus.hasModifiedTimestamp ? try PolarTimeUtils.pbSystemDateTimeToDate(pbSystemDateTime: recoveryStatus.modifiedTimestamp) : nil
+            // Shift so the UTC fields equal the local wall-clock time stored in the proto
+            let createdDate = try PolarTimeUtils.pbSystemDateTimeToDate(pbSystemDateTime: recoveryStatus.createdTimestamp)
+            let createdTimestamp = createdDate.addingTimeInterval(TimeInterval(TimeZone.current.secondsFromGMT(for: createdDate)))
+            let modifiedDate = recoveryStatus.hasModifiedTimestamp ? try PolarTimeUtils.pbSystemDateTimeToDate(pbSystemDateTime: recoveryStatus.modifiedTimestamp) : nil
+            let modifiedTimestamp = modifiedDate.map { $0.addingTimeInterval(TimeInterval(TimeZone.current.secondsFromGMT(for: $0))) }
             return PolarNightlyRechargeData(
                 createdTimestamp: createdTimestamp, modifiedTimestamp: modifiedTimestamp,
                 ansStatus: Float(recoveryStatus.ansStatus), recoveryIndicator: Int(recoveryStatus.recoveryIndicator),

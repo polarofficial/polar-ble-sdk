@@ -89,7 +89,7 @@ fun ListRecordings(viewModel: ListRecordingsViewModel = viewModel(), onClickItem
 fun RecordedItemsList(onRefresh: () -> Unit, onClickItem: (String, String) -> Unit, onDelete: (PolarOfflineRecordingEntry) -> Unit, offlineRecordingUiState: OfflineRecordingsUiState) {
     SwipeRefresh(
         state = rememberSwipeRefreshState(isRefreshing = offlineRecordingUiState.fetchStatus is OfflineRecordingFetch.InProgress),
-        onRefresh = { onRefresh() },
+        onRefresh = { if (offlineRecordingUiState.deletingEntryPath == null) onRefresh() },
     ) {
         when (val fetchStatus = offlineRecordingUiState.fetchStatus) {
             is OfflineRecordingFetch.Failure -> {
@@ -102,8 +102,8 @@ fun RecordedItemsList(onRefresh: () -> Unit, onClickItem: (String, String) -> Un
                         .padding(24.dp)
                         .fillMaxWidth()
                 ) {
-                    items(fetchStatus.fetchedRecordings) { recordingEntry ->
-                        Recording(recordingEntry, onClickItem, onDelete = { })
+                    items(fetchStatus.fetchedRecordings, key = { it.path }) { recordingEntry ->
+                        Recording(recordingEntry, onClickItem, onDelete = { }, enabled = false)
                         Divider(startIndent = 72.dp)
                     }
                 }
@@ -118,8 +118,14 @@ fun RecordedItemsList(onRefresh: () -> Unit, onClickItem: (String, String) -> Un
                             .padding(24.dp)
                             .fillMaxWidth()
                     ) {
-                        items(fetchStatus.fetchedRecordings) { recordingEntry ->
-                            Recording(recordingEntry, onClickItem, onDelete = { onDelete(recordingEntry) })
+                        items(fetchStatus.fetchedRecordings, key = { it.path }) { recordingEntry ->
+                            Recording(
+                                recordingEntry,
+                                onClickItem,
+                                onDelete = { onDelete(recordingEntry) },
+                                isDeleting = offlineRecordingUiState.deletingEntryPath == recordingEntry.path,
+                                enabled = offlineRecordingUiState.deletingEntryPath == null
+                            )
                             Divider(startIndent = 72.dp)
                         }
                     }
@@ -171,12 +177,13 @@ fun Recording(
     onClick: (String, String) -> Unit,
     onDelete: (path: String) -> Unit,
     isDeleting: Boolean = false,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true
 ) {
     ListItem(
         modifier = modifier
             .clickable(
-                enabled = !isDeleting,
+                enabled = enabled && !isDeleting,
                 onClick = { onClick(recordingEntry.path, getFileNameFromPath(recordingEntry.path)) },
                 indication = LocalIndication.current,
                 interactionSource = remember { MutableInteractionSource() }
@@ -215,7 +222,7 @@ fun Recording(
                     strokeWidth = 2.dp
                 )
             } else {
-                IconButton(onClick = { onDelete(recordingEntry.path) }) {
+                IconButton(onClick = { onDelete(recordingEntry.path) }, enabled = enabled) {
                     Icon(
                         imageVector = Icons.Filled.Delete,
                         contentDescription = stringResource(R.string.delete_file),

@@ -260,6 +260,8 @@
 		A57728BB27CE860600855884 /* PolarBleApiDefaultImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = A577289D27CE860600855884 /* PolarBleApiDefaultImpl.swift */; };
 		A57728BC27CE860600855884 /* PolarErrors.swift in Sources */ = {isa = PBXBuildFile; fileRef = A577289F27CE860600855884 /* PolarErrors.swift */; };
 		A57728BD27CE860600855884 /* PolarErrors.swift in Sources */ = {isa = PBXBuildFile; fileRef = A577289F27CE860600855884 /* PolarErrors.swift */; };
+		B01000000000000000000002 /* sport_profile.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = B01000000000000000000001 /* sport_profile.pb.swift */; };
+		B01000000000000000000003 /* sport_profile.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = B01000000000000000000001 /* sport_profile.pb.swift */; };
 		A57D050A292254E2002824D9 /* BlePmdClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D0509292254E2002824D9 /* BlePmdClient.swift */; };
 		A57D050B292254E2002824D9 /* BlePmdClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D0509292254E2002824D9 /* BlePmdClient.swift */; };
 		A57D050C292254E2002824D9 /* BlePmdClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = A57D0509292254E2002824D9 /* BlePmdClient.swift */; };
@@ -675,6 +677,7 @@
 		A577289C27CE860600855884 /* PolarSensorSetting.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PolarSensorSetting.swift; sourceTree = "<group>"; };
 		A577289D27CE860600855884 /* PolarBleApiDefaultImpl.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PolarBleApiDefaultImpl.swift; sourceTree = "<group>"; };
 		A577289F27CE860600855884 /* PolarErrors.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PolarErrors.swift; sourceTree = "<group>"; };
+		B01000000000000000000001 /* sport_profile.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = sport_profile.pb.swift; sourceTree = "<group>"; };
 		A57D0509292254E2002824D9 /* BlePmdClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlePmdClient.swift; sourceTree = "<group>"; };
 		A57D050D29225779002824D9 /* PmdSetting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PmdSetting.swift; sourceTree = "<group>"; };
 		A57D0511292258D5002824D9 /* PmdMeasurementType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PmdMeasurementType.swift; sourceTree = "<group>"; };
@@ -1286,6 +1289,7 @@
 		A577288E27CE860600855884 /* protobuf */ = {
 			isa = PBXGroup;
 			children = (
+				B01000000000000000000001 /* sport_profile.pb.swift */,
 				847D2B072F8F7B6700F429E7 /* spo2_test_result.pb.swift */,
 				AAA41C9D2F1900F900EFA707 /* sleep_skin_temperature_result.pb.swift */,
 				84059D102DEF09600013C470 /* exercise_samples2.pb.swift */,
@@ -2112,6 +2116,7 @@
 				A57728A927CE860600855884 /* structures.pb.swift in Sources */,
 				842B36102DE472470059C207 /* exercise_route.pb.swift in Sources */,
 				A57728BD27CE860600855884 /* PolarErrors.swift in Sources */,
+				B01000000000000000000003 /* sport_profile.pb.swift in Sources */,
 				6C39E8F6209B07BC001F7E44 /* AtomicInteger.swift in Sources */,
 				6C39E8F7209B07BC001F7E44 /* AtomicList.swift in Sources */,
 				AA99887766554433221100AC /* StreamContinuationList.swift in Sources */,
@@ -2295,6 +2300,7 @@
 				84FC57322F4F1ABD00676A9B /* PolarExerciseTypes.swift in Sources */,
 				A5986D2E2BF7537E0014C5DF /* dailysummary.pb.swift in Sources */,
 				A57728BC27CE860600855884 /* PolarErrors.swift in Sources */,
+				B01000000000000000000002 /* sport_profile.pb.swift in Sources */,
 				6C770BA1206B77F300F3D51D /* AtomicBoolean.swift in Sources */,
 				A5A43C652BDFCB830066334F /* PolarSdkModeApi.swift in Sources */,
 				6C770BA2206B77F300F3D51D /* AtomicInteger.swift in Sources */,

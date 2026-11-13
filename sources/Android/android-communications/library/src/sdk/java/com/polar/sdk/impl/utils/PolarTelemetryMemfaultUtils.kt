@@ -21,7 +21,7 @@ internal object PolarTelemetryMemfaultUtils {
         )
     }
 
-    fun startTelemetryStreaming(client: BleMdsClient): Flow<DeviceTelemetryEvent> {
+    suspend fun startTelemetryStreaming(client: BleMdsClient): Flow<DeviceTelemetryEvent> {
         return client.startMdsNotifications(true).map { config ->
             DeviceTelemetryEvent(type = PolarDeviceTelemetryType.memfault_mds, payload = config.exportData)
         }

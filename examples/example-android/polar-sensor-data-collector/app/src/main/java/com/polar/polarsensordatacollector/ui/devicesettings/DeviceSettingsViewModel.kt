@@ -39,6 +39,7 @@ import com.polar.sdk.api.errors.PolarDeviceNotConnected
 import com.polar.sdk.api.errors.PolarDeviceNotFound
 import com.polar.sdk.api.errors.PolarServiceNotAvailable
 import com.polar.sdk.api.model.PolarDiskSpaceData
+import com.polar.sdk.api.model.PolarDeviceLog
 import com.polar.sdk.api.model.sleep.PolarSleepRecordingStatus
 import com.polar.sdk.api.model.PolarPhysicalConfiguration
 import java.time.LocalDate
@@ -119,6 +120,9 @@ internal class DeviceSettingsViewModel @Inject constructor(
 
     private val _uiIdentifier = MutableStateFlow(identifier)
     val uiIdentifier: StateFlow<String> = _uiIdentifier.asStateFlow()
+
+    suspend fun exportDeviceLogs(): ResultOfRequest<List<PolarDeviceLog>> =
+        polarDeviceStreamingRepository.exportDeviceLogs(identifier)
 
     private val _uiShowError = MutableSharedFlow<MessageUiState>(extraBufferCapacity = 1)
     val uiShowError: SharedFlow<MessageUiState> = _uiShowError.asSharedFlow()

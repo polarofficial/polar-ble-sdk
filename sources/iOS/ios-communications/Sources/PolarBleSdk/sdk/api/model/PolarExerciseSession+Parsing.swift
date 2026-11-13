@@ -21,9 +21,10 @@ public extension PolarExerciseSession.ExerciseInfo {
         default:                    status = .notStarted
         }
 
+        let sportId = proto.hasSportIdentifier ? proto.sportIdentifier.value : 0
         let sport: PolarExerciseSession.SportProfile = {
-            if proto.hasSportIdentifier, proto.sportIdentifier.value <= UInt64(Int.max) {
-                return .from(id: Int(proto.sportIdentifier.value))
+            if let id = Int(exactly: sportId) {
+                return .from(id: id)
             } else {
                 return .unknown
             }
@@ -57,6 +58,6 @@ public extension PolarExerciseSession.ExerciseInfo {
             return calendar.date(from: components)
         }()
 
-        return .init(status: status, sportProfile: sport, startTime: startTime)
+        return .init(status: status, sportProfile: sport, startTime: startTime, sportId: sportId)
     }
 }

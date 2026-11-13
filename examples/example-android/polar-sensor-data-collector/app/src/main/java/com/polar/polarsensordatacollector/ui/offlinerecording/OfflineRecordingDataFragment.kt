@@ -16,6 +16,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
@@ -81,7 +82,15 @@ class OfflineRecordingDataFragment : Fragment(R.layout.fragment_offline_rec) {
 
 @Composable
 fun ShowRecordingData(viewModel: RecordingDataViewModel = viewModel(), onNavigateBack: () -> Boolean) {
-    when (val uiState = viewModel.recordingDataUiState) {
+    val context = LocalContext.current
+    val uiState = viewModel.recordingDataUiState
+    LaunchedEffect(uiState) {
+        if (uiState == RecordingDataUiState.RecordingDeleted) {
+            Toast.makeText(context, context.getString(R.string.deleted_path, path), Toast.LENGTH_LONG).show()
+            onNavigateBack()
+        }
+    }
+    when (uiState) {
         is RecordingDataUiState.Loading -> ShowIsLoading(uiState.progress)
         is RecordingDataUiState.FetchedData -> {
             val context = LocalContext.current
@@ -103,14 +112,7 @@ fun ShowRecordingData(viewModel: RecordingDataViewModel = viewModel(), onNavigat
         is RecordingDataUiState.Failure -> {
             ShowFailed(uiState)
         }
-        RecordingDataUiState.RecordingDeleted -> {
-            Toast.makeText(
-                LocalContext.current,
-                LocalContext.current.getString(R.string.deleted_path, path),
-                Toast.LENGTH_LONG
-            ).show()
-            onNavigateBack()
-        }
+        RecordingDataUiState.RecordingDeleted -> Unit
         RecordingDataUiState.Idle -> {
         }
     }

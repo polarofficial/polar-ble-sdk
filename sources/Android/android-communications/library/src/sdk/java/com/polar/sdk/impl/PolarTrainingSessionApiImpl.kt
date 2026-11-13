@@ -9,6 +9,7 @@ import com.polar.androidcommunications.api.ble.model.gatt.client.psftp.BlePsFtpU
 import com.polar.androidcommunications.api.ble.model.gatt.client.psftp.BlePsFtpUtils.PftpResponseError
 import com.polar.sdk.api.PolarTrainingSessionApi
 import com.polar.sdk.api.errors.PolarDeviceDisconnected
+import com.polar.sdk.api.errors.PolarSportProfileNotFound
 import com.polar.sdk.api.errors.PolarServiceNotAvailable
 import com.polar.sdk.api.model.PolarExerciseSession
 import com.polar.sdk.api.model.trainingsession.PolarTrainingSession
@@ -18,7 +19,9 @@ import com.polar.sdk.api.model.trainingsession.PolarTrainingSessionReference
 import com.polar.sdk.impl.utils.PolarServiceClientUtils
 import com.polar.sdk.impl.utils.PolarTimeUtils
 import com.polar.sdk.impl.utils.PolarTrainingSessionUtils
+import fi.polar.remote.representation.protobuf.SportProfile
 import fi.polar.remote.representation.protobuf.Structures
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.emitAll
@@ -121,22 +124,60 @@ internal class PolarTrainingSessionApiImpl(
     }
 
     override suspend fun startExercise(identifier: String, profile: PolarExerciseSession.SportProfile) {
+        startExercise(identifier, profile.id.toLong())
+    }
+
+    override suspend fun startExercise(identifier: String, sportId: Long) {
+        require(sportId > 0) { "Sport ID must be positive" }
         apiCallGuard.guardSuspend("startExercise", identifier) {
-            BleLogger.d(TAG, "Start exercise pressed for $identifier with profile=$profile")
+            BleLogger.d(TAG, "Start exercise pressed for $identifier with sportId=$sportId")
             val session = PolarServiceClientUtils.sessionPsFtpClientReady(identifier, listener)
             val client = (session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as? BlePsFtpClient)
                 ?: throw PolarServiceNotAvailable()
             try {
+                val availableSportIds = readSportProfileIds(client)
+                if (sportId !in availableSportIds) {
+                    throw PolarSportProfileNotFound(
+                        "No sport profile for sport ID $sportId in /U/0/SPROF/. Available sport IDs: $availableSportIds"
+                    )
+                }
                 val params = PftpRequest.PbPFtpStartExerciseParams.newBuilder()
-                    .setSportIdentifier(Structures.PbSportIdentifier.newBuilder().setValue(profile.id.toLong()).build())
+                    .setSportIdentifier(Structures.PbSportIdentifier.newBuilder().setValue(sportId).build())
                     .build()
                 client.query(PftpRequest.PbPFtpQuery.START_EXERCISE_VALUE, params.toByteArray())
                 BleLogger.d(TAG, "Start exercise succeeded for $identifier")
+            } catch (e: CancellationException) {
+                throw e
             } catch (t: Throwable) {
                 BleLogger.e(TAG, "Start exercise failed for $identifier: ${t.message ?: "unknown error"}")
                 throw handleError(t)
             }
         }
+    }
+
+    private suspend fun readSportProfileIds(client: BlePsFtpClient): Set<Long> {
+        suspend fun read(path: String): ByteArray {
+            val operation = PftpRequest.PbPFtpOperation.newBuilder()
+                .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
+                .setPath(path)
+                .build()
+            return client.request(operation.toByteArray()).toByteArray()
+        }
+
+        val root = "/U/0/SPROF/"
+        val folders = PftpResponse.PbPFtpDirectory.parseFrom(read(root)).entriesList
+            .filter { it.name.endsWith("/") }
+        val sportIds = linkedSetOf<Long>()
+        for (folder in folders) {
+            val path = root + folder.name
+            val entries = PftpResponse.PbPFtpDirectory.parseFrom(read(path)).entriesList
+            if (entries.none { it.name == "PROFILE.BPB" }) continue
+            val sportId = SportProfile.PbSportProfile.parseFrom(read(path + "PROFILE.BPB"))
+                .sportIdentifier.value
+            sportIds.add(sportId)
+            BleLogger.d(TAG, "Sport profile $path" + "PROFILE.BPB: sportId=$sportId")
+        }
+        return sportIds
     }
 
     override suspend fun pauseExercise(identifier: String) {
@@ -243,11 +284,9 @@ internal class PolarTrainingSessionApiImpl(
                 PolarExerciseSession.ExerciseStatus.STOPPED
             else -> PolarExerciseSession.ExerciseStatus.NOT_STARTED
         }
-        val sport = if (proto.hasSportIdentifier()) {
-            PolarExerciseSession.SportProfile.fromId(proto.sportIdentifier.value.toInt())
-        } else {
-            PolarExerciseSession.SportProfile.UNKNOWN
-        }
+        val sportId = if (proto.hasSportIdentifier()) proto.sportIdentifier.value else 0L
+        val sport = PolarExerciseSession.SportProfile.entries.firstOrNull { it.id.toLong() == sportId }
+            ?: PolarExerciseSession.SportProfile.UNKNOWN
         val startTime: LocalDateTime? = if (proto.hasStartTime()) {
             try {
                 PolarTimeUtils.pbLocalDateTimeToLocalDateTimeWithOptionalTz(proto.startTime)
@@ -256,11 +295,12 @@ internal class PolarTrainingSessionApiImpl(
                 null
             }
         } else null
-        return PolarExerciseSession.ExerciseInfo(status = status, sportProfile = sport, startTime = startTime)
+        return PolarExerciseSession.ExerciseInfo(status = status, sportProfile = sport, startTime = startTime, sportId = sportId)
     }
 
     private fun handleError(throwable: Throwable): Exception {
         return when {
+            throwable is PolarSportProfileNotFound -> throwable
             throwable is BleDisconnected -> PolarDeviceDisconnected()
             throwable is PftpResponseError -> {
                 val pftpError = PbPFtpError.forNumber(throwable.error)

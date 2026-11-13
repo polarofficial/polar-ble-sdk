@@ -405,7 +405,7 @@ extension PolarBleSdkManager {
         Task { @MainActor [weak self] in
             guard let self else { return }
             do {
-                let settings = try await api.requestOfflineRecordingSettings(device.deviceId, feature: feature)
+                let settings = try await DeviceApiCallSerializer.shared.serialize(device.deviceId) { try await api.requestOfflineRecordingSettings(device.deviceId, feature: feature) }
                 AppLogger.log("Offline recording settings fetch completed for \(feature)")
 
                 var derivedGroup: PolarDerivedMeasurementSettingsGroup? = nil
@@ -483,22 +483,23 @@ extension PolarBleSdkManager {
             throw PolarErrors.deviceNotConnected
         }
         AppLogger.log("Offline recording trigger setup fetch for \(device.deviceId)")
-        let triggerSetup = try await api.getOfflineRecordingTriggerSetup(device.deviceId)
+        let triggerSetup = try await DeviceApiCallSerializer.shared.serialize(device.deviceId) { try await api.getOfflineRecordingTriggerSetup(device.deviceId) }
         AppLogger.log("Offline recording trigger setup fetch completed for \(device.deviceId)")
         return triggerSetup
     }
     
-    func selectSportProfile(_ sport: PolarExerciseSession.SportProfile) {
+    func selectSportProfile(_ sport: PolarExerciseSession.SportProfile?) {
         exerciseState.selectedSport = sport
+        exerciseState.customSportIdText = ""
     }
 
     func refreshExerciseStatus() async {
         guard case .connected(let device) = deviceConnectionState else { return }
         await MainActor.run { self.exerciseState.isRefreshing = true }
         do {
-            let info = try await api.getExerciseStatus(identifier: device.deviceId)
+            let info = try await DeviceApiCallSerializer.shared.serialize(device.deviceId) { try await api.getExerciseStatus(identifier: device.deviceId) }
             await MainActor.run {
-                self.exerciseState.apply(status: info.status, sport: info.sportProfile, startTime: info.startTime)
+                self.exerciseState.apply(status: info.status, sport: info.sportProfile, startTime: info.startTime, sportId: info.sportId)
                 self.exerciseState.isRefreshing = false
             }
         } catch {
@@ -509,15 +510,39 @@ extension PolarBleSdkManager {
 
     func startExercise() {
         guard case .connected(let device) = deviceConnectionState else { return }
-        AppLogger.log("Start exercise pressed for \(device.deviceId) with sport=\(exerciseState.selectedSport)")
+        guard !exerciseState.invalidSportId else { return }
+        exerciseState.startError = nil
+        let sportId = exerciseState.selectedSportId
+        AppLogger.log("Start exercise pressed for \(device.deviceId) with sportId=\(String(describing: sportId))")
         Task { @MainActor [weak self] in
             guard let self else { return }
             do {
-                try await api.startExercise(identifier: device.deviceId, profile: exerciseState.selectedSport)
-                let info = try await api.getExerciseStatus(identifier: device.deviceId)
-                exerciseState.apply(status: info.status, sport: info.sportProfile, startTime: info.startTime)
+                if let sportId {
+                    try await DeviceApiCallSerializer.shared.serialize(device.deviceId) {
+                        try await api.startExercise(identifier: device.deviceId, sportId: sportId)
+                    }
+                } else {
+                    try await DeviceApiCallSerializer.shared.serialize(device.deviceId) {
+                        try await api.startExercise(identifier: device.deviceId)
+                    }
+                }
+                let effectiveSportId = sportId ?? UInt64(PolarExerciseSession.SportProfile.otherOutdoor.rawValue)
+                let sport = Int(exactly: effectiveSportId).map { PolarExerciseSession.SportProfile.from(id: $0) } ?? .unknown
+                exerciseState.apply(status: .inProgress, sport: sport, sportId: effectiveSportId)
                 AppLogger.log("Start exercise succeeded for \(device.deviceId)")
+                do {
+                    let info = try await DeviceApiCallSerializer.shared.serialize(device.deviceId) {
+                        try await api.getExerciseStatus(identifier: device.deviceId)
+                    }
+                    exerciseState.apply(status: info.status, sport: info.sportProfile, startTime: info.startTime, sportId: info.sportId)
+                } catch {
+                    AppLogger.log("Exercise started for \(device.deviceId), but status refresh failed: \(error)")
+                }
+            } catch PolarErrors.sportProfileNotFound(let description) {
+                exerciseState.startError = description
+                AppLogger.log("Start exercise failed for \(device.deviceId): \(description)")
             } catch {
+                exerciseState.startError = "Start exercise failed: \(error)"
                 AppLogger.log("Start exercise failed for \(device.deviceId): \(error)")
             }
         }
@@ -529,9 +554,11 @@ extension PolarBleSdkManager {
         Task { @MainActor [weak self] in
             guard let self else { return }
             do {
-                try await api.pauseExercise(identifier: device.deviceId)
-                let info = try await api.getExerciseStatus(identifier: device.deviceId)
-                exerciseState.apply(status: info.status, sport: info.sportProfile, startTime: info.startTime)
+                let info = try await DeviceApiCallSerializer.shared.serialize(device.deviceId) {
+                    try await api.pauseExercise(identifier: device.deviceId)
+                    return try await api.getExerciseStatus(identifier: device.deviceId)
+                }
+                exerciseState.apply(status: info.status, sport: info.sportProfile, startTime: info.startTime, sportId: info.sportId)
                 AppLogger.log("Pause exercise succeeded for \(device.deviceId)")
             } catch {
                 AppLogger.log("Pause exercise failed for \(device.deviceId): \(error)")
@@ -545,9 +572,11 @@ extension PolarBleSdkManager {
         Task { @MainActor [weak self] in
             guard let self else { return }
             do {
-                try await api.resumeExercise(identifier: device.deviceId)
-                let info = try await api.getExerciseStatus(identifier: device.deviceId)
-                exerciseState.apply(status: info.status, sport: info.sportProfile, startTime: info.startTime)
+                let info = try await DeviceApiCallSerializer.shared.serialize(device.deviceId) {
+                    try await api.resumeExercise(identifier: device.deviceId)
+                    return try await api.getExerciseStatus(identifier: device.deviceId)
+                }
+                exerciseState.apply(status: info.status, sport: info.sportProfile, startTime: info.startTime, sportId: info.sportId)
                 AppLogger.log("Resume exercise succeeded for \(device.deviceId)")
             } catch {
                 AppLogger.log("Resume exercise failed for \(device.deviceId): \(error)")
@@ -561,12 +590,14 @@ extension PolarBleSdkManager {
         Task { @MainActor [weak self] in
             guard let self else { return }
             do {
-                try await api.stopExercise(identifier: device.deviceId, save: save)
-                if save {
-                    let info = try await api.getExerciseStatus(identifier: device.deviceId)
-                    exerciseState.apply(status: info.status, sport: info.sportProfile, startTime: info.startTime)
+                let info: PolarExerciseSession.ExerciseInfo? = try await DeviceApiCallSerializer.shared.serialize(device.deviceId) {
+                    try await api.stopExercise(identifier: device.deviceId, save: save)
+                    return save ? try await api.getExerciseStatus(identifier: device.deviceId) : nil
+                }
+                if let info {
+                    exerciseState.apply(status: info.status, sport: info.sportProfile, startTime: info.startTime, sportId: info.sportId)
                 } else {
-                    exerciseState.apply(status: .notStarted, sport: exerciseState.selectedSport, startTime: nil)
+                    exerciseState.apply(status: .notStarted, sport: .unknown, sportId: 0)
                 }
                 AppLogger.log("Stop exercise succeeded for \(device.deviceId)")
             } catch {
@@ -580,7 +611,12 @@ extension PolarBleSdkManager {
         let timer = DispatchSource.makeTimerSource(queue: .main)
         timer.schedule(deadline: .now(), repeating: .seconds(intervalSec))
         timer.setEventHandler { [weak self] in
-            Task { await self?.refreshExerciseStatus() }
+            Task {
+                guard let self else { return }
+                if case .connected(let device) = self.deviceConnectionState,
+                   await DeviceApiCallSerializer.shared.isBusy(device.deviceId) { return }
+                await self.refreshExerciseStatus()
+            }
         }
         exerciseRefreshTimer = timer
         timer.resume()
@@ -601,7 +637,7 @@ extension PolarBleSdkManager {
         }
         let identifier = device.deviceId
         AppLogger.log("Setting offline recording trigger for \(identifier)")
-        try await api.setOfflineRecordingTrigger(identifier, trigger: trigger, secret: secret)
+        try await DeviceApiCallSerializer.shared.serialize(identifier) { try await api.setOfflineRecordingTrigger(identifier, trigger: trigger, secret: secret) }
         AppLogger.log("Offline recording trigger set successfully for \(identifier)")
     }
 
@@ -612,7 +648,7 @@ extension PolarBleSdkManager {
         }
         AppLogger.log("Offline recording trigger setup fetch for \(device.deviceId)")
         do {
-            let settings = try await api.requestOfflineRecordingSettings(device.deviceId, feature: feature)
+            let settings = try await DeviceApiCallSerializer.shared.serialize(device.deviceId) { try await api.requestOfflineRecordingSettings(device.deviceId, feature: feature) }
             BleLogger.trace("Offline recording settings fetched for feature: \(feature)")
             let recordingSettings = convertToRecordingSettings(feature: feature, sensorSettings: settings)
             offlineRecordingSettingsMap[feature] = recordingSettings
@@ -765,10 +801,12 @@ extension PolarBleSdkManager {
         }
         AppLogger.log("Start offline recording listing")
         do {
-            for try await entry in api.listOfflineRecordings(device.deviceId) {
-                await MainActor.run {
-                    offlineRecordingEntries.entries.append(entry)
-                    offlineRecordingEntries.entries.sort { $0.date > $1.date }
+            try await DeviceApiCallSerializer.shared.serialize(device.deviceId) {
+                for try await entry in api.listOfflineRecordings(device.deviceId) {
+                    await MainActor.run {
+                        offlineRecordingEntries.entries.append(entry)
+                        offlineRecordingEntries.entries.sort { $0.date > $1.date }
+                    }
                 }
             }
             AppLogger.log("Offline recording listing completed")
@@ -798,7 +836,7 @@ extension PolarBleSdkManager {
         AppLogger.log("start offline recording removal")
         Task {
             do {
-                try await api.removeOfflineRecord(device.deviceId, entry: offlineRecordingEntry)
+                try await DeviceApiCallSerializer.shared.serialize(device.deviceId) { try await api.removeOfflineRecord(device.deviceId, entry: offlineRecordingEntry) }
                 AppLogger.log("offline recording removal completed")
                 await MainActor.run { offlineRecordingEntries.entries.removeAll{$0 == offlineRecordingEntry} }
             } catch {
@@ -822,111 +860,113 @@ extension PolarBleSdkManager {
                 AppLogger.log("start offline recording \(offlineRecordingEntry.path) fetch")
                 let readStartTime = Date()
 
-                for try await result in api.getOfflineRecordWithProgress(device.deviceId, entry: offlineRecordingEntry, secret: nil) {
-                    switch result {
-                    case .progress(let progress):
-                        await MainActor.run {
-                            self.offlineRecordingData.progress = PolarOfflineRecordingProgress(
-                                bytesDownloaded: progress.bytesDownloaded,
-                                totalBytes: progress.totalBytes,
-                                progressPercent: progress.progressPercent
-                            )
-                        }
+                try await DeviceApiCallSerializer.shared.serialize(device.deviceId) {
+                    for try await result in api.getOfflineRecordWithProgress(device.deviceId, entry: offlineRecordingEntry, secret: nil) {
+                        switch result {
+                        case .progress(let progress):
+                            await MainActor.run {
+                                self.offlineRecordingData.progress = PolarOfflineRecordingProgress(
+                                    bytesDownloaded: progress.bytesDownloaded,
+                                    totalBytes: progress.totalBytes,
+                                    progressPercent: progress.progressPercent
+                                )
+                            }
                         
-                    case .complete(let offlineRecording):
-                        let elapsedTime = Date().timeIntervalSince(readStartTime)
+                        case .complete(let offlineRecording):
+                            let elapsedTime = Date().timeIntervalSince(readStartTime)
                         
-                        switch offlineRecording {
-                        case .accOfflineRecordingData(let data, let startTime, let settings):
-                            AppLogger.log("ACC data received")
-                            await MainActor.run {
-                                self.offlineRecordingData.startTime = startTime
-                                self.offlineRecordingData.usedSettings = settings
-                                self.offlineRecordingData.data = dataHeaderString(.acc) + dataToString(data)
-                                self.offlineRecordingData.dataSize = offlineRecordingEntry.size
-                                self.offlineRecordingData.downLoadTime = elapsedTime
+                            switch offlineRecording {
+                            case .accOfflineRecordingData(let data, let startTime, let settings):
+                                AppLogger.log("ACC data received")
+                                await MainActor.run {
+                                    self.offlineRecordingData.startTime = startTime
+                                    self.offlineRecordingData.usedSettings = settings
+                                    self.offlineRecordingData.data = dataHeaderString(.acc) + dataToString(data)
+                                    self.offlineRecordingData.dataSize = offlineRecordingEntry.size
+                                    self.offlineRecordingData.downLoadTime = elapsedTime
+                                }
+                            case .gyroOfflineRecordingData(let data, startTime: let startTime, settings: let settings):
+                                AppLogger.log("GYR data received")
+                                await MainActor.run {
+                                    self.offlineRecordingData.startTime = startTime
+                                    self.offlineRecordingData.usedSettings = settings
+                                    self.offlineRecordingData.data = dataHeaderString(.gyro) + dataToString(data)
+                                    self.offlineRecordingData.dataSize = offlineRecordingEntry.size
+                                    self.offlineRecordingData.downLoadTime = elapsedTime
+                                }
+                            case .magOfflineRecordingData(let data, startTime: let startTime, settings: let settings):
+                                AppLogger.log("MAG data received")
+                                await MainActor.run {
+                                    self.offlineRecordingData.startTime = startTime
+                                    self.offlineRecordingData.usedSettings = settings
+                                    self.offlineRecordingData.data = dataHeaderString(.magnetometer) + dataToString(data)
+                                    self.offlineRecordingData.dataSize = offlineRecordingEntry.size
+                                    self.offlineRecordingData.downLoadTime = elapsedTime
+                                }
+                            case .ppgOfflineRecordingData(let data, startTime: let startTime, settings: let settings):
+                                AppLogger.log("PPG data received")
+                                await MainActor.run {
+                                    self.offlineRecordingData.startTime = startTime
+                                    self.offlineRecordingData.usedSettings = settings
+                                    self.offlineRecordingData.data = ppgDataHeaderString(data) + dataToString(data)
+                                    self.offlineRecordingData.dataSize = offlineRecordingEntry.size
+                                    self.offlineRecordingData.downLoadTime = elapsedTime
+                                }
+                            case .ppiOfflineRecordingData(let data, startTime: let startTime):
+                                AppLogger.log("PPI data received")
+                                await MainActor.run {
+                                    self.offlineRecordingData.startTime = startTime
+                                    self.offlineRecordingData.usedSettings = nil
+                                    self.offlineRecordingData.data = dataHeaderString(.ppi) + dataToString(data)
+                                    self.offlineRecordingData.dataSize = offlineRecordingEntry.size
+                                    self.offlineRecordingData.downLoadTime = elapsedTime
+                                }
+                            case .hrOfflineRecordingData(let data, startTime: let startTime):
+                                AppLogger.log("HR data received")
+                                await MainActor.run {
+                                    self.offlineRecordingData.startTime = startTime
+                                    self.offlineRecordingData.usedSettings = nil
+                                    self.offlineRecordingData.data = dataHeaderString(.hr) + dataToString(data)
+                                    self.offlineRecordingData.dataSize = offlineRecordingEntry.size
+                                    self.offlineRecordingData.downLoadTime = elapsedTime
+                                }
+                            case .temperatureOfflineRecordingData(let data, startTime: let startTime):
+                                AppLogger.log("Temperature data received")
+                                await MainActor.run {
+                                    self.offlineRecordingData.startTime = startTime
+                                    self.offlineRecordingData.usedSettings = nil
+                                    self.offlineRecordingData.data = dataHeaderString(.temperature) + dataToString(data)
+                                    self.offlineRecordingData.dataSize = offlineRecordingEntry.size
+                                    self.offlineRecordingData.downLoadTime = elapsedTime
+                                }
+                            case .skinTemperatureOfflineRecordingData(let data, startTime: let startTime):
+                                AppLogger.log("Skin temperature data received")
+                                await MainActor.run {
+                                    self.offlineRecordingData.startTime = startTime
+                                    self.offlineRecordingData.usedSettings = nil
+                                    self.offlineRecordingData.data = dataHeaderString(.skinTemperature) + dataToString(data)
+                                    self.offlineRecordingData.dataSize = offlineRecordingEntry.size
+                                    self.offlineRecordingData.downLoadTime = elapsedTime
+                                }
+                            case .emptyData(startTime: let startTime):
+                                await MainActor.run {
+                                    self.offlineRecordingData.startTime = startTime
+                                }
+                            case .derivedAccOfflineRecordingData(let data, startTime: let startTime, settings: let settings):
+                                AppLogger.log("Derived ACC data received: \(data.samples.count) samples")
+                                let derivedAccString = derivedAccDataHeaderString(data) + derivedAccDataToString(data)
+                                await MainActor.run {
+                                    self.offlineRecordingData.startTime = startTime
+                                    self.offlineRecordingData.usedSettings = settings
+                                    self.offlineRecordingData.data = derivedAccString
+                                    self.offlineRecordingData.dataSize = offlineRecordingEntry.size
+                                    self.offlineRecordingData.downLoadTime = elapsedTime
+                                }
                             }
-                        case .gyroOfflineRecordingData(let data, startTime: let startTime, settings: let settings):
-                            AppLogger.log("GYR data received")
-                            await MainActor.run {
-                                self.offlineRecordingData.startTime = startTime
-                                self.offlineRecordingData.usedSettings = settings
-                                self.offlineRecordingData.data = dataHeaderString(.gyro) + dataToString(data)
-                                self.offlineRecordingData.dataSize = offlineRecordingEntry.size
-                                self.offlineRecordingData.downLoadTime = elapsedTime
-                            }
-                        case .magOfflineRecordingData(let data, startTime: let startTime, settings: let settings):
-                            AppLogger.log("MAG data received")
-                            await MainActor.run {
-                                self.offlineRecordingData.startTime = startTime
-                                self.offlineRecordingData.usedSettings = settings
-                                self.offlineRecordingData.data = dataHeaderString(.magnetometer) + dataToString(data)
-                                self.offlineRecordingData.dataSize = offlineRecordingEntry.size
-                                self.offlineRecordingData.downLoadTime = elapsedTime
-                            }
-                        case .ppgOfflineRecordingData(let data, startTime: let startTime, settings: let settings):
-                            AppLogger.log("PPG data received")
-                            await MainActor.run {
-                                self.offlineRecordingData.startTime = startTime
-                                self.offlineRecordingData.usedSettings = settings
-                                self.offlineRecordingData.data = ppgDataHeaderString(data) + dataToString(data)
-                                self.offlineRecordingData.dataSize = offlineRecordingEntry.size
-                                self.offlineRecordingData.downLoadTime = elapsedTime
-                            }
-                        case .ppiOfflineRecordingData(let data, startTime: let startTime):
-                            AppLogger.log("PPI data received")
-                            await MainActor.run {
-                                self.offlineRecordingData.startTime = startTime
-                                self.offlineRecordingData.usedSettings = nil
-                                self.offlineRecordingData.data = dataHeaderString(.ppi) + dataToString(data)
-                                self.offlineRecordingData.dataSize = offlineRecordingEntry.size
-                                self.offlineRecordingData.downLoadTime = elapsedTime
-                            }
-                        case .hrOfflineRecordingData(let data, startTime: let startTime):
-                            AppLogger.log("HR data received")
-                            await MainActor.run {
-                                self.offlineRecordingData.startTime = startTime
-                                self.offlineRecordingData.usedSettings = nil
-                                self.offlineRecordingData.data = dataHeaderString(.hr) + dataToString(data)
-                                self.offlineRecordingData.dataSize = offlineRecordingEntry.size
-                                self.offlineRecordingData.downLoadTime = elapsedTime
-                            }
-                        case .temperatureOfflineRecordingData(let data, startTime: let startTime):
-                            AppLogger.log("Temperature data received")
-                            await MainActor.run {
-                                self.offlineRecordingData.startTime = startTime
-                                self.offlineRecordingData.usedSettings = nil
-                                self.offlineRecordingData.data = dataHeaderString(.temperature) + dataToString(data)
-                                self.offlineRecordingData.dataSize = offlineRecordingEntry.size
-                                self.offlineRecordingData.downLoadTime = elapsedTime
-                            }
-                        case .skinTemperatureOfflineRecordingData(let data, startTime: let startTime):
-                            AppLogger.log("Skin temperature data received")
-                            await MainActor.run {
-                                self.offlineRecordingData.startTime = startTime
-                                self.offlineRecordingData.usedSettings = nil
-                                self.offlineRecordingData.data = dataHeaderString(.skinTemperature) + dataToString(data)
-                                self.offlineRecordingData.dataSize = offlineRecordingEntry.size
-                                self.offlineRecordingData.downLoadTime = elapsedTime
-                            }
-                        case .emptyData(startTime: let startTime):
-                            await MainActor.run {
-                                self.offlineRecordingData.startTime = startTime
-                            }
-                        case .derivedAccOfflineRecordingData(let data, startTime: let startTime, settings: let settings):
-                            AppLogger.log("Derived ACC data received: \(data.samples.count) samples")
-                            let derivedAccString = derivedAccDataHeaderString(data) + derivedAccDataToString(data)
-                            await MainActor.run {
-                                self.offlineRecordingData.startTime = startTime
-                                self.offlineRecordingData.usedSettings = settings
-                                self.offlineRecordingData.data = derivedAccString
-                                self.offlineRecordingData.dataSize = offlineRecordingEntry.size
-                                self.offlineRecordingData.downLoadTime = elapsedTime
-                            }
-                        }
                         
-                        await MainActor.run {
-                            self.offlineRecordingData.loadState = OfflineRecordingDataLoadingState.success
+                            await MainActor.run {
+                                self.offlineRecordingData.loadState = OfflineRecordingDataLoadingState.success
+                            }
                         }
                     }
                 }
@@ -1018,7 +1058,19 @@ extension PolarBleSdkManager {
         guard case .inProgress = self.onlineStreamingFeature.isStreaming[feature] else { return false }
         return onlineStreamingTasks[feature] != nil
     }
-    
+
+    @MainActor
+    func handleDeviceStoppedStream(_ error: Error, feature: PolarDeviceDataType) {
+        guard case BlePmdError.bleOnlineStreamClosed = error else { return }
+        // The SDK already terminated this stream. Do not send another stop request
+        // or cancel unrelated streams. The stream's defer closes and preserves its log.
+        onlineStreamingTasks.removeValue(forKey: feature)
+        onlineRecordingDataTypes.removeAll { $0 == feature }
+        let message = "Device stopped \(feature.displayName) streaming."
+        AppLogger.log(message)
+        generalMessage = Message(text: message)
+    }
+
     func ecgStreamStart(settings: PolarBleSdk.PolarSensorSetting) {
         guard case .connected(let device) = deviceConnectionState else {
             AppLogger.log("Device is not connected \(deviceConnectionState)")
@@ -1054,6 +1106,7 @@ extension PolarBleSdkManager {
                 AppLogger.log("ECG stream completed")
             } catch {
                 AppLogger.log("ECG stream failed: \(error)")
+                await self.handleDeviceStoppedStream(error, feature: .ecg)
                 if let fileHandle = logFile?.fileHandle {
                     self.writeErrorOnlineStreamLogFile(fileHandle, error)
                 }
@@ -1093,6 +1146,7 @@ extension PolarBleSdkManager {
                     AppLogger.log("ACC stream completed")
                 } catch {
                     AppLogger.log("ACC stream failed: \(error)")
+                    await self.handleDeviceStoppedStream(error, feature: .acc)
                     if let fileHandle = logFile?.fileHandle { self.writeErrorOnlineStreamLogFile(fileHandle, error) }
                 }
             }
@@ -1128,6 +1182,7 @@ extension PolarBleSdkManager {
                     AppLogger.log("MAG stream completed")
                 } catch {
                     AppLogger.log("MAG stream failed: \(error)")
+                    await self.handleDeviceStoppedStream(error, feature: .magnetometer)
                     if let fileHandle = logFile?.fileHandle { self.writeErrorOnlineStreamLogFile(fileHandle, error) }
                 }
             }
@@ -1164,6 +1219,7 @@ extension PolarBleSdkManager {
                     AppLogger.log("GYR stream completed")
                 } catch {
                     AppLogger.log("GYR stream failed: \(error)")
+                    await self.handleDeviceStoppedStream(error, feature: .gyro)
                     if let fileHandle = logFile?.fileHandle { self.writeErrorOnlineStreamLogFile(fileHandle, error) }
                 }
             }
@@ -1281,6 +1337,7 @@ extension PolarBleSdkManager {
                     AppLogger.log("PPG stream completed")
                 } catch {
                     AppLogger.log("PPG stream failed: \(error)")
+                    await self.handleDeviceStoppedStream(error, feature: .ppg)
                     if let fileHandle = logFile?.fileHandle { self.writeErrorOnlineStreamLogFile(fileHandle, error) }
                 }
             }
@@ -1319,6 +1376,7 @@ extension PolarBleSdkManager {
                     AppLogger.log("PPI stream completed")
                 } catch {
                     AppLogger.log("PPI stream failed: \(error)")
+                    await self.handleDeviceStoppedStream(error, feature: .ppi)
                     if let fileHandle = logFile?.fileHandle { self.writeErrorOnlineStreamLogFile(fileHandle, error) }
                 }
             }
@@ -1392,6 +1450,7 @@ extension PolarBleSdkManager {
                     AppLogger.log("TEMP stream completed")
                 } catch {
                     AppLogger.log("TEMP stream failed: \(error)")
+                    await self.handleDeviceStoppedStream(error, feature: .temperature)
                     if let fileHandle = logFile?.fileHandle { self.writeErrorOnlineStreamLogFile(fileHandle, error) }
                 }
             }
@@ -1427,6 +1486,7 @@ extension PolarBleSdkManager {
                     AppLogger.log("PRE stream completed")
                 } catch {
                     AppLogger.log("PRE stream failed: \(error)")
+                    await self.handleDeviceStoppedStream(error, feature: .pressure)
                     if let fileHandle = logFile?.fileHandle { self.writeErrorOnlineStreamLogFile(fileHandle, error) }
                 }
             }
@@ -1462,6 +1522,7 @@ extension PolarBleSdkManager {
                     AppLogger.log("SKIN TEMP stream completed")
                 } catch {
                     AppLogger.log("SKIN TEMP stream failed: \(error)")
+                    await self.handleDeviceStoppedStream(error, feature: .skinTemperature)
                     if let fileHandle = logFile?.fileHandle { self.writeErrorOnlineStreamLogFile(fileHandle, error) }
                 }
             }
@@ -2078,7 +2139,7 @@ extension PolarBleSdkManager {
         if case .connected(let device) = deviceConnectionState {
             Task.detached {
                 do {
-                    try await self.api.setLogConfig(device.deviceId, logConfig: logConfig)
+                    try await DeviceApiCallSerializer.shared.serialize(device.deviceId) { try await self.api.setLogConfig(device.deviceId, logConfig: logConfig) }
                 }
                 catch let err {
                     AppLogger.log("Setting log config failed: \(err)")
@@ -2207,7 +2268,7 @@ extension PolarBleSdkManager {
     func getLogConfig() async {
         guard case .connected(let device) = deviceConnectionState else { return }
         do {
-            let config = try await api.getLogConfig(device.deviceId)
+            let config = try await DeviceApiCallSerializer.shared.serialize(device.deviceId) { try await api.getLogConfig(device.deviceId) }
             await MainActor.run {
                 logConfig = LogConfig(
                     ppiLogEnabled: config.ppiLogEnabled,
@@ -2246,7 +2307,7 @@ extension PolarBleSdkManager {
     func getSleep(start: Date, end: Date) async {
         if case .connected(let device) = deviceConnectionState {
             do {
-                let sleepData = try await api.getSleep(identifier: device.deviceId, fromDate: start, toDate: end)
+                let sleepData = try await DeviceApiCallSerializer.shared.serialize(device.deviceId) { try await api.getSleep(identifier: device.deviceId, fromDate: start, toDate: end) }
                 Task {@MainActor in
                     if (!sleepData.isEmpty) {
                         dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss Z"
@@ -2564,7 +2625,7 @@ extension PolarBleSdkManager {
     func getSleepRecordingStatus() async {
         if case .connected(let device) = deviceConnectionState {
             do {
-                let status = try await api.getSleepRecordingStatus(identifier: device.deviceId)
+                let status = try await DeviceApiCallSerializer.shared.serialize(device.deviceId) { try await api.getSleepRecordingStatus(identifier: device.deviceId) }
                 Task {@MainActor in
                     self.sleepRecordingFeature.status = status
                 }
@@ -2623,7 +2684,7 @@ extension PolarBleSdkManager {
         guard case .connected(let device) = deviceConnectionState else { return }
         Task {
             do {
-                try await api.stopSleepRecording(identifier: device.deviceId)
+                try await DeviceApiCallSerializer.shared.serialize(device.deviceId) { try await api.stopSleepRecording(identifier: device.deviceId) }
                 AppLogger.log("sleepRecordingStop completed")
             } catch {
                 AppLogger.log("Error in stopping sleep recording: \(error)")
@@ -3453,8 +3514,8 @@ extension PolarBleSdkManager {
                 for try await info in api.observeExerciseStatus(identifier: device.deviceId) {
                     AppLogger.log("Exercise notification received: \(info.status)")
                     await MainActor.run {
-                        self.exerciseState.apply(status: info.status, sport: info.sportProfile, startTime: info.startTime)
-                        self.exerciseState.applyNotificationEvent(status: info.status, sport: info.sportProfile)
+                        self.exerciseState.apply(status: info.status, sport: info.sportProfile, startTime: info.startTime, sportId: info.sportId)
+                        self.exerciseState.applyNotificationEvent(status: info.status, sport: info.sportProfile, sportId: info.sportId)
                     }
                 }
             } catch {
@@ -3608,7 +3669,7 @@ extension PolarBleSdkManager {
         isOfflineExcerciseV2Ongoing = false
         isOfflineExerciseV2Paused = false
         do {
-            let result = try await api.startOfflineExerciseV2(identifier: device.deviceId)
+            let result = try await DeviceApiCallSerializer.shared.serialize(device.deviceId) { try await api.startOfflineExerciseV2(identifier: device.deviceId) }
             isOfflineExcerciseV2Ongoing = (result.result == .success)
             return result
         } catch {
@@ -3622,7 +3683,7 @@ extension PolarBleSdkManager {
             throw NSError(domain: "Device not connected", code: -1)
         }
         do {
-            try await api.stopOfflineExerciseV2(identifier: device.deviceId)
+            try await DeviceApiCallSerializer.shared.serialize(device.deviceId) { try await api.stopOfflineExerciseV2(identifier: device.deviceId) }
             isOfflineExcerciseV2Ongoing = false
             isOfflineExerciseV2Paused = false
         } catch {
@@ -3637,10 +3698,12 @@ extension PolarBleSdkManager {
         }
         AppLogger.log("Pause offline exercise V2 pressed for \(device.deviceId)")
         do {
-            try await api.pauseExercise(identifier: device.deviceId)
             // After a successful pause the device reports "not actively running".
             // If it's still reporting "ongoing", the pause did not take effect.
-            let isRunning = try await api.getOfflineExerciseStatusV2(identifier: device.deviceId)
+            let isRunning = try await DeviceApiCallSerializer.shared.serialize(device.deviceId) {
+                try await api.pauseExercise(identifier: device.deviceId)
+                return try await api.getOfflineExerciseStatusV2(identifier: device.deviceId)
+            }
             guard !isRunning else {
                 throw NSError(domain: "Pause command did not take effect, exercise is still running", code: -3)
             }
@@ -3660,8 +3723,10 @@ extension PolarBleSdkManager {
         }
         AppLogger.log("Resume offline exercise V2 pressed for \(device.deviceId)")
         do {
-            try await api.resumeExercise(identifier: device.deviceId)
-            let isRunning = try await api.getOfflineExerciseStatusV2(identifier: device.deviceId)
+            let isRunning = try await DeviceApiCallSerializer.shared.serialize(device.deviceId) {
+                try await api.resumeExercise(identifier: device.deviceId)
+                return try await api.getOfflineExerciseStatusV2(identifier: device.deviceId)
+            }
             guard isRunning else {
                 throw NSError(domain: "Resume command did not take effect, exercise is no longer ongoing", code: -4)
             }
@@ -3732,7 +3797,7 @@ extension PolarBleSdkManager {
             return
         }
         do {
-            let isRunning = try await api.getOfflineExerciseStatusV2(identifier: device.deviceId)
+            let isRunning = try await DeviceApiCallSerializer.shared.serialize(device.deviceId) { try await api.getOfflineExerciseStatusV2(identifier: device.deviceId) }
             if isRunning {
                 isOfflineExcerciseV2Ongoing = true
                 isOfflineExerciseV2Paused = false

@@ -119,11 +119,17 @@ class BlePMDClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, P
     private fun processPmdCpCommand(data: ByteArray, status: Int) {
         BleLogger.d_hex(TAG, "pmd command. Status: $status. Data: ", data)
         if (data.isNotEmpty() && data[0] != PmdControlPointResponse.CONTROL_POINT_RESPONSE_CODE) {
+            if (status != ATT_SUCCESS) {
+                BleLogger.w(TAG, "PMD CP command with status $status, skipped")
+                return
+            }
             when (PmdControlPointCommandServiceToClient.fromByte(data[0])) {
                 PmdControlPointCommandServiceToClient.ONLINE_MEASUREMENT_STOPPED -> {
                     val errorDescription = "Stop command from device"
                     data.drop(1).forEach { dataType ->
-                        when (PmdMeasurementType.fromId(dataType)) {
+                        val type = PmdMeasurementType.fromId(dataType)
+                        previousTimeStampMap.keys.removeAll { it.first == type }
+                        when (type) {
                             PmdMeasurementType.ECG -> ChannelUtils.postError(ecgObservers, BleOnlineStreamClosed(errorDescription))
                             PmdMeasurementType.PPG -> ChannelUtils.postError(ppgObservers, BleOnlineStreamClosed(errorDescription))
                             PmdMeasurementType.ACC -> ChannelUtils.postError(accObservers, BleOnlineStreamClosed(errorDescription))

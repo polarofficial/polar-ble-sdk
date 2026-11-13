@@ -159,6 +159,23 @@ open class BlePsFtpClient: BleGattClientBase, @unchecked Sendable {
     
     let currentOperationWrite = AtomicBoolean(initialValue: false)
     private let isDisconnected = AtomicBoolean(initialValue: false)
+    // Host interrupt frame: next=0, status=00b, sequence_number=0, error=0
+    static let HOST_INTERRUPT_FRAME = Data([0x00, 0x00, 0x00])
+    var INTERRUPT_TIMEOUT = TimeInterval(5)
+    var INTERRUPT_DRAIN_QUIET = TimeInterval(0.25)
+    var INTERRUPT_DRAIN_MAX = TimeInterval(2)
+    // Write acknowledgements are ordered: acks owed by abandoned writes are consumed before they can count for a later transaction.
+    // set when late write callbacks can no longer be told apart from the next write's; only a reconnect clears it
+    private let connectionResetRequired = AtomicBoolean(initialValue: false)
+    private let ackLock = NSLock()
+    private var pendingAcks = 0
+    private var staleAcks = 0
+    // true once any frame of the current (serialized) transaction has been handed to the transport
+    private let transactionTransmitted = AtomicBoolean(initialValue: false)
+    private let activeMtuLock = NSLock()
+    private var activeMtuOperation: BlockOperation?
+    // cancellable by disconnected(); distinct from the cancelled transfer operation
+    private var interruptOperation: BlockOperation?
 
     public init(gattServiceTransmitter: BleAttributeTransportProtocol){
         super.init(serviceUuid: BlePsFtpClient.PSFTP_SERVICE, gattServiceTransmitter: gattServiceTransmitter)
@@ -179,6 +196,11 @@ open class BlePsFtpClient: BleGattClientBase, @unchecked Sendable {
     override public func disconnected() {
         super.disconnected()
         isDisconnected.set(true)
+        activeMtuLock.lock()
+        let pendingInterrupt = interruptOperation
+        activeMtuLock.unlock()
+        pendingInterrupt?.cancel()
+        packetsWritten.signal()
         BleLogger.trace("PS-FTP reset ")
         currentOperationWrite.set(false)
         mtuOperationQueue.cancelAllOperations()
@@ -191,6 +213,9 @@ open class BlePsFtpClient: BleGattClientBase, @unchecked Sendable {
         mtuOperationQueue.waitUntilAllOperationsAreFinished()
         sendNotificationOperationQueue.waitUntilAllOperationsAreFinished()
         waitNotificationOperationQueue.waitUntilAllOperationsAreFinished()
+        // Cleared only after active operations exited: they may add ack debt while unwinding.
+        clearAckDebt()
+        connectionResetRequired.set(false)
         // Flush any subscriber continuations that the broadcast loop may not have reached.
         subscriberLock.lock()
         let remainingContinuations = Array(subscriberContinuations.values)
@@ -235,6 +260,15 @@ open class BlePsFtpClient: BleGattClientBase, @unchecked Sendable {
         BleLogger.trace("serviceDataWritten called with characteristic: \(chr), error: \(err)")
         if err == 0 {
             if chr.isEqual(BlePsFtpClient.PSFTP_MTU_CHARACTERISTIC) {
+                // bookkeeping and counter update are one atomic step, so cancellation cannot interleave between them
+                ackLock.lock()
+                defer { ackLock.unlock() }
+                if staleAcks > 0 {
+                    staleAcks -= 1
+                    BleLogger.trace("Ignoring late write acknowledgement of an abandoned PSFTP_MTU_CHARACTERISTIC write")
+                    return
+                }
+                if pendingAcks > 0 { pendingAcks -= 1 }
                 BleLogger.trace("Incrementing packetsWritten for PSFTP_MTU_CHARACTERISTIC")
                 self.packetsWritten.increment()
             } else if chr.isEqual(BlePsFtpClient.PSFTP_H2D_NOTIFICATION_CHARACTERISTIC) {
@@ -244,6 +278,12 @@ open class BlePsFtpClient: BleGattClientBase, @unchecked Sendable {
         } else {
             // no signaling of written, timeout will happen on both ends
             BleLogger.trace("PS-FTP WRITE failed: ", String(err))
+            if chr.isEqual(BlePsFtpClient.PSFTP_MTU_CHARACTERISTIC) {
+                // a failed callback still settles one write, so it must retire stale debt in order
+                ackLock.lock()
+                if staleAcks > 0 { staleAcks -= 1 } else if pendingAcks > 0 { pendingAcks -= 1 }
+                ackLock.unlock()
+            }
         }
     }
     
@@ -411,9 +451,21 @@ open class BlePsFtpClient: BleGattClientBase, @unchecked Sendable {
         if !canceled.isCancelled {
             if let transport = self.gattServiceTransmitter {
                 try DispatchQueue.global(qos: .userInitiated).sync {
-                    try transport.transmitMessage(self, serviceUuid: BlePsFtpClient.PSFTP_SERVICE, characteristicUuid: BlePsFtpClient.PSFTP_MTU_CHARACTERISTIC, packet: packet, withResponse: response)
+                    ackLock.lock(); pendingAcks += 1; ackLock.unlock()
+                    do {
+                        try transport.transmitMessage(self, serviceUuid: BlePsFtpClient.PSFTP_SERVICE, characteristicUuid: BlePsFtpClient.PSFTP_MTU_CHARACTERISTIC, packet: packet, withResponse: response)
+                    } catch {
+                        ackLock.lock(); pendingAcks = max(0, pendingAcks - 1); ackLock.unlock()
+                        throw error
+                    }
+                    self.transactionTransmitted.set(true)
                     BleLogger.trace_hex("MTU send ", data: packet)
-                    try self.waitPacketsWritten(self.packetsWritten, canceled: canceled, count: 1, timeout: timeout)
+                    do {
+                        try self.waitPacketsWritten(self.packetsWritten, canceled: canceled, count: 1, timeout: timeout)
+                    } catch {
+                        self.abandonPendingAcks(canceled: { if case BlePsFtpException.operationCanceled = error { return true } else { return false } }(), acknowledgedByAtt: response)
+                        throw error
+                    }
                 }
                 return
             }
@@ -448,18 +500,110 @@ open class BlePsFtpClient: BleGattClientBase, @unchecked Sendable {
     }
 
     private func cancellationError() -> Error {
-        if isDisconnected.get() || !(gattServiceTransmitter?.isConnected() ?? false) {
+        if connectionResetRequired.get() || isDisconnected.get() || !(gattServiceTransmitter?.isConnected() ?? false) {
             return BleGattException.gattDisconnected
         }
         return BlePsFtpException.operationCanceled
     }
 
-    private func cancelOperation(_ operation: BlockOperation) {
+    private func cancelOperation(_ operation: BlockOperation, notification: Bool = false) {
         operation.cancel()
-        packetsWritten.signal()
-        notificationPacketsWritten.signal()
+        if notification {
+            notificationPacketsWritten.signal()
+            return
+        }
+        // A queued (not yet running) operation must not disturb the active transaction.
+        activeMtuLock.lock()
+        let isActive = activeMtuOperation === operation
+        activeMtuLock.unlock()
+        if isActive {
+            packetsWritten.signal()
+            mtuInputQueue.removeAll()
+        }
+    }
+
+    // ATT callbacks carry no write identity, so a late acknowledgement cannot be attributed by time.
+    // A cancelled write-with-response keeps owing exactly one acknowledgement, consumed in order before any later
+    // write can be acknowledged; the debt never expires, so a delayed callback cannot release a later write.
+    // It is cleared on disconnect. An unacknowledged interrupt (full timeout, so the link is silent) also clears the debt; any other timed-out wait is presumed lost and owes nothing,
+    // and a write-without-response is acknowledged locally by the transport, so neither adds debt.
+    private func abandonPendingAcks(canceled: Bool, acknowledgedByAtt: Bool) {
+        ackLock.lock()
+        if canceled && acknowledgedByAtt && pendingAcks > 0 && !isDisconnected.get() {
+            staleAcks += pendingAcks
+        }
+        pendingAcks = 0
+        ackLock.unlock()
+    }
+
+    private func clearAckDebt() {
+        ackLock.lock(); pendingAcks = 0; staleAcks = 0; ackLock.unlock()
+    }
+
+    private func beginMtuTransaction(_ block: BlockOperation?) {
+        activeMtuLock.lock()
+        activeMtuOperation = block
+        activeMtuLock.unlock()
+        transactionTransmitted.set(false)
+    }
+
+    private func endMtuTransaction() {
+        activeMtuLock.lock()
+        activeMtuOperation = nil
+        activeMtuLock.unlock()
+        transactionTransmitted.set(false)
+    }
+
+    /// Maps cancellation of an active, transmitted transaction to a PS-FTP host interrupt.
+    /// Runs on the serialized MTU queue so the next transaction starts only after cleanup.
+    private func interruptCancelledTransaction(_ block: BlockOperation?, error: Error) {
+        guard block?.isCancelled == true, transactionTransmitted.get() else { return }
+        guard !(error is BleGattException), gattServiceTransmitter?.isConnected() ?? false else { return }
+        let interruptOp = BlockOperation()
+        activeMtuLock.lock()
+        interruptOperation = interruptOp
+        activeMtuLock.unlock()
+        defer {
+            activeMtuLock.lock()
+            interruptOperation = nil
+            activeMtuLock.unlock()
+        }
+        guard !isDisconnected.get() else { return }
+        transactionTransmitted.set(false) // at most one interrupt per transaction
+        currentOperationWrite.set(false)
+        // a parked data packet must neither follow the interrupt nor acknowledge it
+        gattServiceTransmitter?.discardPendingWriteWithoutResponse(self, characteristicUuid: BlePsFtpClient.PSFTP_MTU_CHARACTERISTIC)
+        packetsWritten.set(0)
         mtuInputQueue.removeAll()
-        notificationInputQueue.removeAll()
+        do {
+            // fresh, non-cancelled operation: the cancelled transfer operation would be rejected
+            try transmitMtuPacket(BlePsFtpClient.HOST_INTERRUPT_FRAME, canceled: interruptOp, response: true, timeout: INTERRUPT_TIMEOUT)
+            BleLogger.trace("PS-FTP host interrupt delivered")
+        } catch {
+            BleLogger.error("PS-FTP host interrupt delivery failed, device interruption not confirmed: \(error)")
+            if case AtomicIntegerException.waitTimeout = error, !isDisconnected.get() {
+                // Callbacks of the cancelled write or the interrupt may still arrive and carry no write identity, so
+                // they could acknowledge a later write. Fail further transactions until the connection is reset.
+                BleLogger.error("PS-FTP interrupt unacknowledged, requesting connection reset")
+                connectionResetRequired.set(true)
+                gattServiceTransmitter?.requestDisconnect()
+            }
+        }
+        drainStaleFrames(canceled: interruptOp)
+        packetsWritten.set(0)
+    }
+
+    // In-flight response frames may still arrive before the device processes the interrupt.
+    private func drainStaleFrames(canceled: BlockOperation) {
+        let deadline = Date().addingTimeInterval(INTERRUPT_DRAIN_MAX)
+        while deadline.timeIntervalSinceNow > 0, !canceled.isCancelled, gattServiceTransmitter?.isConnected() ?? false {
+            do {
+                _ = try mtuInputQueue.poll(INTERRUPT_DRAIN_QUIET, canceled: canceled, cancelError: BlePsFtpException.operationCanceled)
+            } catch {
+                break
+            }
+        }
+        mtuInputQueue.removeAll()
     }
 
     /// Sends a single request to device. Suspends until a full response is received.
@@ -496,19 +640,18 @@ open class BlePsFtpClient: BleGattClientBase, @unchecked Sendable {
                 self.beginOperation()
                 BleLogger.trace("PS-FTP new request operation")
                 self.gattServiceTransmitter?.attributeOperationStarted()
-                defer { self.gattServiceTransmitter?.attributeOperationFinished() }
-                if !(block?.isCancelled ?? true) {
+                self.beginMtuTransaction(block)
+                defer { self.endMtuTransaction(); self.gattServiceTransmitter?.attributeOperationFinished() }
+                if !(block?.isCancelled ?? true) && !self.connectionResetRequired.get() {
                     self.resetMtuPipe()
                     let totalStream = BlePsFtpUtility.makeCompleteMessageStream(header as Data, type: BlePsFtpUtility.MessageType.request, id: 0)
                     let sequenceNumber = BlePsFtpUtility.BlePsFtpRfc76SequenceNumber()
                     totalStream.open()
                     defer { totalStream.close() }
-                    var anySend = false
                     do {
                         let requs = BlePsFtpUtility.buildRfc76MessageFrameAll(totalStream, mtuSize: self.mtuSize, sequenceNumber: sequenceNumber)
                         for packet in requs {
                             try self.transmitMtuPacket(packet, canceled: block ?? BlockOperation(), response: true, timeout: self.PROTOCOL_TIMEOUT)
-                            anySend = true
                         }
                         let outputStream = NSMutableData()
                         let error = try self.readResponse(outputStream, inputQueue: self.mtuInputQueue, canceled: block ?? BlockOperation(), timeout: self.PROTOCOL_TIMEOUT)
@@ -526,10 +669,8 @@ open class BlePsFtpClient: BleGattClientBase, @unchecked Sendable {
                         if !(self.gattServiceTransmitter?.isConnected() ?? false) {
                             result.resume(throwing: BleGattException.gattDisconnected)
                         } else {
-                            if block?.isCancelled ?? true {
-                                do { if anySend { try self.sendMtuCancelPacket(canceled: block ?? BlockOperation()) } } catch { BleLogger.error("Stream cancelation failed") }
-                            }
-                            result.resume(throwing: error)
+                            result.resume(throwing: error) // caller outcome first; cleanup below keeps the queue
+                            self.interruptCancelledTransaction(block, error: error)
                         }
                     }
                 } else {
@@ -582,11 +723,13 @@ open class BlePsFtpClient: BleGattClientBase, @unchecked Sendable {
                 self.beginOperation()
                 BleLogger.trace("PS-FTP new write operation")
                 self.gattServiceTransmitter?.attributeOperationStarted()
+                self.beginMtuTransaction(block)
                 defer {
+                    self.endMtuTransaction()
                     self.currentOperationWrite.set(false)
                     self.gattServiceTransmitter?.attributeOperationFinished()
                 }
-                if !(block?.isCancelled ?? true) {
+                if !(block?.isCancelled ?? true) && !self.connectionResetRequired.get() {
                     self.currentOperationWrite.set(true)
                     self.resetMtuPipe()
                     let headerSize = Int64(header.length)
@@ -645,14 +788,8 @@ open class BlePsFtpClient: BleGattClientBase, @unchecked Sendable {
                             if !(self.gattServiceTransmitter?.isConnected() ?? false) {
                                 result.finish(throwing: BleGattException.gattDisconnected)
                             } else {
-                                if block?.isCancelled ?? true {
-                                    if (error is AtomicIntegerException) && (error as! AtomicIntegerException) == .waitTimeout {
-                                        BleLogger.error("PS-FTP no cancel send no packets written")
-                                    } else {
-                                        do { try self.sendMtuCancelPacket(canceled: block ?? BlockOperation()) } catch { BleLogger.error("Stream cancelation failed") }
-                                    }
-                                }
-                                result.finish(throwing: error)
+                                result.finish(throwing: error) // caller outcome first; cleanup below keeps the queue
+                                self.interruptCancelledTransaction(block, error: error)
                             }
                             return
                         }
@@ -665,7 +802,9 @@ open class BlePsFtpClient: BleGattClientBase, @unchecked Sendable {
                         default: result.finish(throwing: BlePsFtpException.responseError(errorCode: error))
                         }
                     } catch let error {
+                        self.currentOperationWrite.set(false)
                         result.finish(throwing: error)
+                        self.interruptCancelledTransaction(block, error: error)
                     }
                 } else {
                     result.finish(throwing: self.cancellationError())
@@ -711,8 +850,9 @@ open class BlePsFtpClient: BleGattClientBase, @unchecked Sendable {
                 }
                 self.beginOperation()
                 BleLogger.trace("PS-FTP new query operation started for ID: \(id)")
-                defer { self.mtuInputQueue.removeAll() }
-                if !(block?.isCancelled ?? true) {
+                self.beginMtuTransaction(block)
+                defer { self.endMtuTransaction(); self.mtuInputQueue.removeAll() }
+                if !(block?.isCancelled ?? true) && !self.connectionResetRequired.get() {
                     self.mtuInputQueue.removeAll()
                     let totalStream = BlePsFtpUtility.makeCompleteMessageStream(parametersData, type: BlePsFtpUtility.MessageType.query, id: id)
                     totalStream.open()
@@ -734,14 +874,8 @@ open class BlePsFtpClient: BleGattClientBase, @unchecked Sendable {
                         if !(self.gattServiceTransmitter?.isConnected() ?? false) {
                             result.resume(throwing: BleGattException.gattDisconnected)
                         } else {
-                            if block?.isCancelled ?? false {
-                                if (error is AtomicIntegerException) && (error as! AtomicIntegerException) == .waitTimeout {
-                                    BleLogger.error("PS-FTP query timed out, no cancel packet sent for ID: \(id)")
-                                } else {
-                                    do { try self.sendMtuCancelPacket(canceled: block ?? BlockOperation()) } catch { BleLogger.error("Stream cancellation failed") }
-                                }
-                            }
-                            result.resume(throwing: error)
+                            result.resume(throwing: error) // caller outcome first; cleanup below keeps the queue
+                            self.interruptCancelledTransaction(block, error: error)
                         }
                     }
                 } else {
@@ -798,7 +932,7 @@ open class BlePsFtpClient: BleGattClientBase, @unchecked Sendable {
             self.sendNotificationOperationQueue.addOperation(block)
             }
         }, onCancel: { [weak self] in
-            self?.cancelOperation(block)
+            self?.cancelOperation(block, notification: true)
         })
     }
     

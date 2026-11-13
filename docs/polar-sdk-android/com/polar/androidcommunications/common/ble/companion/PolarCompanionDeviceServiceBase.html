@@ -125,14 +125,14 @@ var pathtoroot = "../../../../../../";
 public abstract class <span class="typeNameLabel"><a href=PolarCompanionDeviceServiceBase.html>PolarCompanionDeviceServiceBase</a></span>
 extends <a href=https://developer.android.com/reference/kotlin/android/companion/CompanionDeviceService.html>CompanionDeviceService</a>
                     </pre>
-                    <div class="block"><p>Base <a href=https://developer.android.com/reference/kotlin/android/companion/CompanionDeviceService.html>CompanionDeviceService</a> implementation that forwards device presence events to PolarCompanionDevicePresenceBus, so that <a href=PolarCompanionDeviceManager.html>PolarCompanionDeviceManager</a> based consumers (e.g. <code>PolarCompanionDeviceApiImpl</code>) can react to them regardless of process lifecycle.</p><p>To use this in a host application:</p><pre><code>&lt;service
+                    <div class="block"><p>Base <a href=https://developer.android.com/reference/kotlin/android/companion/CompanionDeviceService.html>CompanionDeviceService</a> implementation that forwards device presence events to PolarCompanionDevicePresenceBus, so that <a href=PolarCompanionDeviceManager.html>PolarCompanionDeviceManager</a> based consumers (e.g. <code>PolarCompanionDeviceApiImpl</code>) can react to them regardless of process lifecycle.</p><p>The SDK does not register a companion service automatically. To receive SDK presence callbacks, explicitly register <a href=PolarCompanionDeviceService.html>PolarCompanionDeviceService</a> or a subclass of this base in the host application's manifest, inside its <code>&lt;application&gt;</code> element:</p><pre><code>&lt;service
     android:name=&quot;.MyCompanionDeviceService&quot;
     android:permission=&quot;android.permission.BIND_COMPANION_DEVICE_SERVICE&quot;
     android:exported=&quot;true&quot;&gt;
     &lt;intent-filter&gt;
         &lt;action android:name=&quot;android.companion.CompanionDeviceService&quot; /&gt;
     &lt;/intent-filter&gt;
-&lt;/service&gt;</code></pre><p>where <code>MyCompanionDeviceService</code> extends <a href=PolarCompanionDeviceServiceBase.html>PolarCompanionDeviceServiceBase</a>.</p></div>
+&lt;/service&gt;</code></pre><p>where <code>MyCompanionDeviceService</code> extends <a href=PolarCompanionDeviceServiceBase.html>PolarCompanionDeviceServiceBase</a>. Overrides of presence callbacks must call <code>super</code> to forward events to the SDK.</p><p>Apps that handle presence independently can keep their own service without registering an SDK service. If multiple companion services are declared, Android binds all of them but delivers presence callbacks only to the primary service. Explicitly select it using the service-level <code>android.companion.PROPERTY_PRIMARY_COMPANION_DEVICE_SERVICE</code> property with <code>android:value=&quot;true&quot;</code>.</p></div>
 
                     <dl>
 

@@ -1,0 +1,12 @@
+syntax = "proto2";
+
+package data;
+
+import "structures.proto";
+
+option java_package = "fi.polar.remote.representation.protobuf";
+option java_outer_classname = "SportProfile";
+
+message PbSportProfile {
+  required PbSportIdentifier sport_identifier = 2;
+}

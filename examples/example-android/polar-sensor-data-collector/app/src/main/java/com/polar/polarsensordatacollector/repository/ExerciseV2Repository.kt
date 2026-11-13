@@ -14,7 +14,8 @@ import javax.inject.Singleton
 
 @Singleton
 class ExerciseV2Repository @Inject constructor(
-    private val api: BDBleApiImpl
+    private val api: BDBleApiImpl,
+    private val apiCallSerializer: DeviceApiCallSerializer
 ) : PolarOfflineExerciseV2Api {
 
     companion object {
@@ -33,7 +34,7 @@ class ExerciseV2Repository @Inject constructor(
         sportProfile: PolarExerciseSession.SportProfile
     ): PolarOfflineExerciseV2Api.OfflineExerciseStartResult {
         return try {
-            val result = (api as PolarOfflineExerciseV2Api).startOfflineExerciseV2(identifier, sportProfile)
+            val result = apiCallSerializer.serialize(identifier) { (api as PolarOfflineExerciseV2Api).startOfflineExerciseV2(identifier, sportProfile) }
             Log.d(TAG, "startOfflineExerciseV2 success: ${result.result}, path: ${result.directoryPath}")
             result
         } catch (e: Exception) {
@@ -49,7 +50,7 @@ class ExerciseV2Repository @Inject constructor(
      */
     override suspend fun stopOfflineExerciseV2(identifier: String) {
         try {
-            (api as PolarOfflineExerciseV2Api).stopOfflineExerciseV2(identifier)
+            apiCallSerializer.serialize(identifier) { (api as PolarOfflineExerciseV2Api).stopOfflineExerciseV2(identifier) }
             Log.d(TAG, "stopOfflineExerciseV2 success")
         } catch (e: Exception) {
             Log.e(TAG, "stopOfflineExerciseV2 failed: ${e.message}")
@@ -65,7 +66,9 @@ class ExerciseV2Repository @Inject constructor(
      */
     override suspend fun getOfflineExerciseStatusV2(identifier: String): Boolean {
         return try {
-            val isRunning = (api as PolarOfflineExerciseV2Api).getOfflineExerciseStatusV2(identifier)
+            val isRunning = apiCallSerializer.serialize(identifier) {
+                (api as PolarOfflineExerciseV2Api).getOfflineExerciseStatusV2(identifier)
+            }
             Log.d(TAG, "getOfflineExerciseStatusV2 success: isRunning=$isRunning")
             isRunning
         } catch (e: Exception) {
@@ -86,8 +89,9 @@ class ExerciseV2Repository @Inject constructor(
      * @return [Flow] stream of [PolarExerciseEntry] entries
      */
     override fun listOfflineExercisesV2(identifier: String, directoryPath: String): Flow<PolarExerciseEntry> {
-        return (api as PolarOfflineExerciseV2Api)
-            .listOfflineExercisesV2(identifier, directoryPath)
+        return apiCallSerializer.serializeFlow(identifier) {
+            (api as PolarOfflineExerciseV2Api).listOfflineExercisesV2(identifier, directoryPath)
+        }
             .onEach { entry ->
                 Log.d(TAG, "listOfflineExercisesV2 found exercise: ${entry.identifier}")
             }
@@ -111,7 +115,7 @@ class ExerciseV2Repository @Inject constructor(
      */
     override suspend fun fetchOfflineExerciseV2(identifier: String, entry: PolarExerciseEntry): PolarExerciseData {
         return try {
-            val data = (api as PolarOfflineExerciseV2Api).fetchOfflineExerciseV2(identifier, entry)
+            val data = apiCallSerializer.serialize(identifier) { (api as PolarOfflineExerciseV2Api).fetchOfflineExerciseV2(identifier, entry) }
             Log.d(TAG, "fetchOfflineExerciseV2 success: ${data.hrSamples.size} samples")
             data
         } catch (e: Exception) {
@@ -133,7 +137,7 @@ class ExerciseV2Repository @Inject constructor(
      */
     override suspend fun removeOfflineExerciseV2(identifier: String, entry: PolarExerciseEntry) {
         try {
-            (api as PolarOfflineExerciseV2Api).removeOfflineExerciseV2(identifier, entry)
+            apiCallSerializer.serialize(identifier) { (api as PolarOfflineExerciseV2Api).removeOfflineExerciseV2(identifier, entry) }
             Log.d(TAG, "removeOfflineExerciseV2 success: removed ${entry.path}")
         } catch (e: Exception) {
             Log.e(TAG, "removeOfflineExerciseV2 failed: ${e.message}")
@@ -155,7 +159,7 @@ class ExerciseV2Repository @Inject constructor(
     override suspend fun isOfflineExerciseV2Supported(identifier: String): Boolean {
         Log.d(TAG, "========== isOfflineExerciseV2Supported called for device: $identifier ==========")
         return try {
-            val isSupported = (api as PolarOfflineExerciseV2Api).isOfflineExerciseV2Supported(identifier)
+            val isSupported = apiCallSerializer.serialize(identifier) { (api as PolarOfflineExerciseV2Api).isOfflineExerciseV2Supported(identifier) }
             Log.d(TAG, "========== CAPABILITY CHECK RESULT ==========")
             Log.d(TAG, "Device: $identifier")
             Log.d(TAG, "dm_exercise supported: $isSupported")

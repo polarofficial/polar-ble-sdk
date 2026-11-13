@@ -33,7 +33,10 @@ public enum PolarErrors: Error {
     
     /// invalid argument
     case invalidArgument(description: String = "")
-    
+
+    /// The device does not recognize or support the requested sport identifier.
+    case sportProfileNotFound(description: String)
+
     /// Polar BLE SDK internal exception indicating something went wrong in SDK internal logic
     case polarBleSdkInternalException(description: String)
     

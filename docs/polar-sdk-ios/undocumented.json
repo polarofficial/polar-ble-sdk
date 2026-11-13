@@ -758,106 +758,113 @@
     },
     {
       "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/api/model/PolarExerciseSession.swift",
-      "line": 10,
+      "line": 11,
       "symbol": "PolarExerciseSession.SportProfile.unknown",
       "symbol_kind": "source.lang.swift.decl.enumelement",
       "warning": "undocumented"
     },
     {
       "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/api/model/PolarExerciseSession.swift",
-      "line": 11,
+      "line": 12,
       "symbol": "PolarExerciseSession.SportProfile.running",
       "symbol_kind": "source.lang.swift.decl.enumelement",
       "warning": "undocumented"
     },
     {
       "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/api/model/PolarExerciseSession.swift",
-      "line": 12,
+      "line": 13,
       "symbol": "PolarExerciseSession.SportProfile.cycling",
       "symbol_kind": "source.lang.swift.decl.enumelement",
       "warning": "undocumented"
     },
     {
       "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/api/model/PolarExerciseSession.swift",
-      "line": 13,
+      "line": 14,
       "symbol": "PolarExerciseSession.SportProfile.otherOutdoor",
       "symbol_kind": "source.lang.swift.decl.enumelement",
       "warning": "undocumented"
     },
     {
       "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/api/model/PolarExerciseSession.swift",
-      "line": 15,
+      "line": 16,
       "symbol": "PolarExerciseSession.SportProfile.from(id:)",
       "symbol_kind": "source.lang.swift.decl.function.method.static",
       "warning": "undocumented"
     },
     {
       "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/api/model/PolarExerciseSession.swift",
-      "line": 17,
+      "line": 18,
       "symbol": "PolarExerciseSession.SportProfile.displayName",
       "symbol_kind": "source.lang.swift.decl.var.instance",
       "warning": "undocumented"
     },
     {
       "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/api/model/PolarExerciseSession.swift",
-      "line": 29,
+      "line": 30,
       "symbol": "PolarExerciseSession.ExerciseStatus.notStarted",
       "symbol_kind": "source.lang.swift.decl.enumelement",
       "warning": "undocumented"
     },
     {
       "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/api/model/PolarExerciseSession.swift",
-      "line": 30,
+      "line": 31,
       "symbol": "PolarExerciseSession.ExerciseStatus.inProgress",
       "symbol_kind": "source.lang.swift.decl.enumelement",
       "warning": "undocumented"
     },
     {
       "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/api/model/PolarExerciseSession.swift",
-      "line": 31,
+      "line": 32,
       "symbol": "PolarExerciseSession.ExerciseStatus.paused",
       "symbol_kind": "source.lang.swift.decl.enumelement",
       "warning": "undocumented"
     },
     {
       "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/api/model/PolarExerciseSession.swift",
-      "line": 32,
+      "line": 33,
       "symbol": "PolarExerciseSession.ExerciseStatus.stopped",
       "symbol_kind": "source.lang.swift.decl.enumelement",
       "warning": "undocumented"
     },
     {
       "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/api/model/PolarExerciseSession.swift",
-      "line": 33,
+      "line": 34,
       "symbol": "PolarExerciseSession.ExerciseStatus.syncRequired",
       "symbol_kind": "source.lang.swift.decl.enumelement",
       "warning": "undocumented"
     },
     {
       "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/api/model/PolarExerciseSession.swift",
-      "line": 38,
+      "line": 39,
       "symbol": "PolarExerciseSession.ExerciseInfo.status",
       "symbol_kind": "source.lang.swift.decl.var.instance",
       "warning": "undocumented"
     },
     {
       "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/api/model/PolarExerciseSession.swift",
-      "line": 39,
+      "line": 40,
       "symbol": "PolarExerciseSession.ExerciseInfo.sportProfile",
       "symbol_kind": "source.lang.swift.decl.var.instance",
       "warning": "undocumented"
     },
     {
       "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/api/model/PolarExerciseSession.swift",
-      "line": 40,
+      "line": 41,
       "symbol": "PolarExerciseSession.ExerciseInfo.startTime",
       "symbol_kind": "source.lang.swift.decl.var.instance",
       "warning": "undocumented"
     },
     {
       "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/api/model/PolarExerciseSession.swift",
-      "line": 42,
+      "line": 45,
       "symbol": "PolarExerciseSession.ExerciseInfo.init(status:sportProfile:startTime:)",
+      "symbol_kind": "source.lang.swift.decl.function.method.instance",
+      "warning": "undocumented"
+    },
+    {
+      "file": "/Users/rkangast/repos/ios-communications/Sources/PolarBleSdk/sdk/api/model/PolarExerciseSession.swift",
+      "line": 49,
+      "symbol": "PolarExerciseSession.ExerciseInfo.init(status:sportProfile:startTime:sportId:)",
       "symbol_kind": "source.lang.swift.decl.function.method.instance",
       "warning": "undocumented"
     },

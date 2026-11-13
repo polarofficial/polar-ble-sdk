@@ -420,6 +420,32 @@
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
                 <Button
+                        android:id="@+id/export_device_logs_button"
+                        style="@style/Widget.App.Button.OutlinedButton"
+                        android:layout_width="@dimen/settings_single_button_width"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/settings_row_spacing"
+                        android:layout_marginStart="10dp"
+                        android:text="@string/export_device_logs_button"
+                        android:textAppearance="?attr/textAppearanceSubtitle1"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/do_file_delete_group" />
+
+                <com.google.android.material.progressindicator.CircularProgressIndicator
+                        android:id="@+id/export_device_logs_progress"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:visibility="gone"
+                        android:indeterminate="true"
+                        app:indicatorSize="24dp"
+                        app:trackThickness="3dp"
+                        app:layout_constraintStart_toEndOf="@id/export_device_logs_button"
+                        app:layout_constraintTop_toTopOf="@id/export_device_logs_button"
+                        app:layout_constraintBottom_toBottomOf="@id/export_device_logs_button" />
+
+                <Button
                         android:id="@+id/do_telemetry_delete_button"
                         style="@style/Widget.App.Button.OutlinedButton"
                         android:layout_width="@dimen/settings_single_button_width"
@@ -430,7 +456,7 @@
                         android:textAppearance="?attr/textAppearanceSubtitle1"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/do_file_delete_group" />
+                        app:layout_constraintTop_toBottomOf="@id/export_device_logs_button" />
 
                 <Button
                         android:id="@+id/do_date_folder_delete_button"

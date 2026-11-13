@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.polar.polarsensordatacollector.R
+import com.polar.polarsensordatacollector.repository.DeviceApiCallSerializer
 import com.polar.sdk.api.PolarBleApi
 import com.polar.sdk.api.model.PolarExerciseSession
 import kotlinx.coroutines.Dispatchers
@@ -62,7 +63,7 @@ class ExerciseViewModel(
         PolarExerciseSession.SportProfile.CYCLING,
         PolarExerciseSession.SportProfile.OTHER_OUTDOOR
     )
-    private var selectedSport: PolarExerciseSession.SportProfile = PolarExerciseSession.SportProfile.RUNNING
+    private var selectedSportId: Long? = PolarExerciseSession.SportProfile.RUNNING.id.toLong()
 
     private var notificationObserveJob: Job? = null
     private var notificationEventJob: Job? = null
@@ -88,11 +89,11 @@ class ExerciseViewModel(
         _status.value = info.status
         _statusText.value = when (info.status) {
             PolarExerciseSession.ExerciseStatus.IN_PROGRESS ->
-                sp.get(R.string.status_in_progress, info.sportProfile.name)
+                sp.get(R.string.status_in_progress, sportLabel(info))
             PolarExerciseSession.ExerciseStatus.PAUSED ->
-                sp.get(R.string.status_paused, info.sportProfile.name)
+                sp.get(R.string.status_paused, sportLabel(info))
             PolarExerciseSession.ExerciseStatus.STOPPED ->
-                sp.get(R.string.status_stopped, info.sportProfile.name)
+                sp.get(R.string.status_stopped, sportLabel(info))
             PolarExerciseSession.ExerciseStatus.NOT_STARTED ->
                 sp.get(R.string.status_not_started)
             PolarExerciseSession.ExerciseStatus.SYNC_REQUIRED ->
@@ -107,8 +108,15 @@ class ExerciseViewModel(
         _startTime.value = info.startTime
     }
 
-    fun selectProfile(profile: PolarExerciseSession.SportProfile) {
-        selectedSport = profile
+    private fun sportLabel(info: PolarExerciseSession.ExerciseInfo): String =
+        if (info.sportProfile == PolarExerciseSession.SportProfile.UNKNOWN && info.sportId > 0) {
+            sp.get(R.string.exercise_sport_id, info.sportId)
+        } else {
+            info.sportProfile.name
+        }
+
+    fun selectSportId(sportId: Long?) {
+        selectedSportId = sportId
     }
 
     fun toggleNotificationObservation() {
@@ -132,11 +140,11 @@ class ExerciseViewModel(
                     PolarExerciseSession.ExerciseStatus.NOT_STARTED ->
                         sp.get(R.string.status_not_started)
                     PolarExerciseSession.ExerciseStatus.IN_PROGRESS ->
-                        sp.get(R.string.status_in_progress, info.sportProfile.name)
+                        sp.get(R.string.status_in_progress, sportLabel(info))
                     PolarExerciseSession.ExerciseStatus.PAUSED ->
-                        sp.get(R.string.status_paused, info.sportProfile.name)
+                        sp.get(R.string.status_paused, sportLabel(info))
                     PolarExerciseSession.ExerciseStatus.STOPPED ->
-                        sp.get(R.string.status_stopped, info.sportProfile.name)
+                        sp.get(R.string.status_stopped, sportLabel(info))
                     PolarExerciseSession.ExerciseStatus.SYNC_REQUIRED ->
                         sp.get(R.string.status_sync_required)
                 }
@@ -154,7 +162,7 @@ class ExerciseViewModel(
         _isObservingNotifications.value = false
     }
 
-    fun start()  { viewModelScope.launch { try { repo.start(selectedSport) } catch (e: Exception) { Log.e(TAG, "Start failed", e) } } }
+    fun start()  { viewModelScope.launch { try { repo.start(selectedSportId) } catch (e: Exception) { Log.e(TAG, "Start failed", e) } } }
     fun pause()  { viewModelScope.launch { try { repo.pause() } catch (e: Exception) { Log.e(TAG, "Pause failed", e) } } }
     fun resume() { viewModelScope.launch { try { repo.resume() } catch (e: Exception) { Log.e(TAG, "Resume failed", e) } } }
     fun stop(save: Boolean = true) { viewModelScope.launch { repo.stop(save) } }
@@ -172,7 +180,8 @@ class ExerciseViewModel(
 class ExerciseViewModelFactory(
     private val api: PolarBleApi,
     private val identifier: String,
-    private val context: Context
+    private val context: Context,
+    private val apiCallSerializer: DeviceApiCallSerializer
 ) : ViewModelProvider.Factory {
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -182,7 +191,8 @@ class ExerciseViewModelFactory(
             api as com.polar.sdk.api.PolarTrainingSessionApi,
             api,
             identifier,
-            prefs
+            prefs,
+            apiCallSerializer
         )
         return ExerciseViewModel(repo, AndroidStringProvider(appCtx)) as T
     }

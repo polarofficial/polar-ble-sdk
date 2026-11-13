@@ -4,17 +4,17 @@ import Foundation
 
 public class PpiData {
     
-    struct PpiSample {
-        var timeStamp: UInt64
-        let hr: Int
-        let ppInMs: UInt16
-        let ppErrorEstimate: UInt16
-        let blockerBit: Int
-        let skinContactStatus: Int
-        let skinContactSupported: Int
+    public struct PpiSample {
+        public internal(set) var timeStamp: UInt64
+        public let hr: Int
+        public let ppInMs: UInt16
+        public let ppErrorEstimate: UInt16
+        public let blockerBit: Int
+        public let skinContactStatus: Int
+        public let skinContactSupported: Int
     }
     
-    var samples: [PpiSample]
+    public internal(set) var samples: [PpiSample]
     
     init(samples: [PpiSample] = []) {
         self.samples = samples

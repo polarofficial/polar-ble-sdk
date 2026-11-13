@@ -221,7 +221,7 @@ class BleAdvertisementContent {
         ) {
             val uuids = if (advertisementData.containsKey(AD_TYPE.GAP_ADTYPE_16BIT_MORE)) advertisementData[AD_TYPE.GAP_ADTYPE_16BIT_MORE] else advertisementData[AD_TYPE.GAP_ADTYPE_16BIT_COMPLETE]
             if (uuids != null && uuids.isNotEmpty()) {
-                for (i in uuids.indices step 2) {
+                for (i in 0 until (uuids.size - 1) step 2) {
                     val hexUUid = String.format("%02X%02X", uuids[i + 1], uuids[i])
                     if (hexUUid == service) {
                         return true

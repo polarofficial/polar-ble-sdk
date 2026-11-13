@@ -6,106 +6,124 @@ import PolarBleSdk
 struct ExerciseView: View {
     @EnvironmentObject private var bleSdkManager: PolarBleSdkManager
 
-    @State private var selectedIndex: Int = 0
     @State private var saveOnStop: Bool = true
     @State private var toast: String? = nil
 
     var body: some View {
         NavigationView {
-            VStack(alignment: .leading, spacing: 16) {
-
-                Picker("Sport profile", selection: $selectedIndex) {
-                    ForEach(0..<bleSdkManager.exerciseState.sportProfiles.count, id: \.self) { i in
-                        Text(bleSdkManager.exerciseState.sportProfiles[i].displayName).tag(i)
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    Picker("exercise.sportProfile", selection: Binding(
+                        get: { bleSdkManager.exerciseState.selectedSport },
+                        set: { bleSdkManager.selectSportProfile($0) }
+                    )) {
+                        Text("exercise.defaultSport").tag(PolarExerciseSession.SportProfile?.none)
+                        ForEach(0..<bleSdkManager.exerciseState.sportProfiles.count, id: \.self) { i in
+                            let sport = bleSdkManager.exerciseState.sportProfiles[i]
+                            Text(sport.displayName).tag(Optional(sport))
+                        }
                     }
-                }
-                .pickerStyle(.segmented)
-                .onChange(of: selectedIndex) { i in
-                    bleSdkManager.selectSportProfile(bleSdkManager.exerciseState.sportProfiles[i])
-                }
-
-                Text(bleSdkManager.exerciseState.statusText)
-                    .font(.title3).fontWeight(.semibold)
-
-                HStack(spacing: 12) {
-                    Button("Start") {
-                        toast = "Starting…"
-                        bleSdkManager.startExercise()
-                    }
-                    .buttonStyle(.borderedProminent)
+                    .pickerStyle(.menu)
                     .disabled(!bleSdkManager.exerciseState.canStart)
 
-                    Button("Pause") {
-                        toast = "Pausing…"
-                        bleSdkManager.pauseExercise()
-                    }
-                    .buttonStyle(.bordered)
-                    .disabled(!bleSdkManager.exerciseState.canPause)
+                    TextField("exercise.customSportId", text: $bleSdkManager.exerciseState.customSportIdText)
+                        .textFieldStyle(.roundedBorder)
+                        .keyboardType(.numberPad)
+                        .accessibilityIdentifier("exercise.customSportId")
+                        .disabled(!bleSdkManager.exerciseState.canStart)
+                    Text(bleSdkManager.exerciseState.invalidSportId
+                         ? String(localized: "exercise.invalidSportId")
+                         : String(localized: "exercise.customSportId.help"))
+                        .font(.caption)
+                        .foregroundColor(bleSdkManager.exerciseState.invalidSportId ? .red : .secondary)
 
-                    Button("Resume") {
-                        toast = "Resuming…"
-                        bleSdkManager.resumeExercise()
+                    if let error = bleSdkManager.exerciseState.startError {
+                        Text(error)
+                            .font(.callout)
+                            .foregroundColor(.red)
                     }
-                    .buttonStyle(.bordered)
-                    .disabled(!bleSdkManager.exerciseState.canResume)
 
-                    Button("Stop") {
-                        toast = "Stopping…"
-                        bleSdkManager.stopExercise(save: saveOnStop)
+                    Text(bleSdkManager.exerciseState.statusText)
+                        .font(.title3).fontWeight(.semibold)
+
+                    HStack(spacing: 12) {
+                        Button("exercise.start") {
+                            toast = NSLocalizedString("exercise.toast.starting", comment: "Exercise start in progress")
+                            bleSdkManager.startExercise()
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .disabled(!bleSdkManager.exerciseState.canStart || bleSdkManager.exerciseState.invalidSportId)
+
+                        Button("exercise.pause") {
+                            toast = NSLocalizedString("exercise.toast.pausing", comment: "Exercise pause in progress")
+                            bleSdkManager.pauseExercise()
+                        }
+                        .buttonStyle(.bordered)
+                        .disabled(!bleSdkManager.exerciseState.canPause)
+
+                        Button("exercise.resume") {
+                            toast = NSLocalizedString("exercise.toast.resuming", comment: "Exercise resume in progress")
+                            bleSdkManager.resumeExercise()
+                        }
+                        .buttonStyle(.bordered)
+                        .disabled(!bleSdkManager.exerciseState.canResume)
+
+                        Button("exercise.stop") {
+                            toast = NSLocalizedString("exercise.toast.stopping", comment: "Exercise stop in progress")
+                            bleSdkManager.stopExercise(save: saveOnStop)
+                        }
+                        .buttonStyle(.bordered)
+                        .disabled(!bleSdkManager.exerciseState.canStop)
                     }
-                    .buttonStyle(.bordered)
-                    .disabled(!bleSdkManager.exerciseState.canStop)
-                }
 
-                if bleSdkManager.exerciseState.canStop {
-                    HStack(spacing: 8) {
-                        Toggle("", isOn: $saveOnStop)
-                            .labelsHidden()
-                            .toggleStyle(.automatic)
-                        Text("Save exercise on stop")
+                    if bleSdkManager.exerciseState.canStop {
+                        HStack(spacing: 8) {
+                            Toggle("", isOn: $saveOnStop)
+                                .labelsHidden()
+                                .toggleStyle(.automatic)
+                            Text("exercise.saveOnStop")
+                                .font(.subheadline)
+                        }
+                        .padding(.top, 4)
+                    }
+
+                    let startTimeString: String? = {
+                        if let startTime = bleSdkManager.exerciseState.startTime {
+                            let formatter = DateFormatter()
+                            formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+                            formatter.timeZone = TimeZone.current
+                            let formatted = formatter.string(from: startTime)
+                            return formatted
+                        }
+                        return nil
+                    }()
+
+                    if let startTimeString {
+                        Text(String(format: NSLocalizedString("exercise.startTime", comment: "Exercise start time"), startTimeString))
                             .font(.subheadline)
+                            .padding(.top, 8)
                     }
-                    .padding(.top, 4)
-                }
 
-                let startTimeString: String? = {
-                    if let startTime = bleSdkManager.exerciseState.startTime {
-                        let formatter = DateFormatter()
-                        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
-                        formatter.timeZone = TimeZone.current
-                        let formatted = formatter.string(from: startTime)
-                        return formatted
+                    Divider()
+                        .padding(.top, 16)
+
+                    Button(
+                        bleSdkManager.exerciseState.isObservingNotifications
+                        ? String(localized: "exercise.stopObserving")
+                        : String(localized: "exercise.observeNotifications")
+                    ) {
+                        bleSdkManager.toggleExerciseNotificationObservation()
                     }
-                    return nil
-                }()
+                    .buttonStyle(.bordered)
 
-                if let startTimeString {
-                    Text("Exercise start time: \(startTimeString)")
-                        .font(.subheadline)
-                        .padding(.top, 8)
+                    if let notificationEvent = bleSdkManager.exerciseState.notificationEvent {
+                        Text(notificationEvent)
+                            .font(.body)
+                            .foregroundColor(.blue)
+                    }
                 }
-
-                Divider()
-                    .padding(.top, 16)
-
-                Button(
-                    bleSdkManager.exerciseState.isObservingNotifications
-                    ? "Stop observing"
-                    : "Observe exercise state notifications"
-                ) {
-                    bleSdkManager.toggleExerciseNotificationObservation()
-                }
-                .buttonStyle(.bordered)
-
-                if let notificationEvent = bleSdkManager.exerciseState.notificationEvent {
-                    Text(notificationEvent)
-                        .font(.body)
-                        .foregroundColor(.blue)
-                }
-
-                Spacer()
+                .padding(16)
             }
-            .padding(16)
             .overlay(alignment: .bottom) {
                 if let toast {
                     Text(toast)
@@ -121,13 +139,10 @@ struct ExerciseView: View {
                 }
             }
             .animation(.easeInOut, value: toast)
-            .navigationTitle("Exercise")
+            .navigationTitle("exercise.title")
         }
         .navigationViewStyle(.stack)
         .onAppear {
-            selectedIndex = bleSdkManager.exerciseState
-                .sportProfiles
-                .firstIndex(of: bleSdkManager.exerciseState.selectedSport) ?? 0
 
             Task { await bleSdkManager.refreshExerciseStatus() }
             bleSdkManager.startExerciseAutoRefresh()
@@ -141,10 +156,10 @@ struct ExerciseView: View {
         }
         .onChange(of: bleSdkManager.exerciseState.status) { newStatus in
             switch newStatus {
-            case .inProgress: toast = "Exercise in progress"
-            case .paused:     toast = "Exercise paused"
-            case .syncRequired: toast = "Syncing…"
-            case .stopped:    toast = "No active exercise"
+            case .inProgress: toast = NSLocalizedString("exercise.toast.inProgress", comment: "Exercise is active")
+            case .paused:     toast = NSLocalizedString("exercise.toast.paused", comment: "Exercise is paused")
+            case .syncRequired: toast = NSLocalizedString("exercise.toast.syncing", comment: "Exercise data is syncing")
+            case .stopped:    toast = NSLocalizedString("exercise.toast.stopped", comment: "No active exercise")
             default: break
             }
         }

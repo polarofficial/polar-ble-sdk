@@ -15,7 +15,9 @@ import androidx.appcompat.widget.AppCompatImageView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.viewModels
+import androidx.lifecycle.DEFAULT_ARGS_KEY
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.MutableCreationExtras
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -37,8 +39,6 @@ import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.rx3.await
 import java.text.DecimalFormat
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 
 @AndroidEntryPoint
 class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
@@ -49,7 +49,24 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
     }
 
     private val viewModel: MainViewModel by activityViewModels()
-    private val onlineViewModel: OnlineRecordingViewModel by viewModels()
+    // The parent fragment owns the ViewModel. ViewPager2 removes this fragment when the user visits
+    // other tabs. A fragment-owned ViewModel would cancel the running streams at that time.
+    // The creation extras come from the parent too. The parent registry then owns the SavedStateHandle
+    // and keeps saving it after this fragment is destroyed.
+    private val onlineViewModel: OnlineRecordingViewModel by lazy {
+        val args = requireArguments()
+        val deviceId = args.getString(ONLINE_OFFLINE_KEY_DEVICE_ID)
+            ?: throw Exception("OnlineRecFragment has no deviceId")
+        val parent = requireParentFragment()
+        val extras = MutableCreationExtras(parent.defaultViewModelCreationExtras).apply {
+            set(DEFAULT_ARGS_KEY, args)
+        }
+        ViewModelProvider(
+            parent.viewModelStore,
+            defaultViewModelProviderFactory,
+            extras
+        )["${OnlineRecordingViewModel::class.java.name}:$deviceId", OnlineRecordingViewModel::class.java]
+    }
 
     private lateinit var timer: TextView
 
@@ -96,7 +113,7 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         Log.d(TAG, "onViewCreated() called, savedInstanceState is null: ${savedInstanceState == null}, validatedFileUris=${onlineViewModel.validatedFileUris.value}")
-        selectedDeviceId = arguments?.getString(ONLINE_OFFLINE_KEY_DEVICE_ID)
+        selectedDeviceId = requireArguments().getString(ONLINE_OFFLINE_KEY_DEVICE_ID)
             ?: throw Exception("OnlineRecFragment has no deviceId")
 
         setupViews(view)
@@ -126,6 +143,18 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
                             it.description ?: "",
                             showAsError = true
                         )
+                }
+            }
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                onlineViewModel.uiDeviceStoppedStream.collect { feature ->
+                    Toast.makeText(
+                        requireContext(),
+                        getString(R.string.online_stream_stopped_by_device, feature.name),
+                        Toast.LENGTH_LONG
+                    ).show()
                 }
             }
         }
@@ -447,6 +476,13 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
             }
         } else {
             startRecordingButton.setText(R.string.start_streaming)
+            // Stopped features keep their check boxes disabled. Enable them again for the next recording.
+            for (feature in PolarDeviceDataType.entries) {
+                if (feature == PolarDeviceDataType.DERIVED_MEASUREMENT) continue
+                if (getRecStatusAndSettingsView(feature).visibility != VISIBLE) continue
+                streamingFeatureCheckBoxEnable(feature)
+                streamingFeatureSettingsToggle(feature, true)
+            }
             startRecordingButton.setOnClickListener {
                 viewModel.selectedDevice?.let {
                     val isRecordingStarted = startStreams()
@@ -1360,7 +1396,7 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
                     fileUri
                 ).apply {
                     // Marker file is a special file that is created if users adds markers during streaming.
-                    val markerUri = getUriForMarkerFile()
+                    val markerUri = getUriForMarkerFile(fileUri)
                     if (markerUri != null) {
                         openDataTextView(
                             requireContext(),
@@ -1388,7 +1424,7 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
             if (validatedUris.isNotEmpty()) {
                 val dataUri = getUriByDataType(feature)
                 // Marker file is a special file that is created if users adds markers during streaming.
-                val markerUri = getUriForMarkerFile()
+                val markerUri = dataUri?.let { getUriForMarkerFile(it) }
 
                 if (dataUri != null) {
                     val uriArrWithOneUri = ArrayList<Uri>()
@@ -1457,7 +1493,7 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
         return onlineViewModel.validatedFileUris.value
             .asSequence()
             .mapNotNull { fileUri ->
-                parseStreamFileMetadata(fileUri)
+                StreamFileUris.parseMetadata(fileUri)
                     ?.takeIf { it.streamType.name == desiredDataType.name }
                     ?.timestamp
                     ?.let { timestamp -> timestamp to fileUri }
@@ -1473,7 +1509,7 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
      */
     private fun getAllUrisByDataType(desiredDataType: PolarDeviceDataType): List<Uri> {
         return onlineViewModel.validatedFileUris.value.filter { fileUri ->
-            parseStreamFileMetadata(fileUri)?.streamType?.name == desiredDataType.name
+            StreamFileUris.parseMetadata(fileUri)?.streamType?.name == desiredDataType.name
         }
     }
 
@@ -1495,68 +1531,11 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
     }
 
     /**
-     * Finds the Uri for the MARKER file.
+     * Finds the Uri for the MARKER file that the user set during the session of the data file.
      */
-    private fun getUriForMarkerFile(): Uri? {
-        return onlineViewModel.validatedFileUris.value
-            .asSequence()
-            .mapNotNull { fileUri ->
-                parseStreamFileMetadata(fileUri)
-                    ?.takeIf { it.streamType == DataCollector.StreamType.MARKER }
-                    ?.timestamp
-                    ?.let { timestamp -> timestamp to fileUri }
-            }
-            .maxByOrNull { it.first }
-            ?.second
-    }
-
-    private data class StreamFileMetadata(
-        val streamType: DataCollector.StreamType,
-        val timestamp: LocalDateTime
-    )
-
-    /** Parses stream type and session timestamp from a file URI produced by [DataCollector].
-     *  Works with the per-device directory layout: sensorDataLogs/<streamType>/<deviceId>/file.
-     *  Scans all path segments for a match with a known [DataCollector.StreamType] name so the
-     *  parser is resilient to nesting depth changes. */
-    private fun parseStreamFileMetadata(fileUri: Uri): StreamFileMetadata? {
-        val decodedSegments = fileUri.pathSegments
-            .map { Uri.decode(it) }
-            .filter { it.isNotBlank() }
-        if (decodedSegments.isEmpty()) {
-            Log.w(TAG, "Unable to parse file uri metadata from empty path: $fileUri")
-            return null
-        }
-
-        // The last segment may be the plain filename, or an encoded relative path like
-        // "sensorDataLogs/HR/deviceId/filename.txt".  Split on "/" to get all path parts.
-        val filePathParts = decodedSegments.last().split("/").filter { it.isNotBlank() }
-        val fileName = filePathParts.lastOrNull()
-        if (fileName == null) {
-            Log.w(TAG, "Unable to determine file name from uri: $fileUri")
-            return null
-        }
-
-        // Scan all directory segments (from innermost outward, skipping the filename itself)
-        // looking for a segment whose name matches a known StreamType.
-        val allSegments = (decodedSegments.dropLast(1) + filePathParts.dropLast(1)).distinct()
-        val streamType = allSegments.reversed()
-            .mapNotNull { seg -> DataCollector.StreamType.entries.firstOrNull { it.name == seg } }
-            .firstOrNull()
-        if (streamType == null) {
-            Log.w(TAG, "Unable to determine stream type from uri: $fileUri")
-            return null
-        }
-
-        val timestamp = fileName.split("_")
-            .mapNotNull { token -> runCatching { LocalDateTime.parse(token, DateTimeFormatter.ISO_LOCAL_DATE_TIME) }.getOrNull() }
-            .firstOrNull()
-        if (timestamp == null) {
-            Log.w(TAG, "Unable to determine timestamp from file name: $fileName")
-            return null
-        }
-
-        return StreamFileMetadata(streamType = streamType, timestamp = timestamp)
+    private fun getUriForMarkerFile(dataUri: Uri): Uri? {
+        val markerUri = onlineViewModel.markerUriFor(dataUri) ?: return null
+        return markerUri.takeIf { onlineViewModel.validatedFileUris.value.contains(it) }
     }
 
     private fun openHrGraph() {

@@ -10,7 +10,6 @@ import androidx.lifecycle.viewModelScope
 import com.polar.polarsensordatacollector.repository.DeviceConnectionState
 import com.polar.polarsensordatacollector.repository.PolarDeviceRepository
 import com.polar.polarsensordatacollector.repository.ResultOfRequest
-import com.polar.polarsensordatacollector.ui.trainingsession.TrainingSessionListDevConnectionState
 import com.polar.sdk.api.model.PolarOfflineRecordingEntry
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
@@ -84,6 +83,7 @@ class ListRecordingsViewModel @Inject constructor(
     }
 
     fun listOfflineRecordings() {
+        if (offlineRecordingsUiState.deletingEntryPath != null) return
         Log.d(TAG, "listOfflineRecordings for device $identifier")
         viewModelScope.launch {
             try {
@@ -132,17 +132,19 @@ class ListRecordingsViewModel @Inject constructor(
     }
 
     fun deleteRecording(entry: PolarOfflineRecordingEntry) {
+        if (offlineRecordingsUiState.deletingEntryPath != null ||
+            offlineRecordingsUiState.fetchStatus !is OfflineRecordingFetch.Success
+        ) return
         Log.d(TAG, "deleteRecording from device $identifier, path: ${entry.path}")
+        offlineRecordingsUiState = offlineRecordingsUiState.copy(
+            deletingEntryPath = entry.path
+        )
         viewModelScope.launch {
-            offlineRecordingsUiState = offlineRecordingsUiState.copy(
-                deletingEntryPath = entry.path
-            )
-
             when (val result = polarDeviceStreamingRepository.deleteRecording(identifier, entry.path)) {
                 is ResultOfRequest.Success -> {
                     Log.d(TAG, "Recording deleted successfully: ${entry.path}")
 
-                    listOfRecordings.remove(entry)
+                    listOfRecordings.removeAll { it.path == entry.path }
                     offlineRecordingsUiState = offlineRecordingsUiState.copy(
                         fetchStatus = OfflineRecordingFetch.Success(listOfRecordings.toList()),
                         deletingEntryPath = null
@@ -152,6 +154,10 @@ class ListRecordingsViewModel @Inject constructor(
                     Log.e(TAG, "Failed to delete recording: ${result.message}")
 
                     offlineRecordingsUiState = offlineRecordingsUiState.copy(
+                        fetchStatus = OfflineRecordingFetch.Failure(
+                            message = result.message,
+                            throwable = result.throwable
+                        ),
                         deletingEntryPath = null
                     )
                 }

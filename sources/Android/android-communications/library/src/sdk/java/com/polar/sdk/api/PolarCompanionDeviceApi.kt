@@ -11,6 +11,11 @@ import android.content.IntentSender
  * execution privileges and receive device presence notifications (device entering/leaving BLE
  * range) via a declared `CompanionDeviceService`, without needing a continuous BLE scan.
  *
+ * Service registration is opt-in. The host app must declare
+ * [com.polar.androidcommunications.common.ble.companion.PolarCompanionDeviceService] or a subclass of
+ * [com.polar.androidcommunications.common.ble.companion.PolarCompanionDeviceServiceBase] in its
+ * manifest to forward presence events to this API. The SDK does not declare a companion service.
+ *
  * This API complements, and does not replace, [PolarBleApi.searchForDevice] /
  * [PolarBleApi.connectToDevice]. Typical flow:
  * 1. Call [createAssociationRequest] and [associate] to have the user pick/approve a Polar device.
@@ -93,6 +98,9 @@ interface PolarCompanionDeviceApi {
     /**
      * Starts observing device presence for the device behind [identifier] (must already be
      * associated). Presence changes are reported via [callback].
+     *
+     * Requires a host-declared companion service that forwards presence events to the SDK;
+     * see the service registration requirements on [PolarCompanionDeviceApi].
      *
      * @return true if observation was started successfully
      */

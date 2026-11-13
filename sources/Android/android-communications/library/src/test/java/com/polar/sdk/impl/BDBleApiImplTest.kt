@@ -97,6 +97,8 @@ import com.polar.sdk.api.PolarBleApiCallbackProvider
 import com.polar.sdk.api.RestApiEventPayload
 import com.polar.sdk.api.model.PolarSensorSetting
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdMeasurementType
+import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.errors.BleOnlineStreamClosed
+import kotlinx.coroutines.CancellationException
 import com.polar.sdk.impl.utils.PolarNightlyRechargeUtils
 import com.polar.sdk.api.model.PolarExerciseEntry
 import com.polar.sdk.api.errors.PolarBleSdkInternalException
@@ -462,6 +464,51 @@ class BDBleApiImplTest {
             PolarServiceClientUtils.sessionPsPfcClientReady(deviceId, any())
         } throws PolarServiceNotAvailable()
         return Pair(client, session)
+    }
+
+    @Test
+    fun `device initiated stream stop does not send redundant stop command`() = runTest {
+        val deviceId = "A1B2C3D4"
+        val api = BDBleApiImpl.getInstance(context, setOf(PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_ONLINE_STREAMING))
+        val (client, session) = mockPmdClientConnection(deviceId)
+        val stopped = BleOnlineStreamClosed("Stop command from device")
+        coEvery { client.startMeasurement(any(), any(), any(), any()) } returns Unit
+        every { client.monitorAccNotifications(any()) } returns flow {
+            throw CancellationException("Channel closed due to error", stopped)
+        }
+
+        try {
+            val error = runCatching {
+                api.startAccStreaming(deviceId, PolarSensorSetting(emptyMap())).toList()
+            }.exceptionOrNull()
+            Assert.assertNotNull(error)
+            Assert.assertTrue(generateSequence(error) { it.cause }.any { it === stopped })
+            coVerify(exactly = 0) { client.stopMeasurement(any()) }
+            verify(exactly = 0) { session.sessionState }
+        } finally {
+            unmockkObject(PolarServiceClientUtils)
+        }
+    }
+
+    @Test
+    fun `regular stream cancellation still sends stop command`() = runTest {
+        val deviceId = "A1B2C3D4"
+        val api = BDBleApiImpl.getInstance(context, setOf(PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_ONLINE_STREAMING))
+        val (client, session) = mockPmdClientConnection(deviceId)
+        every { session.sessionState } returns BleDeviceSession.DeviceSessionState.SESSION_OPEN
+        every { session.address } returns deviceId
+        coEvery { client.startMeasurement(any(), any(), any(), any()) } returns Unit
+        coEvery { client.stopMeasurement(any()) } returns Unit
+        every { client.monitorAccNotifications(any()) } returns flow {
+            throw CancellationException("Cancelled by caller")
+        }
+
+        try {
+            runCatching { api.startAccStreaming(deviceId, PolarSensorSetting(emptyMap())).toList() }
+            coVerify(timeout = 3000, exactly = 1) { client.stopMeasurement(PmdMeasurementType.ACC) }
+        } finally {
+            unmockkObject(PolarServiceClientUtils)
+        }
     }
 
     // ── mockPmdClientConnection helper ────────────────────────────────────────

@@ -117,7 +117,7 @@ var pathtoroot = "../../../../../../../../";
 public final class <span class="typeNameLabel"><a href=BleMdsClient.html>BleMdsClient</a></span>
 extends <a href=../BleGattBase.html>BleGattBase</a>
                     </pre>
-                    <div class="block"><p>The <code>BleMdsClient</code> class implements BLE MDS (Memfault Diagnostic Service) client for receiving telemetry diagnostics data from a BLE MDS service.</p><p>Service flow:</p><ul><li><p>After connection <a href=BleMdsClient.Companion.html#MDS_SUPPORTED_FEATURES>MDS_SUPPORTED_FEATURES</a>, <a href=BleMdsClient.Companion.html#MDS_DEVICE_IDENTIFIER>MDS_DEVICE_IDENTIFIER</a>, <a href=BleMdsClient.Companion.html#MDS_DATA_URI>MDS_DATA_URI</a> and     <a href=BleMdsClient.Companion.html#MDS_AUTHORIZATION>MDS_AUTHORIZATION</a> are auto-read, and <a href=BleMdsClient.Companion.html#MDS_DATA_EXPORT>MDS_DATA_EXPORT</a> notifications are auto-enabled.     If <a href=BleMdsClient.Companion.html#MDS_SUPPORTED_FEATURES>MDS_SUPPORTED_FEATURES</a> fails to read, the failure is not cached forever: the next     <a href=BleMdsClient.html#clientReady(java.lang.Boolean)>clientReady</a> call triggers one fresh retry read instead of replaying the stale failure,     so recovery works once consent is resolved without an app restart or BLE reconnect.</p></li><li><p>Call <a href=BleMdsClient.html#startMdsNotifications(java.lang.Boolean)>startMdsNotifications</a> to register an observer and enable streaming via     <a href=BleMdsClient.Companion.html#MDS_DATA_EXPORT>MDS_DATA_EXPORT</a>.</p></li><li><p>Observe <a href=BleMdsClient.TelemetryConfiguration.html>TelemetryConfiguration</a> for continuous streaming; each     emission carries the latest device context together with the export data chunk.</p></li></ul></div>
+                    <div class="block"><p>The <code>BleMdsClient</code> class implements BLE MDS (Memfault Diagnostic Service) client for receiving telemetry diagnostics data from a BLE MDS service.</p><p>Service flow:</p><ul><li><p>After connection <a href=BleMdsClient.Companion.html#MDS_SUPPORTED_FEATURES>MDS_SUPPORTED_FEATURES</a>, <a href=BleMdsClient.Companion.html#MDS_DEVICE_IDENTIFIER>MDS_DEVICE_IDENTIFIER</a>, <a href=BleMdsClient.Companion.html#MDS_DATA_URI>MDS_DATA_URI</a> and     <a href=BleMdsClient.Companion.html#MDS_AUTHORIZATION>MDS_AUTHORIZATION</a> are auto-read, and <a href=BleMdsClient.Companion.html#MDS_DATA_EXPORT>MDS_DATA_EXPORT</a> notifications are auto-enabled.     If <a href=BleMdsClient.Companion.html#MDS_SUPPORTED_FEATURES>MDS_SUPPORTED_FEATURES</a> fails to read, the failure is not cached forever: the next     <a href=BleMdsClient.html#clientReady(java.lang.Boolean)>clientReady</a> call triggers one fresh retry read instead of replaying the stale failure,     so recovery works once consent is resolved without an app restart or BLE reconnect.</p></li><li><p>Call <a href=BleMdsClient.html#startMdsNotifications(java.lang.Boolean)>startMdsNotifications</a> to make sure <a href=BleMdsClient.Companion.html#MDS_DATA_EXPORT>MDS_DATA_EXPORT</a> notifications are enabled     (re-writing a previously refused CCC), register an observer and enable streaming via     <a href=BleMdsClient.Companion.html#MDS_DATA_EXPORT>MDS_DATA_EXPORT</a>.</p></li><li><p>Observe <a href=BleMdsClient.TelemetryConfiguration.html>TelemetryConfiguration</a> for continuous streaming; each     emission carries the latest device context together with the export data chunk.</p></li></ul></div>
 
                     <dl>
 
@@ -318,6 +318,14 @@ extends <a href=../BleGattBase.html>BleGattBase</a>
                                         </tr>
                                         
                                         <tr id="i2" class="altColor">
+                                            <td class="colFirst"><code>final <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=BleMdsClient.html#ensureNotificationsEnabled(java.lang.Boolean)>ensureNotificationsEnabled</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> checkConnection) </code>
+                                            </th>
+                                            <td class="colLast">Suspends until <a href=BleMdsClient.Companion.html#MDS_DATA_EXPORT>MDS_DATA_EXPORT</a> notifications are enabled.</td>
+                                        </tr>
+                                        
+                                        <tr id="i3" class="rowColor">
                                             <td class="colFirst"><code><a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=BleMdsClient.html#clientReady(java.lang.Boolean)>clientReady</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> checkConnection) </code>
@@ -325,7 +333,7 @@ extends <a href=../BleGattBase.html>BleGattBase</a>
                                             <td class="colLast"></td>
                                         </tr>
                                         
-                                        <tr id="i3" class="rowColor">
+                                        <tr id="i4" class="altColor">
                                             <td class="colFirst"><code><a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=BleMdsClient.html#processServiceData(java.util.UUID,kotlin.ByteArray,java.lang.Integer,java.lang.Boolean)>processServiceData</a>(<a href=https://developer.android.com/reference/kotlin/java/util/UUID.html>UUID</a> characteristic, <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-byte-array/index.html>ByteArray</a> data, <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> status, <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> notifying) </code>
@@ -333,7 +341,7 @@ extends <a href=../BleGattBase.html>BleGattBase</a>
                                             <td class="colLast">Callback for GATT service characteristic data processing</td>
                                         </tr>
                                         
-                                        <tr id="i4" class="altColor">
+                                        <tr id="i5" class="rowColor">
                                             <td class="colFirst"><code><a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a></code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=BleMdsClient.html#processServiceDataWritten(java.util.UUID,java.lang.Integer)>processServiceDataWritten</a>(<a href=https://developer.android.com/reference/kotlin/java/util/UUID.html>UUID</a> characteristic, <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> status) </code>
@@ -341,7 +349,7 @@ extends <a href=../BleGattBase.html>BleGattBase</a>
                                             <td class="colLast"></td>
                                         </tr>
                                         
-                                        <tr id="i5" class="rowColor">
+                                        <tr id="i6" class="altColor">
                                             <td class="colFirst"><code>final Flow&lt;<a href=BleMdsClient.TelemetryConfiguration.html>BleMdsClient.TelemetryConfiguration</a>&gt;</code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=BleMdsClient.html#startMdsNotifications(java.lang.Boolean)>startMdsNotifications</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> checkConnection) </code>
@@ -349,7 +357,7 @@ extends <a href=../BleGattBase.html>BleGattBase</a>
                                             <td class="colLast"></td>
                                         </tr>
                                         
-                                        <tr id="i6" class="altColor">
+                                        <tr id="i7" class="rowColor">
                                             <td class="colFirst"><code>final Flow&lt;<a href=BleMdsClient.TelemetryConfiguration.html>BleMdsClient.TelemetryConfiguration</a>&gt;</code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=BleMdsClient.html#monitorMdsNotifications(java.lang.Boolean)>monitorMdsNotifications</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> checkConnection) </code>
@@ -357,7 +365,7 @@ extends <a href=../BleGattBase.html>BleGattBase</a>
                                             <td class="colLast"></td>
                                         </tr>
                                         
-                                        <tr id="i7" class="rowColor">
+                                        <tr id="i8" class="altColor">
                                             <td class="colFirst"><code>final <a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a></code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=BleMdsClient.html#sendControlPointCommand(java.lang.Integer)>sendControlPointCommand</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/Integer.html>Integer</a> command) </code>
@@ -458,6 +466,29 @@ extends <a href=../BleGattBase.html>BleGattBase</a>
                                         <h4>reset</h4>
                                         <pre class="methodSignature"> <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a> <a href=BleMdsClient.html#reset()>reset</a>()</pre>
                                         <div class="block"></div>
+
+                                        <dl>
+
+                                        
+
+                                        
+
+                                        
+
+                                        </dl>
+                                    </li>
+                                </ul>
+                                
+                                <a id="ensureNotificationsEnabled(java.lang.Boolean)">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockList"
+                                          >
+                                    <li class="blockList">
+                                        <h4>ensureNotificationsEnabled</h4>
+                                        <pre class="methodSignature"> final <a href=https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html>Unit</a> <a href=BleMdsClient.html#ensureNotificationsEnabled(java.lang.Boolean)>ensureNotificationsEnabled</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> checkConnection)</pre>
+                                        <div class="block"><p>Suspends until <a href=BleMdsClient.Companion.html#MDS_DATA_EXPORT>MDS_DATA_EXPORT</a> notifications are enabled. A failure cached from an earlier refused CCC write is cleared and the write is attempted again, so this recovers after the device has started to permit telemetry. Throws <a href=../../../exceptions/BleAttributeError.html>BleAttributeError</a> if the device refuses again.</p></div>
 
                                         <dl>
 

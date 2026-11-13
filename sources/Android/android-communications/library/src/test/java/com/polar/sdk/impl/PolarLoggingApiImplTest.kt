@@ -148,6 +148,31 @@ internal class PolarLoggingApiImplTest {
         assertArrayEquals(binaryPayload, logs[0].data)
     }
 
+    @Test
+    fun `exportDeviceLogs reads diagnostic and telemetry files on H10 file systems`() = runTest {
+        every {
+            BlePolarDeviceCapabilitiesUtility.getFileSystemType(any<String>())
+        } returns BlePolarDeviceCapabilitiesUtility.FileSystemType.H10_FILE_SYSTEM
+        val files = linkedMapOf(
+            "/ERRORLOG.BPB" to byteArrayOf(0x01),
+            "/ERRORLO2.BPB" to byteArrayOf(0x02),
+            "/SYSLOG.TXT" to "system log".toByteArray(),
+            "/TRC1.BIN" to byteArrayOf(0x80.toByte()),
+            "/TRC2.BIN" to byteArrayOf(0xFF.toByte()),
+            "/DBGTRC1.BIN" to byteArrayOf(0x03)
+        )
+
+        for (deviceType in listOf("H10", "H9")) {
+            val (client, listener) = mockBleConnection(deviceId, deviceType)
+            setupClientRouting(client, files)
+
+            val logs = PolarLoggingApiImpl(listener).exportDeviceLogs(deviceId)
+
+            assertEquals(files.keys.toList(), logs.map { it.path })
+            logs.forEach { log -> assertArrayEquals(files.getValue(log.path), log.data) }
+        }
+    }
+
     // ── getLogConfig ──────────────────────────────────────────────────────────
 
     @Test
@@ -250,7 +275,7 @@ internal class PolarLoggingApiImplTest {
 
     // ── helpers ───────────────────────────────────────────────────────────────
 
-    private fun mockBleConnection(deviceId: String): Pair<BlePsFtpClient, BleDeviceListener> {
+    private fun mockBleConnection(deviceId: String, deviceType: String = "Polar360"): Pair<BlePsFtpClient, BleDeviceListener> {
         val client     = mockk<BlePsFtpClient>()
         val listener   = mockk<BleDeviceListener>()
         val session    = mockk<BleDeviceSession>()
@@ -262,7 +287,7 @@ internal class PolarLoggingApiImplTest {
         every { sessions.iterator().next() }    returns session
         every { session.advertisementContent }  returns advContent
         every { session.advertisementContent.polarDeviceId } returns deviceId
-        every { session.polarDeviceType }       returns "Polar360"
+        every { session.polarDeviceType }       returns deviceType
         every { session.sessionState }          returns BleDeviceSession.DeviceSessionState.SESSION_OPEN
         every { session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) } returns client
         every { client.isServiceDiscovered }    returns true

@@ -28,7 +28,8 @@ import java.util.concurrent.atomic.AtomicInteger
  *    If [MDS_SUPPORTED_FEATURES] fails to read, the failure is not cached forever: the next
  *    [clientReady] call triggers one fresh retry read instead of replaying the stale failure,
  *    so recovery works once consent is resolved without an app restart or BLE reconnect.
- * 2. Call [startMdsNotifications] to register an observer and enable streaming via
+ * 2. Call [startMdsNotifications] to make sure [MDS_DATA_EXPORT] notifications are enabled
+ *    (re-writing a previously refused CCC), register an observer and enable streaming via
  *    [MDS_DATA_EXPORT].
  * 3. Observe [TelemetryConfiguration] for continuous streaming; each
  *    emission carries the latest device context together with the export data chunk.
@@ -142,8 +143,18 @@ class BleMdsClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, M
         ChannelUtils.postDisconnectedAndClearList(mdsObserverAtomicList)
     }
 
-    override suspend fun clientReady(checkConnection: Boolean) {
+    /**
+     * Suspends until [MDS_DATA_EXPORT] notifications are enabled. A failure cached from an earlier
+     * refused CCC write is cleared and the write is attempted again, so this recovers after the
+     * device has started to permit telemetry. Throws [BleAttributeError] if the device refuses again.
+     */
+    suspend fun ensureNotificationsEnabled(checkConnection: Boolean) {
+        retryFailedDataExportNotificationEnable(checkConnection)
         waitNotificationEnabled(MDS_DATA_EXPORT, checkConnection)
+    }
+
+    override suspend fun clientReady(checkConnection: Boolean) {
+        ensureNotificationsEnabled(checkConnection)
 
         var shouldRetryRead = false
         val readToAwait = synchronized(supportedFeaturesReadLock) {
@@ -172,6 +183,28 @@ class BleMdsClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, M
             }
         }
         readToAwait.await()
+    }
+
+    
+    /**
+     * A refused CCC write (e.g. ATT 0x03 while telemetry is not permitted) leaves the failure
+     * cached in the notification state, so every later clientReady() would replay it. Clear a
+     * cached failure and write the CCC again, once per clientReady() call.
+     */
+    private fun retryFailedDataExportNotificationEnable(checkConnection: Boolean) {
+        val state = getNotificationAtomicInteger(MDS_DATA_EXPORT) ?: return
+        val failedStatus = state.get()
+        if (failedStatus == -1 || failedStatus == ATT_SUCCESS || failedStatus == ATT_NOTIFY_OR_INDICATE_OFF) return
+        if (checkConnection && !txInterface.isConnected()) return
+        if (!state.compareAndSet(failedStatus, -1)) return
+        BleLogger.d(TAG, "MDS Data Export: retrying notification enable after error $failedStatus")
+        try {
+            txInterface.setCharacteristicNotify(MDS_SERVICE, MDS_DATA_EXPORT, true)
+        } catch (throwable: Throwable) {
+            BleLogger.e(TAG, "MDS Data Export notification retry failed to start: $throwable")
+            state.compareAndSet(-1, failedStatus)
+            throw throwable
+        }
     }
 
     override fun processServiceData(
@@ -266,10 +299,11 @@ class BleMdsClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, M
         }
     }
 
-    fun startMdsNotifications(checkConnection: Boolean): Flow<TelemetryConfiguration> {
+    suspend fun startMdsNotifications(checkConnection: Boolean): Flow<TelemetryConfiguration> {
         if (checkConnection && !txInterface.isConnected()) {
             throw BleDisconnected()
         }
+        ensureNotificationsEnabled(checkConnection)
 
         lastSeqCounter = -1
         val observer = Channel<TelemetryConfiguration>(Channel.BUFFERED)

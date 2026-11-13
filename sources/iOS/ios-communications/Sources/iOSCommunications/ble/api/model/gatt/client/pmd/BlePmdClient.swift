@@ -173,7 +173,7 @@ open class BlePmdClient: BleGattClientBase, @unchecked Sendable {
         return UInt(fetchSetting(type, setting: .sampleRate) ?? 0)
     }
 
-    private func getPreviousFrameTimeStamp(_ type: PmdMeasurementType, _ frameType: PmdDataFrameType) -> UInt64 {
+    func getPreviousFrameTimeStamp(_ type: PmdMeasurementType, _ frameType: PmdDataFrameType) -> UInt64 {
         var ts: UInt64?
         previousTimeStamp.accessItem { ts = $0[PmdTimestampData(measurementType: type, frameType: frameType)] }
         return ts ?? 0
@@ -186,6 +186,7 @@ open class BlePmdClient: BleGattClientBase, @unchecked Sendable {
     override public func processServiceData(_ chr: CBUUID, data: Data, err: Int) {
         if chr.isEqual(BlePmdClient.PMD_CP) {
             if err == 0 {
+                guard !data.isEmpty else { BleLogger.error("PMD CP received empty data"); return }
                 if data[0] == 0x0f {
                     features = data
                     let types = PmdMeasurementType.fromByteArray(data)
@@ -211,7 +212,11 @@ open class BlePmdClient: BleGattClientBase, @unchecked Sendable {
             case PmdControlPointCommandServiceToClient.ONLINE_MEASUREMENT_STOPPED:
                 for dataType in data.dropFirst() {
                     let err = BlePmdError.bleOnlineStreamClosed(description: "Stop command from device")
-                    switch PmdMeasurementType.fromId(id: dataType) {
+                    let type = PmdMeasurementType.fromId(id: dataType)
+                    previousTimeStamp.accessItem { timestamps in
+                        timestamps = timestamps.filter { $0.key.measurementType != type }
+                    }
+                    switch type {
                     case .ecg:          ecgStreams.finish(throwing: err)
                     case .ppg:          ppgStreams.finish(throwing: err)
                     case .acc:          accStreams.finish(throwing: err)

@@ -113,6 +113,13 @@ class CBDeviceSessionImpl: BleDeviceSession, CBPeripheralDelegate, BleAttributeT
         securityRetryWorkItem?.cancel()
         securityRetryWorkItem = nil
         pendingSecurityOperation = nil
+        // Dropped before clients are torn down (which can wait): a parked write of the old connection must not be
+        // replayed by peripheralIsReady while automatic reconnection is already running.
+        if isBleQueue() {
+            pendingWriteData = nil
+        } else {
+            queueBle.sync { pendingWriteData = nil }
+        }
         for client in gattClients {
             client.disconnected()
         }
@@ -158,6 +165,15 @@ class CBDeviceSessionImpl: BleDeviceSession, CBPeripheralDelegate, BleAttributeT
         }
     }
     
+    func discardPendingWriteWithoutResponse(_ parent: BleGattClientBase, characteristicUuid: CBUUID) {
+        let discard = {
+            if let pending = self.pendingWriteData, pending.parent === parent, pending.characteristicUuid == characteristicUuid {
+                self.pendingWriteData = nil
+            }
+        }
+        if isBleQueue() { discard() } else { queueBle.sync(execute: discard) }
+    }
+
     // from BleGattTransmitter
     func setCharacteristicNotify(_ parent: BleGattClientBase, serviceUuid: CBUUID, characteristicUuid: CBUUID, notify: Bool) throws {
         
@@ -503,6 +519,11 @@ class CBDeviceSessionImpl: BleDeviceSession, CBPeripheralDelegate, BleAttributeT
             peripheral.writeValue(pending.packet, for: pending.characteristic, type: .withoutResponse)
             pending.parent.serviceDataWritten(pending.characteristicUuid, err: 0)
         }
+    }
+
+    func requestDisconnect() {
+        BleLogger.trace("Disconnect requested by GATT client")
+        central.cancelPeripheralConnection(peripheral)
     }
 
     private func retryInitialSecurityOperation(_ operation: SecurityRetryOperation) {

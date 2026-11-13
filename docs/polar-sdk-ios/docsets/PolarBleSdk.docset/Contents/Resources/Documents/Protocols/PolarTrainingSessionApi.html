@@ -17,9 +17,9 @@
     <a title="PolarTrainingSessionApi Protocol Reference"></a>
     <header>
       <div class="content-wrapper">
-        <p><a href="../index.html">PolarBleSdk 8.4.3
+        <p><a href="../index.html">PolarBleSdk 8.5.2
 &gt;= 1.10
-    s.source            = { :git =&gt; &#39;https://github.com/polarofficial/polar-ble-sdk.git&#39;, :tag =&gt; s.version.to_s } Docs</a> (43% documented)</p>
+    s.source            = { :git =&gt; &#39;https://github.com/polarofficial/polar-ble-sdk.git&#39;, :tag =&gt; s.version.to_s } Docs</a> (44% documented)</p>
         <p class="header-right"><a href="https://github.com/polarofficial/polar-ble-sdk"><img src="../img/gh.png" alt="GitHub"/>View on GitHub</a></p>
         <div class="header-right">
           <form role="search" action="../search.json">
@@ -945,7 +945,8 @@ half-open date interval.</p>
 
 </div><div class="aside aside-throws">
     <p class="aside-title">Throws</p>
-    See <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors invoked.
+    <code>PolarErrors.invalidArgument</code> if <code>profile</code> is <code>.unknown</code>, or an error if the
+operation fails or the device does not support the requested sport.
 
 </div>
 
@@ -982,7 +983,86 @@ half-open date interval.</p>
                               </td>
                               <td>
                                 <div>
-                                  <p>The sport profile to use for the exercise session.</p>
+                                  <p>Sport profile to use for the exercise session.</p>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0A18TrainingSessionApiP13startExercise10identifier7sportIdySS_s6UInt64VtYaKF"></a>
+                    <a name="//apple_ref/swift/Method/startExercise(identifier:sportId:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0A18TrainingSessionApiP13startExercise10identifier7sportIdySS_s6UInt64VtYaKF">startExercise(identifier:<wbr>sportId:<wbr>)</a>
+                    </code>
+                      <span class="declaration-note">
+                        Default implementation, asynchronous
+                      </span>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Start an exercise using a numeric Polar sport ecosystem identifier, including sports
+not listed in <code><a href="../Enums/PolarExerciseSession/SportProfile.html">PolarExerciseSession.SportProfile</a></code>.</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO27feature_polar_training_datayA2CmF">PolarBleSdkFeature.feature_polar_training_data</a></code>
+
+</div><div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    <code>PolarErrors.invalidArgument</code> if <code>sportId</code> is zero or greater than <code>Int64.max</code>;
+or an error if the device rejects the sport or the operation fails.
+
+</div>
+
+                      </div>
+                      <h4>Default Implementation</h4>
+                      <div class="default_impl abstract">
+                        <p>Compatibility implementation for conformers that do not implement numeric sport IDs.
+Only known <code>SportProfile</code> values are supported by this default; SDK implementations may
+override it to support additional installed sport IDs.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">startExercise</span><span class="p">(</span><span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">sportId</span><span class="p">:</span> <span class="kt">UInt64</span><span class="p">)</span> <span class="k">async</span> <span class="k">throws</span></code></pre>
+
+                        </div>
+                      </div>
+                      <div>
+                        <h4>Parameters</h4>
+                        <table class="graybox">
+                          <tbody>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>identifier</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>The Polar device ID or BT address.</p>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>
+                                <code>
+                                <em>sportId</em>
+                                </code>
+                              </td>
+                              <td>
+                                <div>
+                                  <p>Positive sport identifier no greater than <code>Int64.max</code>.</p>
                                 </div>
                               </td>
                             </tr>
@@ -1300,6 +1380,45 @@ half-open date interval.</p>
                 <li class="item">
                   <div>
                     <code>
+                    <a name="/s:11PolarBleSdk0A18TrainingSessionApiPAAE13startExercise10identifierySS_tYaKF"></a>
+                    <a name="//apple_ref/swift/Method/startExercise(identifier:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0A18TrainingSessionApiPAAE13startExercise10identifierySS_tYaKF">startExercise(identifier:<wbr>)</a>
+                    </code>
+                      <span class="declaration-note">
+                        Extension method, asynchronous
+                      </span>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Start an exercise with the default sport, <code>.otherOutdoor</code>.</p>
+<div class="aside aside-requires">
+    <p class="aside-title">Requires</p>
+    Requires SDK feature(s): <code><a href="../Enums/PolarBleSdkFeature.html#/s:11PolarBleSdk0abC7FeatureO27feature_polar_training_datayA2CmF">PolarBleSdkFeature.feature_polar_training_data</a></code>
+
+</div><div class="aside aside-throws">
+    <p class="aside-title">Throws</p>
+    See <code><a href="../Enums/PolarErrors.html">PolarErrors</a></code> for possible errors.
+
+</div>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">func</span> <span class="nf">startExercise</span><span class="p">(</span><span class="nv">identifier</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="k">async</span> <span class="k">throws</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
                     <a name="/s:11PolarBleSdk0A18TrainingSessionApiPAAE12stopExercise10identifierySS_tYaKF"></a>
                     <a name="//apple_ref/swift/Method/stopExercise(identifier:)" class="dashAnchor"></a>
                     <a class="token" href="#/s:11PolarBleSdk0A18TrainingSessionApiPAAE12stopExercise10identifierySS_tYaKF">stopExercise(identifier:<wbr>)</a>
@@ -1332,7 +1451,7 @@ half-open date interval.</p>
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2026 <a class="link" href="https://github.com/polarofficial/polar-ble-sdk" target="_blank" rel="external noopener">Polar Electro Oy</a>. All rights reserved. (Last updated: 2026-10-23)</p>
+          <p>&copy; 2026 <a class="link" href="https://github.com/polarofficial/polar-ble-sdk" target="_blank" rel="external noopener">Polar Electro Oy</a>. All rights reserved. (Last updated: 2026-11-13)</p>
           <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external noopener">jazzy ♪♫ v0.15.3</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external noopener">Realm</a> project.</p>
         </section>
       </article>

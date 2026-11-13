@@ -3,3 +3,34 @@
 */
 
 "APP_NAME" = "PSDC";
+
+"exercise.title" = "Exercise";
+"exercise.sportProfile" = "Sport profile (optional)";
+"exercise.defaultSport" = "Default (Other outdoor)";
+"exercise.customSportId" = "Custom sport ID (optional)";
+"exercise.customSportId.help" = "A custom ID overrides the selected profile. The sport must have a profile installed on the device. This is a sport identifier, not a profile index or folder name.";
+"exercise.invalidSportId" = "Enter a positive 64-bit sport ID.";
+"exercise.start" = "Start";
+"exercise.pause" = "Pause";
+"exercise.resume" = "Resume";
+"exercise.stop" = "Stop";
+"exercise.saveOnStop" = "Save exercise on stop";
+"exercise.startTime" = "Exercise start time: %@";
+"exercise.stopObserving" = "Stop observing";
+"exercise.observeNotifications" = "Observe exercise state notifications";
+"exercise.sportId" = "Sport ID %@";
+"exercise.status.inProgress" = "In progress (%@)";
+"exercise.status.paused" = "Paused (%@)";
+"exercise.status.stopped" = "Stopped (%@)";
+"exercise.status.synchronizing" = "Synchronizing…";
+"exercise.status.notStarted" = "Not started";
+"exercise.notification.stopped" = "Stopped";
+"exercise.notification.syncRequired" = "Sync required";
+"exercise.toast.starting" = "Starting…";
+"exercise.toast.pausing" = "Pausing…";
+"exercise.toast.resuming" = "Resuming…";
+"exercise.toast.stopping" = "Stopping…";
+"exercise.toast.inProgress" = "Exercise in progress";
+"exercise.toast.paused" = "Exercise paused";
+"exercise.toast.syncing" = "Syncing…";
+"exercise.toast.stopped" = "No active exercise";

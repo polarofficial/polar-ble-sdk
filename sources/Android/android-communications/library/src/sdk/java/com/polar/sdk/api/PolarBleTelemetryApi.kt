@@ -100,4 +100,16 @@ interface PolarBleTelemetryApi {
  **/
     @OptIn
     suspend fun getAvailableTelemetryTypes(identifier: String): DeviceTelemetrySupport
+
+    /**
+     * NOTE: this is an experimental API intended for Polar internal use only. Polar will not support 3rd party users with this API.
+     * Re-evaluates telemetry readiness for an already connected device, e.g. after the device has started to
+     * permit telemetry again. Re-writes the MDS notification descriptor if an earlier write was refused. When
+     * telemetry is ready, `bleSdkFeatureReady` is emitted for FEATURE_TELEMETRY if it was not reported yet.
+     *
+     * @param identifier: Polar device ID or BT address.
+     * @return true if telemetry is ready for use, false otherwise.
+     **/
+    @OptIn
+    suspend fun refreshTelemetryReadiness(identifier: String): Boolean
 }

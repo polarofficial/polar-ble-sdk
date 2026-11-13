@@ -19,6 +19,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.core.util.Pair
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.Fragment
@@ -40,11 +41,13 @@ import com.google.android.material.switchmaterial.SwitchMaterial
 import com.google.gson.GsonBuilder
 import com.polar.polarsensordatacollector.R
 import com.polar.polarsensordatacollector.repository.SdkMode
+import com.polar.polarsensordatacollector.repository.ResultOfRequest
 import com.polar.polarsensordatacollector.ui.activity.ActivityRecordingFragmentDirections
 import com.polar.polarsensordatacollector.ui.landing.MainViewModel
 import com.polar.polarsensordatacollector.ui.exercise.ExerciseActivity
 import com.polar.polarsensordatacollector.ui.genericapi.GenericApiActivity
 import com.polar.polarsensordatacollector.ui.utils.showSnackBar
+import com.polar.polarsensordatacollector.ui.utils.ZipCompressionHelper
 import com.polar.sdk.api.PolarBleApi
 import com.polar.sdk.api.PolarDeviceTelemetryType
 import com.polar.sdk.api.model.CheckFirmwareUpdateStatus
@@ -53,7 +56,10 @@ import com.polar.sdk.api.model.PolarPhysicalConfiguration
 import com.polar.sdk.api.model.sleep.PolarSleepRecordingStatus
 import com.polar.sdk.api.model.PolarUserDeviceSettings
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -117,6 +123,8 @@ class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
     private lateinit var deleteDateFoldersButton: Button
 
     private lateinit var deleteTelemetryDataButton: Button
+    private lateinit var exportDeviceLogsButton: Button
+    private lateinit var exportDeviceLogsProgress: CircularProgressIndicator
 
     private lateinit var waitForConnectionButton: Button
     private lateinit var waitForConnectionStatusText: TextView
@@ -429,6 +437,10 @@ class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
             })
         }
 
+        exportDeviceLogsButton.setOnClickListener {
+            exportDeviceLogs()
+        }
+
         deleteTelemetryDataButton.setOnClickListener {
             AlertDialog.Builder(requireContext())
                 .setTitle(getString(R.string.do_telemetry_delete_header))
@@ -604,6 +616,48 @@ class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
         }
     }
 
+    private fun exportDeviceLogs() {
+        val context = requireContext()
+        viewLifecycleOwner.lifecycleScope.launch {
+            exportDeviceLogsButton.isEnabled = false
+            exportDeviceLogsProgress.visibility = VISIBLE
+            try {
+                val logs = when (val result = viewModel.exportDeviceLogs()) {
+                    is ResultOfRequest.Success -> result.value.orEmpty()
+                    is ResultOfRequest.Failure -> {
+                        showSnackBar(requireView(), getString(R.string.export_device_logs_error), result.message, showAsError = true)
+                        return@launch
+                    }
+                }
+                if (logs.isEmpty()) {
+                    showSnackBar(requireView(), getString(R.string.export_device_logs_empty), showAsError = false)
+                    return@launch
+                }
+
+                val deviceId = viewModel.uiIdentifier.value
+                val zipFile = withContext(Dispatchers.IO) {
+                    ZipCompressionHelper.createDeviceLogsZipFile(context, logs.map { it.path to it.data }, deviceId)
+                }
+                val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", zipFile)
+                val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                    type = "application/zip"
+                    putExtra(Intent.EXTRA_STREAM, uri)
+                    putExtra(Intent.EXTRA_SUBJECT, getString(R.string.export_device_logs_sharing_title))
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                }
+                startActivity(Intent.createChooser(shareIntent, getString(R.string.export_device_logs_sharing_title)))
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (error: Exception) {
+                Log.e(TAG, "Failed to export device logs", error)
+                showSnackBar(requireView(), getString(R.string.export_device_logs_error), error.message ?: "", showAsError = true)
+            } finally {
+                exportDeviceLogsProgress.visibility = GONE
+                exportDeviceLogsButton.isEnabled = true
+            }
+        }
+    }
+
     private fun setupViews(view: View) {
         sdkModeToggleButton = view.findViewById(R.id.sdk_mode_toggle_button)
         sdkModeProgress = view.findViewById(R.id.sdk_mode_progress)
@@ -676,6 +730,8 @@ class DeviceSettingsFragment : Fragment(R.layout.fragment_device_settings) {
         deleteDateFoldersButton = view.findViewById(R.id.do_date_folder_delete_button)
 
         deleteTelemetryDataButton = view.findViewById(R.id.do_telemetry_delete_button)
+        exportDeviceLogsButton = view.findViewById(R.id.export_device_logs_button)
+        exportDeviceLogsProgress = view.findViewById(R.id.export_device_logs_progress)
 
         waitForConnectionButton = view.findViewById(R.id.wait_connection_button)
         waitForConnectionStatusText = view.findViewById(R.id.wait_connection_status_text)

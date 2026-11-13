@@ -65,6 +65,7 @@ import com.polar.sdk.impl.utils.PolarServiceClientUtils
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import protocol.PftpError.PbPFtpError
@@ -229,9 +230,11 @@ internal class PolarOfflineRecordingApiImpl(
         entry: PolarOfflineRecordingEntry,
         secret: PolarRecordingSecret?
     ): Flow<PolarOfflineRecordingResult> = apiCallGuard.guardFlow("getOfflineRecordWithProgress", identifier) {
+        // channelFlow lets the non-suspending progress callback push updates while the download runs
+        emitAll(channelFlow {
         val totalBytes = entry.size
         val accumulatedBytes = AtomicLong(0L)
-        emit(PolarOfflineRecordingResult.Progress(bytesDownloaded = 0L, totalBytes = totalBytes, progressPercent = 0))
+        send(PolarOfflineRecordingResult.Progress(bytesDownloaded = 0L, totalBytes = totalBytes, progressPercent = 0))
 
         val session = PolarServiceClientUtils.sessionPsFtpClientReady(identifier, listener)
         val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
@@ -243,7 +246,7 @@ internal class PolarOfflineRecordingApiImpl(
             val currentBytes = accumulatedBytes.addAndGet(bytesReceived)
             val percent = if (totalBytes > 0) ((currentBytes * 100) / totalBytes).toInt().coerceIn(0, 100) else 0
             BleLogger.d(TAG, "Progress: $currentBytes/$totalBytes ($percent%)")
-            /* progress callback is best-effort for emitted updates */
+            trySend(PolarOfflineRecordingResult.Progress(bytesDownloaded = currentBytes, totalBytes = totalBytes, progressPercent = percent))
         })
         val accumulator = OfflineRecordingAccumulator()
         val pair = getSubRecordingAndOtherFilesCount(client, entry)
@@ -253,8 +256,9 @@ internal class PolarOfflineRecordingApiImpl(
         } else {
             fetchSubRecordings(client, entry, secret, identifier, count, accumulator)
         }
-        emit(PolarOfflineRecordingResult.Progress(bytesDownloaded = totalBytes, totalBytes = totalBytes, progressPercent = 100))
-        emit(PolarOfflineRecordingResult.Complete(data))
+        send(PolarOfflineRecordingResult.Progress(bytesDownloaded = totalBytes, totalBytes = totalBytes, progressPercent = 100))
+        send(PolarOfflineRecordingResult.Complete(data))
+        })
     }
 
     @Suppress("OVERRIDE_DEPRECATION")

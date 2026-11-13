@@ -9,7 +9,8 @@ import java.time.LocalDateTime
 class PolarExerciseSession {
 
     /**
-     * Supported sport profiles.
+     * Convenience names for a small subset of Polar sport identifiers, not a complete
+     * list of sports supported by devices. Use numeric sport IDs for other sports.
      */
     enum class SportProfile(val id: Int) {
         UNKNOWN(0),
@@ -43,6 +44,8 @@ class PolarExerciseSession {
     data class ExerciseInfo(
         val status: ExerciseStatus,
         val sportProfile: SportProfile,
-        val startTime: LocalDateTime? = null
+        val startTime: LocalDateTime? = null,
+        /** Raw sport identifier, including IDs absent from [SportProfile]. Zero if unavailable. */
+        val sportId: Long = sportProfile.id.toLong()
     )
 }

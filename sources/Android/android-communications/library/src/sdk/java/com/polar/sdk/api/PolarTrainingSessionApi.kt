@@ -1,5 +1,6 @@
 package com.polar.sdk.api
 
+import com.polar.sdk.api.errors.PolarSportProfileNotFound
 import com.polar.sdk.api.model.PolarExerciseSession
 import com.polar.sdk.api.model.trainingsession.PolarTrainingSession
 import com.polar.sdk.api.model.trainingsession.PolarTrainingSessionFetchResult
@@ -67,10 +68,28 @@ interface PolarTrainingSessionApi {
      * Start an exercise session on the device. Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_TRAINING_DATA]
      *
      * @param identifier The Polar device ID or BT address.
-     * @param profile The sport profile to use for the exercise session.
-     * @throws Throwable if the operation fails
+     * @param profile Sport profile; defaults to [PolarExerciseSession.SportProfile.OTHER_OUTDOOR].
+     * @throws PolarSportProfileNotFound if no matching sport profile exists on the device.
+     * @throws Throwable if the operation fails.
      */
-    suspend fun startExercise(identifier: String, profile: PolarExerciseSession.SportProfile)
+    suspend fun startExercise(
+        identifier: String,
+        profile: PolarExerciseSession.SportProfile = PolarExerciseSession.SportProfile.OTHER_OUTDOOR
+    )
+
+    /**
+     * Start an exercise using a numeric Polar sport ecosystem identifier, including sports
+     * not listed in [PolarExerciseSession.SportProfile]. Requires feature
+     * [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_TRAINING_DATA].
+     *
+     * @param identifier The Polar device ID or BT address.
+     * @param sportId Positive sport identifier, representable as a signed [Long].
+     * @throws IllegalArgumentException if [sportId] is zero or negative.
+     * @throws PolarSportProfileNotFound if no matching sport profile exists on the device.
+     * @throws Throwable if profile discovery fails,
+     * the device rejects the sport, or the operation fails.
+     */
+    suspend fun startExercise(identifier: String, sportId: Long)
 
     /**
      * Pause an ongoing exercise session. Requires feature [PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_TRAINING_DATA]

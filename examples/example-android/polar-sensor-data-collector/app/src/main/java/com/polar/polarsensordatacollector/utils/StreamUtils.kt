@@ -1,9 +1,13 @@
 package com.polar.polarsensordatacollector.utils
 
 import android.util.Log
+import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.errors.BleOnlineStreamClosed
 
 object StreamUtils {
     private const val TAG = "StreamUtils"
+
+    fun isDeviceInitiatedStop(error: Throwable): Boolean =
+        generateSequence(error) { it.cause }.any { it is BleOnlineStreamClosed }
 
     fun calculateSampleRate(timeStampEarlier: Long, timeStampLater: Long): Double {
         val delta = timeStampLater - timeStampEarlier

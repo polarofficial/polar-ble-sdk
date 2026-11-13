@@ -14,6 +14,7 @@ import com.polar.androidcommunications.api.ble.model.gatt.client.psftp.BlePsFtpC
 import com.polar.androidcommunications.api.ble.model.gatt.client.psftp.BlePsFtpUtils
 import com.polar.sdk.api.PolarBleApi
 import com.polar.sdk.api.errors.PolarDeviceNotFound
+import com.polar.sdk.api.errors.PolarSportProfileNotFound
 import com.polar.sdk.api.errors.PolarServiceNotAvailable
 import com.polar.sdk.api.model.PolarExerciseSession
 import com.polar.sdk.api.model.trainingsession.PolarTrainingSession
@@ -21,6 +22,8 @@ import com.polar.sdk.api.model.trainingsession.PolarTrainingSessionFetchResult
 import com.polar.sdk.api.model.trainingsession.PolarTrainingSessionReference
 import com.polar.sdk.impl.utils.PolarServiceClientUtils
 import com.polar.sdk.impl.utils.PolarTrainingSessionUtils
+import com.google.protobuf.CodedOutputStream
+import fi.polar.remote.representation.protobuf.SportProfile
 import fi.polar.remote.representation.protobuf.Structures
 import io.mockk.MockK
 import io.mockk.MockKDsl
@@ -38,6 +41,7 @@ import io.mockk.unmockkObject
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -106,7 +110,28 @@ internal class PolarTrainingSessionApiImplTest {
         every { session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) } returns client
         every { client.isServiceDiscovered } returns true
         every { client.getNotificationAtomicInteger(any()) } returns AtomicInteger(0)
+        mockSportProfiles(client, 1L, 16L, 1234L, Int.MAX_VALUE.toLong() + 1, Long.MAX_VALUE)
         return Pair(client, listener)
+    }
+
+    private fun directory(vararg names: String): ByteArray = PftpResponse.PbPFtpDirectory.newBuilder()
+        .addAllEntries(names.map { PftpResponse.PbPFtpEntry.newBuilder().setName(it).setSize(0).build() })
+        .build().toByteArray()
+
+    private fun mockSportProfiles(client: BlePsFtpClient, vararg sportIds: Long): MutableMap<String, ByteArray> {
+        val files = mutableMapOf("/U/0/SPROF/" to directory(*sportIds.indices.map { "$it/" }.toTypedArray()))
+        sportIds.forEachIndexed { index, sportId ->
+            files["/U/0/SPROF/$index/"] = directory("PROFILE.BPB")
+            files["/U/0/SPROF/$index/PROFILE.BPB"] = SportProfile.PbSportProfile.newBuilder()
+                .setSportIdentifier(Structures.PbSportIdentifier.newBuilder().setValue(sportId))
+                .build().toByteArray()
+        }
+        coEvery { client.request(any()) } answers {
+            val operation = PftpRequest.PbPFtpOperation.parseFrom(firstArg<ByteArray>())
+            assertEquals(PftpRequest.PbPFtpOperation.Command.GET, operation.command)
+            ByteArrayOutputStream().apply { write(files.getValue(operation.path)) }
+        }
+        return files
     }
 
     private fun mockNoSession(): BleDeviceListener {
@@ -157,6 +182,7 @@ internal class PolarTrainingSessionApiImplTest {
         mockkObject(PolarServiceClientUtils)
         every { PolarServiceClientUtils.sessionPsFtpClientReady(deviceId, any()) } returns session
 
+        mockSportProfiles(client, 1L, 16L, 1234L)
         return Pair(client, session)
     }
 
@@ -291,6 +317,266 @@ internal class PolarTrainingSessionApiImplTest {
             assert(false) { "Expected PolarServiceNotAvailable" }
         } catch (e: PolarServiceNotAvailable) { /* expected */
         }
+    }
+
+    @Test
+    fun `startExercise accepts sport IDs outside the legacy enum without truncation`() = runTest {
+        // Arrange
+        val (client, listener) = mockBleConnection(deviceId)
+        val api = PolarTrainingSessionApiImpl(listener)
+        val payloads = mutableListOf<ByteArray>()
+        val sportIds = listOf(1234L, Int.MAX_VALUE.toLong() + 1, Long.MAX_VALUE)
+        coEvery { client.query(PftpRequest.PbPFtpQuery.START_EXERCISE_VALUE, capture(payloads)) } returns ByteArrayOutputStream()
+
+        // Act
+        sportIds.forEach { api.startExercise(deviceId, sportId = it) }
+
+        // Assert
+        val encodedIds = payloads.map { PftpRequest.PbPFtpStartExerciseParams.parseFrom(it).sportIdentifier.value }
+        assertEquals(sportIds, encodedIds)
+    }
+
+    @Test
+    fun `startExercise without profile uses other outdoor`() = runTest {
+        // Arrange
+        val (client, listener) = mockBleConnection(deviceId)
+        val api = PolarTrainingSessionApiImpl(listener)
+        val payloads = mutableListOf<ByteArray>()
+        coEvery { client.query(PftpRequest.PbPFtpQuery.START_EXERCISE_VALUE, capture(payloads)) } returns ByteArrayOutputStream()
+
+        // Act
+        api.startExercise(deviceId)
+
+        // Assert
+        val params = PftpRequest.PbPFtpStartExerciseParams.parseFrom(payloads.single())
+        assertEquals(PolarExerciseSession.SportProfile.OTHER_OUTDOOR.id.toLong(), params.sportIdentifier.value)
+    }
+
+    @Test
+    fun `startExercise rejects nonpositive sport IDs before sending any query`() = runTest {
+        // Arrange
+        val (client, listener) = mockBleConnection(deviceId)
+        val api = PolarTrainingSessionApiImpl(listener)
+
+        for (sportId in listOf(0L, -1L, Long.MIN_VALUE)) {
+            // Act & Assert
+            Assert.assertThrows(IllegalArgumentException::class.java) {
+                runBlocking { api.startExercise(deviceId, sportId) }
+            }
+        }
+        coVerify(exactly = 0) { client.query(any(), any()) }
+        coVerify(exactly = 0) { client.request(any()) }
+    }
+
+    @Test
+    fun `startExercise scans every folder and ignores unrelated profile fields`() = runTest {
+        // Arrange
+        val (client, listener) = mockBleConnection(deviceId)
+        val api = PolarTrainingSessionApiImpl(listener)
+        val files = mockSportProfiles(client, 55L, 16L)
+        files["/U/0/SPROF/"] = directory("0/", "1/", "empty/", "README.TXT")
+        files["/U/0/SPROF/empty/"] = directory("OTHER.BPB")
+        val fullProfile = ByteArrayOutputStream().apply {
+            write(files.getValue("/U/0/SPROF/0/PROFILE.BPB"))
+            CodedOutputStream.newInstance(this).apply {
+                writeUInt64(1, 999L) // Profile identifier is not the sport identifier.
+                writeByteArray(3, byteArrayOf(0x08, 0x01)) // Unused settings.
+                writeByteArray(226, byteArrayOf(0x08, 0x01)) // Unused profile info.
+                flush()
+            }
+        }
+        files["/U/0/SPROF/0/PROFILE.BPB"] = fullProfile.toByteArray()
+        val paths = mutableListOf<String>()
+        coEvery { client.request(any()) } answers {
+            val operation = PftpRequest.PbPFtpOperation.parseFrom(firstArg<ByteArray>())
+            assertEquals(PftpRequest.PbPFtpOperation.Command.GET, operation.command)
+            paths.add(operation.path)
+            ByteArrayOutputStream().apply { write(files.getValue(operation.path)) }
+        }
+        coEvery { client.query(PftpRequest.PbPFtpQuery.START_EXERCISE_VALUE, any()) } answers {
+            assertEquals(listOf("/U/0/SPROF/", "/U/0/SPROF/0/", "/U/0/SPROF/0/PROFILE.BPB",
+                "/U/0/SPROF/1/", "/U/0/SPROF/1/PROFILE.BPB", "/U/0/SPROF/empty/"), paths)
+            ByteArrayOutputStream()
+        }
+
+        // Act
+        api.startExercise(deviceId, 55L)
+
+        // Assert
+        coVerify(exactly = 1) { client.query(PftpRequest.PbPFtpQuery.START_EXERCISE_VALUE, any()) }
+        coVerify(exactly = 6) { client.request(any()) }
+    }
+
+    @Test
+    fun `startExercise blocks sport absent from profiles even when folder name matches`() = runTest {
+        // Arrange
+        val (client, listener) = mockBleConnection(deviceId)
+        val api = PolarTrainingSessionApiImpl(listener)
+        val files = mockSportProfiles(client, 16L)
+        files["/U/0/SPROF/"] = directory("55/")
+        files["/U/0/SPROF/55/"] = directory("PROFILE.BPB")
+        files["/U/0/SPROF/55/PROFILE.BPB"] = files.getValue("/U/0/SPROF/0/PROFILE.BPB")
+
+        // Act
+        val error = Assert.assertThrows(PolarSportProfileNotFound::class.java) {
+            runBlocking { api.startExercise(deviceId, 55L) }
+        }
+
+        // Assert
+        assertEquals("No sport profile for sport ID 55 in /U/0/SPROF/. Available sport IDs: [16]", error.message)
+        coVerify(exactly = 0) { client.query(any(), any()) }
+    }
+
+    @Test
+    fun `startExercise blocks default sport when profile directory is empty`() = runTest {
+        // Arrange
+        val (client, listener) = mockBleConnection(deviceId)
+        val api = PolarTrainingSessionApiImpl(listener)
+        mockSportProfiles(client)
+
+        // Act
+        val error = Assert.assertThrows(PolarSportProfileNotFound::class.java) {
+            runBlocking { api.startExercise(deviceId) }
+        }
+
+        // Assert
+        assertTrue(error.message.orEmpty().contains("No sport profile for sport ID 16"))
+        coVerify(exactly = 0) { client.query(any(), any()) }
+    }
+
+    @Test
+    fun `startExercise blocks when folders contain no PROFILE BPB`() = runTest {
+        // Arrange
+        val (client, listener) = mockBleConnection(deviceId)
+        val api = PolarTrainingSessionApiImpl(listener)
+        val files = mockSportProfiles(client, 55L)
+        files["/U/0/SPROF/0/"] = directory("OTHER.BPB")
+
+        // Act
+        Assert.assertThrows(PolarSportProfileNotFound::class.java) {
+            runBlocking { api.startExercise(deviceId, 55L) }
+        }
+
+        // Assert
+        coVerify(exactly = 2) { client.request(any()) }
+        coVerify(exactly = 0) { client.query(any(), any()) }
+    }
+
+    @Test
+    fun `startExercise blocks on unreadable directories or profiles`() = runTest {
+        // Arrange
+        val (client, listener) = mockBleConnection(deviceId)
+        val api = PolarTrainingSessionApiImpl(listener)
+        for (failingPath in listOf("/U/0/SPROF/", "/U/0/SPROF/0/", "/U/0/SPROF/0/PROFILE.BPB")) {
+            val files = mockSportProfiles(client, 55L)
+            coEvery { client.request(any()) } answers {
+                val path = PftpRequest.PbPFtpOperation.parseFrom(firstArg<ByteArray>()).path
+                if (path == failingPath) throw IllegalStateException("read failed: $path")
+                ByteArrayOutputStream().apply { write(files.getValue(path)) }
+            }
+
+            // Act
+            val error = Assert.assertThrows(Exception::class.java) {
+                runBlocking { api.startExercise(deviceId, 55L) }
+            }
+
+            // Assert
+            assertTrue(error.message.orEmpty().contains("read failed: $failingPath"))
+        }
+        coVerify(exactly = 0) { client.query(any(), any()) }
+    }
+
+    @Test
+    fun `startExercise blocks malformed profiles or missing required sport identifier`() = runTest {
+        // Arrange
+        val (client, listener) = mockBleConnection(deviceId)
+        val api = PolarTrainingSessionApiImpl(listener)
+        val files = mockSportProfiles(client, 55L)
+        for (data in listOf(byteArrayOf(0x12, 0x02, 0x08), byteArrayOf(), byteArrayOf(0x08, 0x37))) {
+            files["/U/0/SPROF/0/PROFILE.BPB"] = data
+
+            // Act & Assert
+            Assert.assertThrows(Exception::class.java) {
+                runBlocking { api.startExercise(deviceId, 55L) }
+            }
+        }
+        coVerify(exactly = 0) { client.query(any(), any()) }
+    }
+
+    @Test
+    fun `startExercise rereads profiles on every start`() = runTest {
+        // Arrange
+        val (client, listener) = mockBleConnection(deviceId)
+        val api = PolarTrainingSessionApiImpl(listener)
+        val files = mockSportProfiles(client, 55L)
+        coEvery { client.query(PftpRequest.PbPFtpQuery.START_EXERCISE_VALUE, any()) } returns ByteArrayOutputStream()
+
+        // Act
+        api.startExercise(deviceId, 55L)
+        files["/U/0/SPROF/"] = directory()
+        val error = Assert.assertThrows(PolarSportProfileNotFound::class.java) {
+            runBlocking { api.startExercise(deviceId, 55L) }
+        }
+
+        // Assert
+        assertTrue(error.message.orEmpty().contains("No sport profile"))
+        coVerify(exactly = 1) { client.query(any(), any()) }
+    }
+
+    @Test
+    fun `startExercise preserves cancellation during profile discovery`() = runTest {
+        // Arrange
+        val (client, listener) = mockBleConnection(deviceId)
+        val api = PolarTrainingSessionApiImpl(listener)
+        coEvery { client.request(any()) } throws CancellationException("cancelled")
+
+        // Act & Assert
+        Assert.assertThrows(CancellationException::class.java) {
+            runBlocking { api.startExercise(deviceId, 55L) }
+        }
+        coVerify(exactly = 0) { client.query(any(), any()) }
+    }
+
+    @Test
+    fun `getExerciseStatus preserves numeric sport IDs without aliasing legacy enums`() = runTest {
+        // Arrange
+        val (client, listener) = mockBleConnection(deviceId)
+        val api = PolarTrainingSessionApiImpl(listener)
+        for (sportId in listOf(1234L, (1L shl 32) + 1, Long.MAX_VALUE)) {
+            // Arrange
+            val status = PftpResponse.PbPftpGetExerciseStatusResult.newBuilder()
+                .setExerciseState(PftpResponse.PbPftpGetExerciseStatusResult.PbExerciseState.EXERCISE_STATE_RUNNING)
+                .setSportIdentifier(Structures.PbSportIdentifier.newBuilder().setValue(sportId))
+                .build()
+            coEvery { client.query(PftpRequest.PbPFtpQuery.GET_EXERCISE_STATUS_VALUE, any()) } returns
+                ByteArrayOutputStream().apply { write(status.toByteArray()) }
+
+            // Act
+            val result = api.getExerciseStatus(deviceId)
+
+            // Assert
+            assertEquals(sportId, result.sportId)
+            assertEquals(PolarExerciseSession.SportProfile.UNKNOWN, result.sportProfile)
+        }
+    }
+
+    @Test
+    fun `observeExerciseStatus preserves numeric sport IDs`() = runTest {
+        // Arrange
+        val (client, listener) = mockBleConnection(deviceId)
+        val api = PolarTrainingSessionApiImpl(listener)
+        val notification = buildExerciseStatusNotification(
+            PftpResponse.PbPftpGetExerciseStatusResult.PbExerciseState.EXERCISE_STATE_PAUSED,
+            sportProfileId = 1234
+        )
+        every { client.waitForNotification() } returns flowOf(notification)
+
+        // Act
+        val result = api.observeExerciseStatus(deviceId).take(1).toList().single()
+
+        // Assert
+        assertEquals(1234L, result.sportId)
+        assertEquals(PolarExerciseSession.SportProfile.UNKNOWN, result.sportProfile)
     }
 
 
@@ -757,6 +1043,28 @@ internal class PolarTrainingSessionApiImplTest {
     }
 
     // ── pauseExercise ─────────────────────────────────────────────────────────
+
+    @Test
+    fun `startExercise facade forwards numeric sport and default profile`() = runTest {
+        // Arrange
+        val api = BDBleApiImpl.getInstance(context, setOf(PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_TRAINING_DATA))
+        val (client, _) = mockPsFtpConnection(deviceId)
+        val payloads = mutableListOf<ByteArray>()
+        coEvery { client.query(PftpRequest.PbPFtpQuery.START_EXERCISE_VALUE, capture(payloads)) } returns ByteArrayOutputStream()
+
+        try {
+            // Act
+            api.startExercise(deviceId, sportId = 1234L)
+            api.startExercise(deviceId)
+
+            // Assert
+            assertEquals(listOf(1234L, 16L), payloads.map {
+                PftpRequest.PbPFtpStartExerciseParams.parseFrom(it).sportIdentifier.value
+            })
+        } finally {
+            unmockkObject(PolarServiceClientUtils)
+        }
+    }
 
     @Test
     fun `pauseExercise sends PAUSE_EXERCISE_VALUE query`() = runTest {

@@ -9,6 +9,82 @@ import CoreBluetooth
 /// Unit tests for `PolarBleApiImpl`.
 final class PolarBleApiImplTests: XCTestCase {
 
+    private final class StreamStopClient: MockBlePmdClient, @unchecked Sendable {
+        var didStop: XCTestExpectation?
+
+        override func stopMeasurement(_ type: PmdMeasurementType) async throws {
+            try await super.stopMeasurement(type)
+            didStop?.fulfill()
+        }
+    }
+
+    func testDeviceStoppedStreamPreservesTypedErrorAndDoesNotSendStop() async {
+        let client = StreamStopClient(gattServiceTransmitter: MockPolarGattServiceTransmitter())
+        let api = MockPmdBleApiImpl(mockPmdSession: MockPmdBleDeviceSession(mockPmdClient: client))
+        let stopped = expectation(description: "No redundant stop command")
+        stopped.isInverted = true
+        client.didStop = stopped
+        let stream: AsyncThrowingStream<Int, Error> = api.startStreaming(
+            "ABCDEF01", type: .acc, settings: PolarSensorSetting()
+        ) { _ in
+            AsyncThrowingStream<Int, Error> {
+                $0.finish(throwing: BlePmdError.bleOnlineStreamClosed(description: "Stop command from device"))
+            }
+        }
+        do {
+            for try await _ in stream {}
+            XCTFail("Expected device-stop error")
+        } catch {
+            guard case BlePmdError.bleOnlineStreamClosed = error else {
+                return XCTFail("SDK discarded typed error: \(error)")
+            }
+        }
+        await fulfillment(of: [stopped], timeout: 0.1)
+        XCTAssertEqual(client.startMeasurementCalls.count, 1)
+        XCTAssertTrue(client.stopMeasurementCalls.isEmpty)
+    }
+
+    func testRegularStreamCancellationStillSendsStop() async {
+        let client = StreamStopClient(gattServiceTransmitter: MockPolarGattServiceTransmitter())
+        let api = MockPmdBleApiImpl(mockPmdSession: MockPmdBleDeviceSession(mockPmdClient: client))
+        let observing = expectation(description: "Observer attached")
+        let stopped = expectation(description: "Cancellation sends stop")
+        client.didStop = stopped
+        let stream: AsyncThrowingStream<Int, Error> = api.startStreaming(
+            "ABCDEF01", type: .acc, settings: PolarSensorSetting()
+        ) { _ in
+            AsyncThrowingStream<Int, Error> { _ in observing.fulfill() }
+        }
+        let consumer = Task { try? await stream.first(where: { _ in false }) }
+        await fulfillment(of: [observing], timeout: 2)
+        consumer.cancel()
+        _ = await consumer.value
+        await fulfillment(of: [stopped], timeout: 2)
+        XCTAssertEqual(client.stopMeasurementCalls, [.acc])
+    }
+
+    func testUnrelatedStreamErrorStillSendsStopAndRemainsDeviceError() async {
+        let client = StreamStopClient(gattServiceTransmitter: MockPolarGattServiceTransmitter())
+        let api = MockPmdBleApiImpl(mockPmdSession: MockPmdBleDeviceSession(mockPmdClient: client))
+        let stopped = expectation(description: "Error sends stop")
+        client.didStop = stopped
+        let stream: AsyncThrowingStream<Int, Error> = api.startStreaming(
+            "ABCDEF01", type: .acc, settings: PolarSensorSetting()
+        ) { _ in
+            AsyncThrowingStream<Int, Error> { $0.finish(throwing: BleGattException.gattDisconnected) }
+        }
+        do {
+            for try await _ in stream {}
+            XCTFail("Expected device error")
+        } catch {
+            guard case PolarErrors.deviceError = error else {
+                return XCTFail("Unexpected error: \(error)")
+            }
+        }
+        await fulfillment(of: [stopped], timeout: 2)
+        XCTAssertEqual(client.stopMeasurementCalls, [.acc])
+    }
+
     private final class DisconnectObserver: PolarBleApiObserver {
         var disconnectInfo: PolarBleDisconnectInfo?
 
@@ -1845,7 +1921,7 @@ final class PolarBleApiImplTests: XCTestCase {
            status.exerciseState = .exerciseStateRunning
            status.sportIdentifier.value = UInt64(PolarExerciseSession.SportProfile.running.rawValue)
            let statusData = try status.serializedData()
-           v2MockClient.queryReturnValues = [.success(Data()), .success(Data()), .success(Data()), .success(Data()), .success(statusData)]
+           v2MockClient.queryReturnValues = [.success(try makeStartExerciseResultData()), .success(Data()), .success(Data()), .success(Data()), .success(statusData)]
 
            try awaitVoidAsync { [self] in try await v2Api.startExercise(identifier: deviceId, profile: .running) }
            try awaitVoidAsync { [self] in try await v2Api.pauseExercise(identifier: deviceId) }
@@ -1869,6 +1945,101 @@ final class PolarBleApiImplTests: XCTestCase {
            let notifications = try collectAllAsync(v2Api.observeExerciseStatus(identifier: deviceId))
            XCTAssertEqual(notifications.first?.status, .inProgress)
        }
+
+    func test_startExercise_defaultAndNumericSports_preserveIdentifiers() async throws {
+        let sportIds: [UInt64] = [1234, UInt64(Int32.max) + 1, UInt64(Int64.max)]
+        v2MockClient.queryReturnValue = .success(try makeStartExerciseResultData())
+        let api: PolarTrainingSessionApi = v2Api
+        try await api.startExercise(identifier: deviceId)
+        try await v2Api.startExercise(identifier: deviceId)
+        try await api.startExercise(identifier: deviceId, profile: .cycling)
+        for sportId in sportIds {
+            try await api.startExercise(identifier: deviceId, sportId: sportId)
+        }
+
+        let encodedIds = try v2MockClient.queryCalls.map { call -> UInt64 in
+            XCTAssertEqual(call.id, Protocol_PbPFtpQuery.startExercise.rawValue)
+            let payload = try XCTUnwrap(call.parameters as Data?)
+            let params = try Protocol_PbPFtpStartExerciseParams(serializedBytes: payload)
+            XCTAssertTrue(params.hasSportIdentifier)
+            return params.sportIdentifier.value
+        }
+        XCTAssertEqual(encodedIds, [16, 16, 2] + sportIds)
+        XCTAssertTrue(v2MockClient.requestCalls.isEmpty)
+        XCTAssertTrue(v2MockClient.writeCalls.isEmpty)
+    }
+
+    func test_startExercise_unknownSportResultIsReportedWithoutProfileLookup() async throws {
+        v2MockClient.queryReturnValue = .success(try makeStartExerciseResultData(.resultUnknownSport))
+        do {
+            try await v2Api.startExercise(identifier: deviceId, sportId: 1234)
+            XCTFail("Expected the device's unsupported-sport result")
+        } catch PolarErrors.sportProfileNotFound(let description) {
+            XCTAssertTrue(description.contains("1234"))
+        }
+        XCTAssertEqual(v2MockClient.queryCalls.count, 1)
+        XCTAssertTrue(v2MockClient.requestCalls.isEmpty)
+    }
+
+    private func makeStartExerciseResultData(
+        _ result: Protocol_PbPftpStartExerciseResult.PbStartExerciseResult = .resultSuccess
+    ) throws -> Data {
+        var response = Protocol_PbPftpStartExerciseResult()
+        response.result = result
+        return try response.serializedData()
+    }
+
+    func test_startExercise_rejectsZeroAndUnknownProfile_beforeQuery() async throws {
+        for invalidSportId in [UInt64(0), UInt64.max] {
+            do {
+                try await v2Api.startExercise(identifier: deviceId, sportId: invalidSportId)
+                XCTFail("Expected invalidArgument")
+            } catch PolarErrors.invalidArgument {
+                // Expected, before looking up a connection or sending a query.
+            }
+        }
+        do {
+            try await v2Api.startExercise(identifier: deviceId, profile: .unknown)
+            XCTFail("Expected invalidArgument")
+        } catch PolarErrors.invalidArgument {
+            // Expected, before looking up a connection or sending a query.
+        }
+        XCTAssertTrue(v2MockClient.queryCalls.isEmpty)
+        XCTAssertTrue(v2MockClient.requestCalls.isEmpty)
+    }
+
+    func test_exerciseStatus_preservesNumericSports_inQueriesAndNotifications() async throws {
+        let sportIds: [UInt64] = [1234, (1 << 32) + 1, UInt64(Int64.max), UInt64.max]
+        var payloads: [Data] = []
+        for sportId in sportIds {
+            var status = Protocol_PbPftpGetExerciseStatusResult()
+            status.exerciseState = .exerciseStatePaused
+            status.sportIdentifier.value = sportId
+            let payload = try status.serializedData()
+            payloads.append(payload)
+            v2MockClient.queryReturnValue = .success(payload)
+            let info = try await v2Api.getExerciseStatus(identifier: deviceId)
+            XCTAssertEqual(info.sportId, sportId)
+            XCTAssertEqual(info.sportProfile, .unknown)
+            XCTAssertEqual(info.status, .paused)
+        }
+        v2MockClient.receiveNotificationCalls = payloads.map {
+            (notification: Protocol_PbPFtpDevToHostNotification.exerciseStatus.rawValue, parameters: [$0], compressed: false)
+        }
+        let notifications = try collectAllAsync(v2Api.observeExerciseStatus(identifier: deviceId))
+        XCTAssertEqual(notifications.map(\.sportId), sportIds)
+        XCTAssertTrue(notifications.allSatisfy { $0.sportProfile == .unknown })
+    }
+
+    func test_exerciseInfo_missingSportAndLegacyInitializer() throws {
+        var status = Protocol_PbPftpGetExerciseStatusResult()
+        status.exerciseState = .exerciseStateOff
+        let info = try PolarBleSdk.PolarExerciseSession.ExerciseInfo.parse(from: status.serializedData())
+        XCTAssertEqual(info.sportId, 0)
+        XCTAssertEqual(info.sportProfile, .unknown)
+        XCTAssertEqual(PolarBleSdk.PolarExerciseSession.ExerciseInfo(status: .inProgress, sportProfile: .running).sportId, 1)
+        XCTAssertEqual(PolarBleSdk.PolarExerciseSession.ExerciseInfo(status: .inProgress, sportProfile: .unknown, sportId: 1234).sportId, 1234)
+    }
 
     private func makeActivityAndTrainingErrorContext() -> (
         api: MockDynamicBleApiImpl,
@@ -2415,7 +2586,7 @@ final class PolarBleApiImplTests: XCTestCase {
            status.sportIdentifier.value = UInt64(PolarExerciseSession.SportProfile.running.rawValue)
 
            v2MockClient.queryReturnValues = [
-               .success(Data()),
+               .success(try makeStartExerciseResultData()),
                .success(Data()),
                .success(Data()),
                .success(Data()),

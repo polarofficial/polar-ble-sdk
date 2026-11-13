@@ -146,6 +146,7 @@ class PolarDeviceRepository @Inject constructor(
     private val api: BDBleApiImpl,
     private val collector: DataCollector,
     private val security: SecretKeyManager,
+    private val apiCallSerializer: DeviceApiCallSerializer,
     @ApplicationContext private val context: Context
 ) : PolarBleApiCallback() {
     companion object {
@@ -267,7 +268,7 @@ class PolarDeviceRepository @Inject constructor(
 
     fun listOfflineRecordings(identifier: String): Flow<PolarOfflineRecordingEntry> {
         Log.d(TAG, "listOfflineRecordings from device $identifier")
-        return api.listOfflineRecordings(identifier)
+        return apiCallSerializer.serializeFlow(identifier) { api.listOfflineRecordings(identifier) }
             .onStart {
                 offlineEntryCache[identifier] = mutableListOf()
             }
@@ -379,7 +380,7 @@ class PolarDeviceRepository @Inject constructor(
             offlineRecEntry?.let { offlineEntry ->
                 return@withContext try {
                     val result = measureTimedValue {
-                        api.removeOfflineRecord(identifier, offlineEntry)
+                        apiCallSerializer.serialize(identifier) { api.removeOfflineRecord(identifier, offlineEntry) }
                     }
                     Log.d(
                         TAG,
@@ -409,11 +410,13 @@ class PolarDeviceRepository @Inject constructor(
             flow<ResultOfRequest<OfflineRecordingData>> {
                 val startTime = System.currentTimeMillis()
 
-                api.getOfflineRecordWithProgress(
-                    identifier,
-                    offlineRecEntry,
-                    security.getSecretKey(identifier)?.let { PolarRecordingSecret(it.encoded) }
-                ).collect { result ->
+                apiCallSerializer.serializeFlow(identifier) {
+                    api.getOfflineRecordWithProgress(
+                        identifier,
+                        offlineRecEntry,
+                        security.getSecretKey(identifier)?.let { PolarRecordingSecret(it.encoded) }
+                    )
+                }.collect { result ->
                     when (result) {
                         is PolarOfflineRecordingResult.Progress -> {
                             Log.d(
@@ -788,7 +791,7 @@ class PolarDeviceRepository @Inject constructor(
         if (ready.contains(PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_OFFLINE_RECORDING)) {
             repositoryScope.launch {
                 try {
-                    val types = api.getAvailableOfflineRecordingDataTypes(identifier)
+                    val types = apiCallSerializer.serialize(identifier) { api.getAvailableOfflineRecordingDataTypes(identifier) }
                     Log.d(TAG, "Available offline recording data: $types")
                     updateOfflineStreamDataTypes(identifier, types)
                 } catch (e: Exception) {
@@ -1074,10 +1077,10 @@ class PolarDeviceRepository @Inject constructor(
         api.requestFullStreamSettings(identifier, feature)
 
     suspend fun getOfflineRecSettings(identifier: String, feature: PolarBleApi.PolarDeviceDataType): PolarSensorSetting =
-        api.requestOfflineRecordingSettings(identifier, feature)
+        apiCallSerializer.serialize(identifier) { api.requestOfflineRecordingSettings(identifier, feature) }
 
     suspend fun getFullOfflineRecSettings(identifier: String, feature: PolarBleApi.PolarDeviceDataType): PolarSensorSetting =
-        api.requestFullOfflineRecordingSettings(identifier, feature)
+        apiCallSerializer.serialize(identifier) { api.requestFullOfflineRecordingSettings(identifier, feature) }
 
     fun startEcgStream(identifier: String, polarSensorSetting: PolarSensorSetting): Flow<PolarEcgData> =
         api.startEcgStreaming(identifier, polarSensorSetting)
@@ -1248,7 +1251,7 @@ class PolarDeviceRepository @Inject constructor(
 
     suspend fun getLogConfig(identifier: String): ResultOfRequest<LogConfig> = withContext(Dispatchers.IO) {
         return@withContext try {
-            ResultOfRequest.Success(api.getLogConfig(identifier))
+            ResultOfRequest.Success(apiCallSerializer.serialize(identifier) { api.getLogConfig(identifier) })
         } catch (e: Exception) {
             ResultOfRequest.Failure("Failed to get LogConfig", e)
         }
@@ -1256,7 +1259,7 @@ class PolarDeviceRepository @Inject constructor(
 
     suspend fun setLogConfig(identifier: String, logConfig: LogConfig): ResultOfRequest<Int> = withContext(Dispatchers.IO) {
         return@withContext try {
-            api.setLogConfig(identifier, logConfig)
+            apiCallSerializer.serialize(identifier) { api.setLogConfig(identifier, logConfig) }
             ResultOfRequest.Success()
         } catch (e: Exception) {
             ResultOfRequest.Failure("Failed to set LogConfig", e)
@@ -1277,7 +1280,7 @@ class PolarDeviceRepository @Inject constructor(
 
     suspend fun forceStopSleep(identifier: String): ResultOfRequest<Boolean?> = withContext(Dispatchers.IO) {
         return@withContext try {
-            api.stopSleepRecording(identifier)
+            apiCallSerializer.serialize(identifier) { api.stopSleepRecording(identifier) }
             val stillRecording = api.getSleepRecordingStatus(identifier) == PolarSleepRecordingStatus.ENABLED
             if (stillRecording) {
                 ResultOfRequest.Failure("Stopping sleep failed for $identifier", throwable = null)
@@ -1299,7 +1302,7 @@ class PolarDeviceRepository @Inject constructor(
 
     suspend fun getSleepData(identifier: String, from: LocalDate, to: LocalDate): ResultOfRequest<List<PolarSleepData>> = withContext(Dispatchers.IO) {
         return@withContext try {
-            ResultOfRequest.Success(api.getSleep(identifier, from, to))
+            ResultOfRequest.Success(apiCallSerializer.serialize(identifier) { api.getSleep(identifier, from, to) })
         } catch (e: Exception) {
             ResultOfRequest.Failure(e.message.toString(), e)
         }
@@ -1307,7 +1310,7 @@ class PolarDeviceRepository @Inject constructor(
 
     suspend fun getStepsData(identifier: String, from: LocalDate, to: LocalDate): ResultOfRequest<List<PolarStepsData>> = withContext(Dispatchers.IO) {
         return@withContext try {
-            ResultOfRequest.Success(api.getSteps(identifier, from, to))
+            ResultOfRequest.Success(apiCallSerializer.serialize(identifier) { api.getSteps(identifier, from, to) })
         } catch (e: Exception) {
             ResultOfRequest.Failure(e.message.toString(), e)
         }
@@ -1315,7 +1318,7 @@ class PolarDeviceRepository @Inject constructor(
 
     suspend fun getCaloriesData(identifier: String, from: LocalDate, to: LocalDate, caloriesType: CaloriesType): ResultOfRequest<List<PolarCaloriesData>> = withContext(Dispatchers.IO) {
         return@withContext try {
-            ResultOfRequest.Success(api.getCalories(identifier, from, to, caloriesType))
+            ResultOfRequest.Success(apiCallSerializer.serialize(identifier) { api.getCalories(identifier, from, to, caloriesType) })
         } catch (e: Exception) {
             ResultOfRequest.Failure(e.message.toString(), e)
         }
@@ -1323,7 +1326,7 @@ class PolarDeviceRepository @Inject constructor(
 
     suspend fun get247HrSamplesData(identifier: String, from: LocalDate, to: LocalDate): ResultOfRequest<List<Polar247HrSamplesData>> = withContext(Dispatchers.IO) {
         return@withContext try {
-            ResultOfRequest.Success(api.get247HrSamples(identifier, from, to))
+            ResultOfRequest.Success(apiCallSerializer.serialize(identifier) { api.get247HrSamples(identifier, from, to) })
         } catch (e: Exception) {
             ResultOfRequest.Failure(e.message.toString(), e)
         }
@@ -1331,7 +1334,7 @@ class PolarDeviceRepository @Inject constructor(
 
     suspend fun getNightlyRechargeData(identifier: String, from: LocalDate, to: LocalDate): ResultOfRequest<List<PolarNightlyRechargeData>> = withContext(Dispatchers.IO) {
         return@withContext try {
-            ResultOfRequest.Success(api.getNightlyRecharge(identifier, from, to))
+            ResultOfRequest.Success(apiCallSerializer.serialize(identifier) { api.getNightlyRecharge(identifier, from, to) })
         } catch (e: Exception) {
             ResultOfRequest.Failure(e.message.toString(), e)
         }
@@ -1339,7 +1342,7 @@ class PolarDeviceRepository @Inject constructor(
 
     suspend fun get247PPiSamples(identifier: String, from: LocalDate, to: LocalDate): ResultOfRequest<List<Polar247PPiSamplesData>> = withContext(Dispatchers.IO) {
         return@withContext try {
-            ResultOfRequest.Success(api.get247PPiSamples(identifier, from, to))
+            ResultOfRequest.Success(apiCallSerializer.serialize(identifier) { api.get247PPiSamples(identifier, from, to) })
         } catch (e: Exception) {
             ResultOfRequest.Failure(e.message.toString(), e)
         }
@@ -1387,7 +1390,7 @@ class PolarDeviceRepository @Inject constructor(
         val trainingSessionReferenceEntry = trainingSessionReferenceCache[identifier]?.find { it.path == path }
         trainingSessionReferenceEntry?.let { trainingSessionEntry ->
             return@withContext try {
-                val result = measureTimedValue { api.deleteTrainingSession(identifier, trainingSessionEntry) }
+                val result = measureTimedValue { apiCallSerializer.serialize(identifier) { api.deleteTrainingSession(identifier, trainingSessionEntry) } }
                 Log.d(TAG, "delete of training session $path took ${TimeUnit.MICROSECONDS.toSeconds(result.duration.inWholeMicroseconds)} seconds")
                 trainingSessionReferenceCache[identifier]?.remove(trainingSessionEntry)
                 ResultOfRequest.Success()
@@ -1400,7 +1403,7 @@ class PolarDeviceRepository @Inject constructor(
 
     suspend fun getSkinTemperatureData(identifier: String, from: LocalDate, to: LocalDate): ResultOfRequest<List<PolarSkinTemperatureData>> = withContext(Dispatchers.IO) {
         return@withContext try {
-            ResultOfRequest.Success(api.getSkinTemperature(identifier, from, to))
+            ResultOfRequest.Success(apiCallSerializer.serialize(identifier) { api.getSkinTemperature(identifier, from, to) })
         } catch (e: Exception) {
             ResultOfRequest.Failure(e.message.toString(), e)
         }
@@ -1408,7 +1411,7 @@ class PolarDeviceRepository @Inject constructor(
 
     fun getTrainingSessionReferences(identifier: String, fromDate: LocalDate, toDate: LocalDate): Flow<PolarTrainingSessionReference> {
         Log.d(TAG, "getTrainingSessionReferences from device $identifier")
-        return api.getTrainingSessionReferences(identifier, fromDate, toDate)
+        return apiCallSerializer.serializeFlow(identifier) { api.getTrainingSessionReferences(identifier, fromDate, toDate) }
             .onStart { trainingSessionReferenceCache[identifier] = mutableListOf() }
             .onEach { trainingSessionReferenceCache[identifier]?.add(it) }
     }
@@ -1417,7 +1420,7 @@ class PolarDeviceRepository @Inject constructor(
         Log.d(TAG, "getTrainingSessionWithProgress from device $identifier in $path")
         val trainingSessionReference = trainingSessionReferenceCache[identifier]?.find { it.path == path }
         return if (trainingSessionReference != null) {
-            api.getTrainingSessionWithProgress(identifier, trainingSessionReference)
+            apiCallSerializer.serializeFlow(identifier) { api.getTrainingSessionWithProgress(identifier, trainingSessionReference) }
                 .map<PolarTrainingSessionFetchResult, ResultOfRequest<PolarTrainingSessionFetchResult>> { result -> ResultOfRequest.Success(result) }
                 .catch { e ->
                     Log.e(TAG, "getTrainingSessionWithProgress failed on path $path error $e")
@@ -1433,7 +1436,7 @@ class PolarDeviceRepository @Inject constructor(
 
     suspend fun getActiveTimeData(identifier: String, from: LocalDate, to: LocalDate): ResultOfRequest<List<PolarActiveTimeData>> = withContext(Dispatchers.IO) {
         return@withContext try {
-            ResultOfRequest.Success(api.getActiveTime(identifier, from, to))
+            ResultOfRequest.Success(apiCallSerializer.serialize(identifier) { api.getActiveTime(identifier, from, to) })
         } catch (e: Exception) {
             ResultOfRequest.Failure(e.message.toString(), e)
         }
@@ -1454,7 +1457,7 @@ class PolarDeviceRepository @Inject constructor(
 
     suspend fun getActivitySamplesData(identifier: String, from: LocalDate, to: LocalDate): ResultOfRequest<List<PolarActivitySamplesDayData>> = withContext(Dispatchers.IO) {
         return@withContext try {
-            ResultOfRequest.Success(api.getActivitySampleData(identifier, from, to))
+            ResultOfRequest.Success(apiCallSerializer.serialize(identifier) { api.getActivitySampleData(identifier, from, to) })
         } catch (e: Exception) {
             ResultOfRequest.Failure(e.message.toString(), e)
         }
@@ -1462,7 +1465,7 @@ class PolarDeviceRepository @Inject constructor(
 
     suspend fun getDailySummaryData(identifier: String, from: LocalDate, to: LocalDate): ResultOfRequest<List<PolarDailySummaryData>> = withContext(Dispatchers.IO) {
         return@withContext try {
-            ResultOfRequest.Success(api.getDailySummaryData(identifier, from, to))
+            ResultOfRequest.Success(apiCallSerializer.serialize(identifier) { api.getDailySummaryData(identifier, from, to) })
         } catch (e: Exception) {
             ResultOfRequest.Failure(e.message.toString(), e)
         }
@@ -1470,7 +1473,7 @@ class PolarDeviceRepository @Inject constructor(
 
     suspend fun getSpo2TestData(identifier: String, from: LocalDate, to: LocalDate): ResultOfRequest<List<PolarSpo2TestData>> = withContext(Dispatchers.IO) {
         return@withContext try {
-            ResultOfRequest.Success(api.getSpo2Test(identifier, from, to))
+            ResultOfRequest.Success(apiCallSerializer.serialize(identifier) { api.getSpo2TestData(identifier, from, to) })
         } catch (e: Exception) {
             ResultOfRequest.Failure(e.message.toString(), e)
         }
@@ -1596,7 +1599,7 @@ class PolarDeviceRepository @Inject constructor(
     suspend fun isOfflineExerciseV2Supported(identifier: String): Boolean =
         withContext(Dispatchers.IO) {
             try {
-                val supported = api.isOfflineExerciseV2Supported(identifier)
+                val supported = apiCallSerializer.serialize(identifier) { api.isOfflineExerciseV2Supported(identifier) }
                 _offlineExerciseV2Supported.update { current ->
                     current.toMutableMap().also { it[identifier] = supported }
                 }
@@ -1651,7 +1654,7 @@ class PolarDeviceRepository @Inject constructor(
     suspend fun exportDeviceLogs(identifier: String): ResultOfRequest<List<com.polar.sdk.api.model.PolarDeviceLog>> =
         withContext(Dispatchers.IO) {
             return@withContext try {
-                val logs = api.exportDeviceLogs(identifier)
+                val logs = apiCallSerializer.serialize(identifier) { api.exportDeviceLogs(identifier) }
                 ResultOfRequest.Success(logs)
             } catch (e: Exception) {
                 ResultOfRequest.Failure(e.message.toString(), e)

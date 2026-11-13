@@ -5,7 +5,8 @@ import Foundation
 /// Represents a live exercise session on a Polar device.
 public enum PolarExerciseSession {
 
-    /// Supported sport profiles.
+    /// Convenience names for a subset of Polar sport identifiers, not a complete list
+    /// of sports supported by devices. Use numeric sport IDs for other sports.
     public enum SportProfile: Int {
         case unknown      = 0
         case running      = 1
@@ -38,15 +39,22 @@ public enum PolarExerciseSession {
         public let status: ExerciseStatus
         public let sportProfile: SportProfile
         public let startTime: Date?
+        /// Raw sport identifier, including IDs absent from `SportProfile`. Zero if unavailable.
+        public let sportId: UInt64
 
         public init(status: ExerciseStatus, sportProfile: SportProfile, startTime: Date? = nil) {
+            self.init(status: status, sportProfile: sportProfile, startTime: startTime, sportId: UInt64(sportProfile.rawValue))
+        }
+
+        public init(status: ExerciseStatus, sportProfile: SportProfile, startTime: Date? = nil, sportId: UInt64) {
             self.status = status
             self.sportProfile = sportProfile
             self.startTime = startTime
+            self.sportId = sportId
         }
 
         public var description: String {
-            "ExerciseInfo(status: \(status), sport: \(sportProfile), startTime: \(startTime?.description ?? "nil"))"
+            "ExerciseInfo(status: \(status), sport: \(sportProfile), sportId: \(sportId), startTime: \(startTime?.description ?? "nil"))"
         }
     }
 }

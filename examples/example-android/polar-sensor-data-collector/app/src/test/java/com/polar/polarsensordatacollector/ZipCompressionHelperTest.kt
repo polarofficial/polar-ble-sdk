@@ -86,7 +86,7 @@ class ZipCompressionHelperTest {
         val result = ZipCompressionHelper.compressFilesIfNeeded(context, listOf(uri))
 
         // Assert
-        assertNull(result, "Compression should not occur for files below 25MB")
+        assertNull(result.uri, "Compression should not occur for files below 25MB")
 
         // Cleanup
         smallFile.delete()
@@ -105,7 +105,7 @@ class ZipCompressionHelperTest {
         val result = ZipCompressionHelper.compressFilesIfNeeded(context, listOf(invalidUri))
 
         // Assert
-        assertNull(result, "Should handle invalid files gracefully")
+        assertNull(result.uri, "Should handle invalid files gracefully")
     }
 
     /**

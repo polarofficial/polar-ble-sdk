@@ -10,6 +10,8 @@ class MockGattServiceTransmitterImpl: BleAttributeTransportProtocol {
     var mockConnectionStatus: Bool = true
     var setCharacteristicsNotifyCache: [(characteristicUuid: CBUUID, notify: Bool)] = []
     
+    func discardPendingWriteWithoutResponse(_ parent: BleGattClientBase, characteristicUuid: CBUUID) {}
+
     func isConnected() -> Bool {
         return mockConnectionStatus
     }
@@ -33,6 +35,10 @@ class MockGattServiceTransmitterImpl: BleAttributeTransportProtocol {
     func setCharacteristicNotify(_ parent: BleGattClientBase, serviceUuid: CBUUID, characteristicUuid: CBUUID, notify: Bool) throws {
         setCharacteristicsNotifyCache.append((characteristicUuid, notify))
         parent.notifyDescriptorWritten(characteristicUuid, enabled: notify, err: 0)
+    }
+    
+    func requestDisconnect() {
+        // Do nothing
     }
     
     func attributeOperationStarted(){

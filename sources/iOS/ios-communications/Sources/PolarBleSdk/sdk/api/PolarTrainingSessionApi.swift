@@ -63,10 +63,22 @@ public protocol PolarTrainingSessionApi {
     ///
     /// - Parameters:
     ///   - identifier: The Polar device ID or BT address.
-    ///   - profile: The sport profile to use for the exercise session.
+    ///   - profile: Sport profile to use for the exercise session.
     /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_training_data`
-    /// - Throws: See `PolarErrors` for possible errors invoked.
+    /// - Throws: `PolarErrors.invalidArgument` if `profile` is `.unknown`, or an error if the
+    ///   operation fails or the device does not support the requested sport.
     func startExercise(identifier: String, profile: PolarExerciseSession.SportProfile) async throws
+
+    /// Start an exercise using a numeric Polar sport ecosystem identifier, including sports
+    /// not listed in `PolarExerciseSession.SportProfile`.
+    ///
+    /// - Parameters:
+    ///   - identifier: The Polar device ID or BT address.
+    ///   - sportId: Positive sport identifier no greater than `Int64.max`.
+    /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_training_data`
+    /// - Throws: `PolarErrors.invalidArgument` if `sportId` is zero or greater than `Int64.max`;
+    ///   or an error if the device rejects the sport or the operation fails.
+    func startExercise(identifier: String, sportId: UInt64) async throws
 
     /// Pause an ongoing exercise session.
     ///
@@ -110,6 +122,28 @@ public protocol PolarTrainingSessionApi {
 }
 
 public extension PolarTrainingSessionApi {
+    /// Start an exercise with the default sport, `.otherOutdoor`.
+    ///
+    /// - Requires SDK feature(s): `PolarBleSdkFeature.feature_polar_training_data`
+    /// - Throws: See `PolarErrors` for possible errors.
+    func startExercise(identifier: String) async throws {
+        try await startExercise(identifier: identifier, profile: .otherOutdoor)
+    }
+
+    /// Compatibility implementation for conformers that do not implement numeric sport IDs.
+    /// Only known `SportProfile` values are supported by this default; SDK implementations may
+    /// override it to support additional installed sport IDs.
+    func startExercise(identifier: String, sportId: UInt64) async throws {
+        guard sportId > 0,
+              sportId <= UInt64(Int64.max),
+              let rawValue = Int(exactly: sportId),
+              let profile = PolarExerciseSession.SportProfile(rawValue: rawValue),
+              profile != .unknown else {
+            throw PolarErrors.invalidArgument(description: "This API implementation does not support sport ID \(sportId)")
+        }
+        try await startExercise(identifier: identifier, profile: profile)
+    }
+
     /// Convenience overload that saves the exercise on the device (default behaviour).
     func stopExercise(identifier: String) async throws {
         try await stopExercise(identifier: identifier, save: true)

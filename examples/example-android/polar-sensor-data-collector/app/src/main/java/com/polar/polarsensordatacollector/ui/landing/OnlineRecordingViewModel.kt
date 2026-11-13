@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.polar.androidcommunications.api.ble.exceptions.BleDisconnected
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdMeasurementType
 import com.polar.polarsensordatacollector.DataCollector
 import com.polar.polarsensordatacollector.repository.DeviceConnectionState
@@ -19,6 +20,7 @@ import com.polar.sdk.api.PolarBleRecoveryAction
 import com.polar.sdk.api.errors.PolarDeviceDisconnected
 import com.polar.sdk.api.model.*
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -32,6 +34,9 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import java.io.IOException
 import java.time.Duration
 import java.time.Instant
@@ -152,6 +157,8 @@ class OnlineRecordingViewModel @Inject constructor(
         private val POLAR_EPOCH_INSTANT: Instant = Instant.parse("2000-01-01T00:00:00Z")
         private const val NANOS_PER_SECOND = 1_000_000_000L
         private const val KEY_VALIDATED_FILE_URIS = "validatedFileUris"
+        private const val KEY_MARKER_DATA_URIS = "markerDataUris"
+        private const val KEY_MARKER_URIS = "markerUris"
     }
 
     private fun phoneCalendarTimeAsPolarEpochNs(): Long {
@@ -167,7 +174,9 @@ class OnlineRecordingViewModel @Inject constructor(
         EnumMap(PolarBleApi.PolarDeviceDataType.values().associateWith { OnlineStreamSettings(null, null, null) })
 
     private val streamJobs: MutableMap<PolarBleApi.PolarDeviceDataType, Job?> =
-        EnumMap(PolarBleApi.PolarDeviceDataType::class.java)
+        Collections.synchronizedMap(EnumMap(PolarBleApi.PolarDeviceDataType::class.java))
+
+    private val streamErrorMutex = Mutex()
 
     private val streamsToRestart: MutableSet<PolarBleApi.PolarDeviceDataType> =
         EnumSet.noneOf(PolarBleApi.PolarDeviceDataType::class.java)
@@ -233,6 +242,9 @@ class OnlineRecordingViewModel @Inject constructor(
     private val _uiShowError = MutableSharedFlow<MessageUiState>(extraBufferCapacity = 1)
     val uiShowError: SharedFlow<MessageUiState> = _uiShowError.asSharedFlow()
 
+    private val _uiDeviceStoppedStream = MutableSharedFlow<PolarBleApi.PolarDeviceDataType>(extraBufferCapacity = 16)
+    val uiDeviceStoppedStream: SharedFlow<PolarBleApi.PolarDeviceDataType> = _uiDeviceStoppedStream.asSharedFlow()
+
     private val _shareFiles: MutableStateFlow<ArrayList<Uri>> = MutableStateFlow(ArrayList<Uri>())
     val shareFiles: StateFlow<ArrayList<Uri>> = _shareFiles.asStateFlow()
 
@@ -244,6 +256,34 @@ class OnlineRecordingViewModel @Inject constructor(
         state.get<List<String>>(KEY_VALIDATED_FILE_URIS)?.map { Uri.parse(it) } ?: emptyList()
     )
     val validatedFileUris: StateFlow<List<Uri>> = _validatedFileUris.asStateFlow()
+
+    // Maps a data file to the marker file from the same recording session.
+    // A marker belongs only to the streams that ran when the user set it.
+    private val _markerUriByDataUri: MutableStateFlow<Map<Uri, Uri>> = MutableStateFlow(
+        restoreMarkerUris()
+    )
+
+    fun markerUriFor(dataUri: Uri): Uri? = _markerUriByDataUri.value[dataUri]
+
+    fun linkMarkerToDataFiles(markerUri: Uri, dataUris: Collection<Uri>) {
+        if (dataUris.isEmpty()) return
+        _markerUriByDataUri.update { current -> current + dataUris.associateWith { markerUri } }
+        persistMarkerUris()
+    }
+
+    // Read the two parallel lists. Item N in the data list matches item N in the marker list.
+    private fun restoreMarkerUris(): Map<Uri, Uri> {
+        val dataUris = state.get<ArrayList<Uri>>(KEY_MARKER_DATA_URIS) ?: return emptyMap()
+        val markerUris = state.get<ArrayList<Uri>>(KEY_MARKER_URIS) ?: return emptyMap()
+        return dataUris.zip(markerUris).toMap()
+    }
+
+    // Save the map as two parallel lists. This needs no delimiter.
+    private fun persistMarkerUris() {
+        val entries = _markerUriByDataUri.value.entries
+        state[KEY_MARKER_DATA_URIS] = ArrayList(entries.map { it.key })
+        state[KEY_MARKER_URIS] = ArrayList(entries.map { it.value })
+    }
 
     fun addValidatedFileUri(uri: Uri) {
         _validatedFileUris.update { current -> if (current.contains(uri)) current else current + uri }
@@ -257,6 +297,8 @@ class OnlineRecordingViewModel @Inject constructor(
         if (uris.isEmpty()) return
         _validatedFileUris.update { current -> current.filterNot { uris.contains(it) } }
         persistValidatedFileUris()
+        _markerUriByDataUri.update { current -> current.filterKeys { !uris.contains(it) } }
+        persistMarkerUris()
     }
 
     private fun persistValidatedFileUris() {
@@ -264,7 +306,8 @@ class OnlineRecordingViewModel @Inject constructor(
     }
 
     private var recordingTimerJob: Job? = null
-    private var recordingSessionStartTime: LocalDateTime? = null
+    @Volatile private var recordingSessionStartTime: LocalDateTime? = null
+    @Volatile private var finalizeJob: Job? = null
 
     init {
 
@@ -292,13 +335,12 @@ class OnlineRecordingViewModel @Inject constructor(
                             }
                             if (toRestart.isNotEmpty()) {
                                 viewModelScope.launch {
-                                    toRestart.forEach { feature ->
-                                        if (waitForFeatureReady(feature)) {
-                                            startStream(feature)
-                                        } else {
-                                            showError(disconnectGuidance(feature))
-                                        }
-                                    }
+                                    val (ready, failed) = toRestart.partition { waitForFeatureReady(it) }
+                                    failed.forEach { showError(disconnectGuidance(it)) }
+                                    // A stream that does not restart leaves its file open. Close all files.
+                                    // The streams that are ready then start new files.
+                                    if (failed.isNotEmpty()) finalizeCollector()
+                                    ready.forEach { startStream(it) }
                                 }
                             }
                         }
@@ -440,7 +482,23 @@ class OnlineRecordingViewModel @Inject constructor(
         }
     }
 
+    // The user chooses the streams now. Drop any pending restart from an earlier connection error.
+    // Return true if a restart was pending.
+    private fun discardPendingRestarts(): Boolean = synchronized(streamsToRestart) {
+        streamsToRestart.isNotEmpty().also { streamsToRestart.clear() }
+    }
+
     fun startStream(feature: PolarBleApi.PolarDeviceDataType) {
+        // The files of the old session can still be open after a stream error. Close them before a new session starts.
+        if (discardPendingRestarts()) finalizeCollector()
+        viewModelScope.launch {
+            // Wait for the files to close. Then the new streams do not write to the old files.
+            finalizeJob?.join()
+            startStreamNow(feature)
+        }
+    }
+
+    private fun startStreamNow(feature: PolarBleApi.PolarDeviceDataType) {
         val startTime = recordingSessionStartTime ?: LocalDateTime.now().also { recordingSessionStartTime = it }
         when (feature) {
             PolarBleApi.PolarDeviceDataType.ECG -> startEcgStream(startTime)
@@ -471,6 +529,7 @@ class OnlineRecordingViewModel @Inject constructor(
     }
 
     fun stopStream(feature: PolarBleApi.PolarDeviceDataType) {
+        discardPendingRestarts()
         streamJobs[feature]?.cancel()
         streamJobs[feature] = null
         when (feature) {
@@ -873,11 +932,18 @@ class OnlineRecordingViewModel @Inject constructor(
 
     override fun onCleared() {
         super.onCleared()
-        for (job in streamJobs.values) {
-            job?.cancel()
+        synchronized(streamJobs) {
+            for (job in streamJobs.values) {
+                job?.cancel()
+            }
+            streamJobs.clear()
         }
-        streamJobs.clear()
         stopRecTimer()
+        // Close the files that stay open for a reconnection that did not happen.
+        // viewModelScope is cancelled here, so use a new scope. Do the file work off the main thread.
+        CoroutineScope(Dispatchers.IO).launch {
+            try { collector.finalizeAllStreams() } catch (e: Exception) { Log.e(TAG, "Failed to finalize stream files", e) }
+        }
     }
 
     private suspend fun waitForFeatureReady(feature: PolarBleApi.PolarDeviceDataType): Boolean {
@@ -886,10 +952,9 @@ class OnlineRecordingViewModel @Inject constructor(
         } else {
             PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_ONLINE_STREAMING
         }
-        val timeoutMs = 30_000L
         val pollIntervalMs = 500L
-        val startTime = System.currentTimeMillis()
-        while (System.currentTimeMillis() - startTime < timeoutMs) {
+        val maxPolls = 60
+        repeat(maxPolls) {
             if (polarDeviceStreamingRepository.isFeatureReady(identifier, sdkFeature)) return true
             delay(pollIntervalMs)
         }
@@ -897,20 +962,53 @@ class OnlineRecordingViewModel @Inject constructor(
     }
 
     private suspend fun handleStreamError(feature: PolarBleApi.PolarDeviceDataType, errorMsg: String, error: Throwable) {
-        synchronized(streamsToRestart) { streamsToRestart.add(feature) }
-        updateStreamingRecordingState(identifier, feature, StreamingFeatureState.STATES.STOPPED)
-        streamJobs.values.forEach { it?.cancel() }
-        streamJobs.clear()
-        finalizeCollector()
-        settingsCache[feature]?.selectedSettings?.let { updateStreamingRecordingState(identifier, feature, StreamingFeatureState.STATES.STOPPED, it) }
+        if (StreamUtils.isDeviceInitiatedStop(error)) {
+            // Notify before cleanup cancels this job; channel/SDK errors may wrap the cause.
+            _uiDeviceStoppedStream.tryEmit(feature)
+        }
+        // After a BLE drop, all streams usually fail at about the same time.
+        // Their error handlers then run in parallel. The mutex lets one handler run at a time.
+        // The first handler stops all stream jobs. A later handler finds no jobs.
+        // Remember every running stream here, so that all of them restart after reconnection.
+        // Do not close the data files here. After reconnection, the streams write to the same files.
+        streamErrorMutex.withLock {
+            val jobsToStop = synchronized(streamJobs) {
+                streamJobs.entries
+                    .filter { it.value != null }
+                    .associate { it.key to it.value!! }
+                    .also { streamJobs.clear() }
+            }
+            val activeFeatures = jobsToStop.filterValues { it.isActive }.keys
+            synchronized(streamsToRestart) {
+                streamsToRestart.add(feature)
+                streamsToRestart.addAll(activeFeatures)
+            }
+            activeFeatures.filter { it != feature }.forEach {
+                updateStreamingRecordingState(identifier, it, StreamingFeatureState.STATES.STOPPED)
+            }
+            updateStreamingRecordingState(identifier, feature, StreamingFeatureState.STATES.STOPPED)
+            jobsToStop.values.forEach { it.cancel() }
+            // No reconnection follows an error that is not a disconnect. Close the files now.
+            if (jobsToStop.isNotEmpty() && !isDisconnectError(error)) {
+                finalizeCollector()
+            }
+            settingsCache[feature]?.selectedSettings?.let { updateStreamingRecordingState(identifier, feature, StreamingFeatureState.STATES.STOPPED, it) }
+        }
     }
+
+    private fun isDisconnectError(error: Throwable): Boolean =
+        generateSequence(error) { it.cause }.any { it is PolarDeviceDisconnected || it is BleDisconnected }
 
     private fun finalizeCollector() {
         recordingSessionStartTime = null
-        viewModelScope.launch(Dispatchers.IO) {
+        finalizeJob = viewModelScope.launch(Dispatchers.IO) {
             try {
                 val fileUris = collector.finalizeAllStreams()
                 if (fileUris.isNotEmpty()) {
+                    // Link the marker to the data files of this session. The fragment can be hidden now.
+                    StreamFileUris.findMarkerLinks(fileUris)?.let { (markerUri, dataUris) ->
+                        withContext(Dispatchers.Main) { linkMarkerToDataFiles(markerUri, dataUris) }
+                    }
                     _shareFiles.update { fileUris }
                 }
             } catch (e: Exception) {

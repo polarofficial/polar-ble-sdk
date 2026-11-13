@@ -31,6 +31,7 @@ import com.polar.androidcommunications.api.ble.model.gatt.client.ChargeState
 import com.polar.androidcommunications.api.ble.model.gatt.client.HealthThermometer
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.*
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdControlPointResponse.PmdControlPointResponseCode
+import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.errors.BleOnlineStreamClosed
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.model.*
 import com.polar.androidcommunications.api.ble.model.gatt.client.psftp.BlePsFtpClient
 import com.polar.androidcommunications.api.ble.model.gatt.client.psftp.BlePsFtpUtils
@@ -1444,6 +1445,11 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
         trainingSessionApiImpl.startExercise(identifier, profile)
     }
 
+    override suspend fun startExercise(identifier: String, sportId: Long) {
+        logApiCall("startExercise", "identifier" to identifier, "sportId" to sportId)
+        trainingSessionApiImpl.startExercise(identifier, sportId)
+    }
+
     override suspend fun pauseExercise(identifier: String) {
         logApiCall("pauseExercise", "identifier" to identifier)
         trainingSessionApiImpl.pauseExercise(identifier)
@@ -1577,12 +1583,20 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
             val client = session.fetchClient(BlePMDClient.PMD_SERVICE) as BlePMDClient?
                 ?: throw PolarServiceNotAvailable()
             client.startMeasurement(type, mapPolarSettingsToPmdSettings(setting))
+            var stoppedByDevice = false
             try {
                 observer(client)
                     .catch { throwable -> throw handleError(throwable) }
                     .collect { emit(it) }
+            } catch (throwable: Throwable) {
+                // Observer channels may wrap the device stop error in a CancellationException.
+                stoppedByDevice = generateSequence(throwable) { it.cause }
+                    .any { it is BleOnlineStreamClosed }
+                throw throwable
             } finally {
-                stopPmdStreaming(session, client, type)
+                if (!stoppedByDevice) {
+                    stopPmdStreaming(session, client, type)
+                }
             }
         }
     }
@@ -3600,6 +3614,27 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
     override suspend fun getAvailableTelemetryTypes(identifier: String): DeviceTelemetrySupport {
         logApiCall("getAvailableTelemetryTypes", "identifier" to identifier)
         return telemetryApi.getAvailableTelemetryTypes(identifier)
+    }
+
+    override suspend fun refreshTelemetryReadiness(identifier: String): Boolean {
+        logApiCall("refreshTelemetryReadiness", "identifier" to identifier)
+        if (PolarBleSdkFeature.FEATURE_TELEMETRY !in features) return false
+        val ready = telemetryApi.refreshTelemetryReadiness(identifier)
+        val deviceId = listener?.let { fetchSession(identifier, it) }?.let { it.polarDeviceId.ifEmpty { it.address } } ?: identifier
+        if (ready) {
+            val telemetryTypes = telemetryAvailabilityMap.getOrPut(deviceId) { mutableListOf() }
+            if (telemetryTypes?.contains(PolarDeviceTelemetryType.memfault_mds) != true) {
+                telemetryTypes?.add(PolarDeviceTelemetryType.memfault_mds)
+            }
+            val previouslyReady = readyFeaturesMap[deviceId]?.contains(PolarBleSdkFeature.FEATURE_TELEMETRY) == true
+            readyFeaturesMap.merge(deviceId, setOf(PolarBleSdkFeature.FEATURE_TELEMETRY)) { existing, new -> existing + new }
+            if (!previouslyReady) {
+                withContext(Dispatchers.Main) {
+                    callback?.bleSdkFeatureReady(deviceId, PolarBleSdkFeature.FEATURE_TELEMETRY)
+                }
+            }
+        }
+        return ready
     }
 
     private fun logSdkInitialization() {
