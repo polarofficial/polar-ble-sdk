@@ -17,9 +17,9 @@
     <a title="ExerciseInfo Structure Reference"></a>
     <header>
       <div class="content-wrapper">
-        <p><a href="../../index.html">PolarBleSdk 8.4.3
+        <p><a href="../../index.html">PolarBleSdk 8.5.2
 &gt;= 1.10
-    s.source            = { :git =&gt; &#39;https://github.com/polarofficial/polar-ble-sdk.git&#39;, :tag =&gt; s.version.to_s } Docs</a> (43% documented)</p>
+    s.source            = { :git =&gt; &#39;https://github.com/polarofficial/polar-ble-sdk.git&#39;, :tag =&gt; s.version.to_s } Docs</a> (44% documented)</p>
         <p class="header-right"><a href="https://github.com/polarofficial/polar-ble-sdk"><img src="../../img/gh.png" alt="GitHub"/>View on GitHub</a></p>
         <div class="header-right">
           <form role="search" action="../../search.json">
@@ -678,6 +678,33 @@
                 <li class="item">
                   <div>
                     <code>
+                    <a name="/s:11PolarBleSdk0A15ExerciseSessionO0D4InfoV7sportIds6UInt64Vvp"></a>
+                    <a name="//apple_ref/swift/Property/sportId" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0A15ExerciseSessionO0D4InfoV7sportIds6UInt64Vvp">sportId</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Raw sport identifier, including IDs absent from <code><a href="../../Enums/PolarExerciseSession/SportProfile.html">SportProfile</a></code>. Zero if unavailable.</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="k">let</span> <span class="nv">sportId</span><span class="p">:</span> <span class="kt">UInt64</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
                     <a name="/s:11PolarBleSdk0A15ExerciseSessionO0D4InfoV6status12sportProfile9startTimeAeC0D6StatusO_AC05SportI0O10Foundation4DateVSgtcfc"></a>
                     <a name="//apple_ref/swift/Method/init(status:sportProfile:startTime:)" class="dashAnchor"></a>
                     <a class="token" href="#/s:11PolarBleSdk0A15ExerciseSessionO0D4InfoV6status12sportProfile9startTimeAeC0D6StatusO_AC05SportI0O10Foundation4DateVSgtcfc">init(status:<wbr>sportProfile:<wbr>startTime:<wbr>)</a>
@@ -696,6 +723,33 @@
                         <div class="language">
                           <p class="aside-title">Swift</p>
                           <pre class="highlight swift"><code><span class="kd">public</span> <span class="nf">init</span><span class="p">(</span><span class="nv">status</span><span class="p">:</span> <span class="kt"><a href="../../Enums/PolarExerciseSession/ExerciseStatus.html">ExerciseStatus</a></span><span class="p">,</span> <span class="nv">sportProfile</span><span class="p">:</span> <span class="kt"><a href="../../Enums/PolarExerciseSession/SportProfile.html">SportProfile</a></span><span class="p">,</span> <span class="nv">startTime</span><span class="p">:</span> <span class="kt">Date</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">)</span></code></pre>
+
+                        </div>
+                      </div>
+                    </section>
+                  </div>
+                </li>
+                <li class="item">
+                  <div>
+                    <code>
+                    <a name="/s:11PolarBleSdk0A15ExerciseSessionO0D4InfoV6status12sportProfile9startTime0H2IdAeC0D6StatusO_AC05SportI0O10Foundation4DateVSgs6UInt64Vtcfc"></a>
+                    <a name="//apple_ref/swift/Method/init(status:sportProfile:startTime:sportId:)" class="dashAnchor"></a>
+                    <a class="token" href="#/s:11PolarBleSdk0A15ExerciseSessionO0D4InfoV6status12sportProfile9startTime0H2IdAeC0D6StatusO_AC05SportI0O10Foundation4DateVSgs6UInt64Vtcfc">init(status:<wbr>sportProfile:<wbr>startTime:<wbr>sportId:<wbr>)</a>
+                    </code>
+                  </div>
+                  <div class="height-container">
+                    <div class="pointer-container"></div>
+                    <section class="section">
+                      <div class="pointer"></div>
+                      <div class="abstract">
+                        <p>Undocumented</p>
+
+                      </div>
+                      <div class="declaration">
+                        <h4>Declaration</h4>
+                        <div class="language">
+                          <p class="aside-title">Swift</p>
+                          <pre class="highlight swift"><code><span class="kd">public</span> <span class="nf">init</span><span class="p">(</span><span class="nv">status</span><span class="p">:</span> <span class="kt"><a href="../../Enums/PolarExerciseSession/ExerciseStatus.html">ExerciseStatus</a></span><span class="p">,</span> <span class="nv">sportProfile</span><span class="p">:</span> <span class="kt"><a href="../../Enums/PolarExerciseSession/SportProfile.html">SportProfile</a></span><span class="p">,</span> <span class="nv">startTime</span><span class="p">:</span> <span class="kt">Date</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span><span class="p">,</span> <span class="nv">sportId</span><span class="p">:</span> <span class="kt">UInt64</span><span class="p">)</span></code></pre>
 
                         </div>
                       </div>
@@ -760,7 +814,7 @@
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2026 <a class="link" href="https://github.com/polarofficial/polar-ble-sdk" target="_blank" rel="external noopener">Polar Electro Oy</a>. All rights reserved. (Last updated: 2026-10-23)</p>
+          <p>&copy; 2026 <a class="link" href="https://github.com/polarofficial/polar-ble-sdk" target="_blank" rel="external noopener">Polar Electro Oy</a>. All rights reserved. (Last updated: 2026-11-13)</p>
           <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external noopener">jazzy ♪♫ v0.15.3</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external noopener">Realm</a> project.</p>
         </section>
       </article>

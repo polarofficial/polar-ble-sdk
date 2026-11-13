@@ -10,18 +10,23 @@ import io.mockk.*
 import io.mockk.impl.annotations.MockK
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.withTimeoutOrNull
 import org.junit.*
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import protocol.PftpRequest
 import java.io.ByteArrayOutputStream
 import java.util.*
+import kotlin.system.measureTimeMillis
 
 internal class BlePsFtpClientTest {
     @Rule
@@ -38,6 +43,8 @@ internal class BlePsFtpClientTest {
         MockKAnnotations.init(this)
         blePsFtpClient = BlePsFtpClient(mockGattTxInterface)
         every { mockGattTxInterface.isConnected() } returns true
+        blePsFtpClient.interruptDrainQuietMs = 20L
+        blePsFtpClient.interruptDrainMaxMs = 200L
     }
 
     @After
@@ -75,6 +82,37 @@ internal class BlePsFtpClientTest {
         assertTrue(RFC77_PFTP_SERVICE.equals(transmitService.captured))
         assertTrue(RFC77_PFTP_MTU_CHARACTERISTIC.equals(transmitCharacteristics.captured))
         assertEquals(responsePayload, result.toByteArray()[0])
+    }
+
+    @Test
+    fun `request preserves typed PFTP errors for missing directories and other failures`() = runBlocking {
+        every { mockGattTxInterface.gattClientRequestStopScanning() } just runs
+        every { mockGattTxInterface.gattClientResumeScanning() } just runs
+        blePsFtpClient.descriptorWritten(RFC77_PFTP_MTU_CHARACTERISTIC, true, BleGattBase.ATT_SUCCESS)
+
+        // Cleanup checks a directory after REMOVE has already deleted it. Error 103 must
+        // remain typed so callers can distinguish that expected case from real failures.
+        for (errorCode in listOf(103, 201, 250)) {
+            every { mockGattTxInterface.transmitMessages(any(), any(), any(), any()) } answers {
+                repeat(thirdArg<List<ByteArray>>().size) {
+                    blePsFtpClient.processServiceDataWritten(RFC77_PFTP_MTU_CHARACTERISTIC, 0)
+                }
+                val response = byteArrayOf(0x00, errorCode.toByte(), (errorCode shr 8).toByte())
+                blePsFtpClient.processServiceData(RFC77_PFTP_MTU_CHARACTERISTIC, response, 0, true)
+            }
+            val request = PftpRequest.PbPFtpOperation.newBuilder()
+                .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
+                .setPath("/U/0/20261020/R/114132/")
+                .build().toByteArray()
+
+            val error = Assert.assertThrows(BlePsFtpUtils.PftpResponseError::class.java) {
+                runBlocking { blePsFtpClient.request(request) }
+            }
+            assertEquals(errorCode, error.error)
+            assertTrue(error.message!!.contains(errorCode.toString()))
+            error.errorName?.let { assertTrue(error.message!!.contains(it)) }
+        }
+        verify(exactly = 3) { mockGattTxInterface.gattClientResumeScanning() }
     }
 
     @Test
@@ -245,5 +283,309 @@ internal class BlePsFtpClientTest {
             "PFTP readiness cancellation should not wait for the notification timeout, took ${elapsedMillis}ms",
             elapsedMillis < 5_000L
         )
+    }
+
+    private val interruptFrame = byteArrayOf(0x00, 0x00, 0x00)
+
+    private fun cancelRequestSetup(
+        sent: MutableList<Pair<UUID, List<ByteArray>>>,
+        ackInterrupt: Boolean,
+        requestSent: CompletableDeferred<Unit>
+    ) {
+        every { mockGattTxInterface.gattClientRequestStopScanning() } just runs
+        every { mockGattTxInterface.gattClientResumeScanning() } just runs
+        every { mockGattTxInterface.transmitMessages(any(), any(), any(), any()) } answers {
+            val frames = thirdArg<List<ByteArray>>().map { it.copyOf() }
+            sent.add(Pair(secondArg<UUID>(), frames))
+            val isInterrupt = frames.size == 1 && frames[0].contentEquals(interruptFrame)
+            if (!isInterrupt) {
+                repeat(frames.size) { blePsFtpClient.processServiceDataWritten(RFC77_PFTP_MTU_CHARACTERISTIC, 0) }
+                requestSent.complete(Unit)
+            } else if (ackInterrupt) {
+                blePsFtpClient.processServiceDataWrittenWithResponse(RFC77_PFTP_MTU_CHARACTERISTIC, 0)
+            }
+        }
+        blePsFtpClient.descriptorWritten(RFC77_PFTP_MTU_CHARACTERISTIC, true, BleGattBase.ATT_SUCCESS)
+    }
+
+    @Test
+    fun request_sendsInterruptFrame_whenCancelledAwaitingResponse() = runBlocking {
+        // Arrange
+        val sent = Collections.synchronizedList(mutableListOf<Pair<UUID, List<ByteArray>>>())
+        val requestSent = CompletableDeferred<Unit>()
+        cancelRequestSetup(sent, ackInterrupt = true, requestSent)
+
+        // Act
+        val job = launch(Dispatchers.Default) { blePsFtpClient.request(byteArrayOf(0x01, 0x02)) }
+        requestSent.await()
+        job.cancelAndJoin()
+
+        // Assert
+        assertEquals(2, sent.size)
+        assertEquals(RFC77_PFTP_MTU_CHARACTERISTIC, sent[1].first)
+        assertEquals(1, sent[1].second.size)
+        assertTrue(sent[1].second[0].contentEquals(interruptFrame))
+    }
+
+    private fun ackAllWrites(
+        sent: MutableList<ByteArray>,
+        onInterrupt: () -> Unit = {},
+        onRequest: (Int) -> Unit = {}
+    ) {
+        var operations = 0
+        every { mockGattTxInterface.gattClientRequestStopScanning() } just runs
+        every { mockGattTxInterface.gattClientResumeScanning() } just runs
+        every { mockGattTxInterface.transmitMessages(any(), any(), any(), any()) } answers {
+            val frames = thirdArg<List<ByteArray>>()
+            frames.forEach { sent.add(it.copyOf()) }
+            if (frames.size == 1 && frames[0].contentEquals(interruptFrame)) {
+                blePsFtpClient.processServiceDataWrittenWithResponse(RFC77_PFTP_MTU_CHARACTERISTIC, 0)
+                onInterrupt()
+            } else {
+                repeat(frames.size) { blePsFtpClient.processServiceDataWritten(RFC77_PFTP_MTU_CHARACTERISTIC, 0) }
+                onRequest(++operations)
+            }
+        }
+        blePsFtpClient.descriptorWritten(RFC77_PFTP_MTU_CHARACTERISTIC, true, BleGattBase.ATT_SUCCESS)
+    }
+
+    @Test
+    fun query_returnsResponse_whenStaleFrameOfInterruptedRequestArrivesAfterInterruptAck() = runBlocking {
+        // Arrange
+        val sent = Collections.synchronizedList(mutableListOf<ByteArray>())
+        val bg = CoroutineScope(Dispatchers.Default)
+        val firstSent = CompletableDeferred<Unit>()
+        blePsFtpClient.interruptDrainQuietMs = 250L
+        ackAllWrites(
+            sent,
+            onInterrupt = {
+                // device sent this frame before it processed the interrupt
+                bg.launch {
+                    delay(50)
+                    blePsFtpClient.processServiceData(RFC77_PFTP_MTU_CHARACTERISTIC, byteArrayOf(0x27, 0x55), 0, true)
+                }
+            },
+            onRequest = { n ->
+                if (n == 1) firstSent.complete(Unit)
+                if (n == 2) bg.launch {
+                    delay(150)
+                    blePsFtpClient.processServiceData(RFC77_PFTP_MTU_CHARACTERISTIC, byteArrayOf(0x00, 0x00, 0x00), 0, true)
+                }
+            }
+        )
+        val cancelled = bg.launch { blePsFtpClient.request(byteArrayOf(0x01, 0x02)) }
+        firstSent.await()
+        cancelled.cancelAndJoin()
+
+        // Act
+        val result = runCatching { blePsFtpClient.query(1, null) }
+
+        // Assert
+        assertEquals(null, result.exceptionOrNull()?.toString())
+        assertEquals(1, sent.count { it.contentEquals(interruptFrame) })
+        bg.cancel()
+    }
+
+    @Test
+    fun request_endsInterruptDrain_whenDeviceSendsFramesLongerThanDrainMaximum() = runBlocking {
+        // Arrange
+        val bg = CoroutineScope(Dispatchers.Default)
+        val firstSent = CompletableDeferred<Unit>()
+        blePsFtpClient.interruptDrainQuietMs = 100L
+        blePsFtpClient.interruptDrainMaxMs = 300L
+        val sender = bg.launch(start = CoroutineStart.LAZY) {
+            while (isActive) {
+                blePsFtpClient.processServiceData(RFC77_PFTP_MTU_CHARACTERISTIC, byteArrayOf(0x27, 0x55), 0, true)
+                delay(20)
+            }
+        }
+        ackAllWrites(
+            mutableListOf(),
+            onInterrupt = { sender.start() },
+            onRequest = { firstSent.complete(Unit) }
+        )
+        val cancelled = bg.launch { blePsFtpClient.request(byteArrayOf(0x01, 0x02)) }
+        firstSent.await()
+
+        // Act
+        val elapsed = measureTimeMillis { cancelled.cancelAndJoin() }
+        sender.cancelAndJoin()
+
+        // Assert
+        assertTrue("took ${elapsed}ms", elapsed in 300L..1500L)
+        bg.cancel()
+    }
+
+    @Test
+    fun request_endsInterruptDrain_whenDisconnectedDuringDrain() = runBlocking {
+        // Arrange
+        val bg = CoroutineScope(Dispatchers.Default)
+        val firstSent = CompletableDeferred<Unit>()
+        blePsFtpClient.interruptDrainQuietMs = 2000L
+        blePsFtpClient.interruptDrainMaxMs = 5000L
+        ackAllWrites(
+            mutableListOf(),
+            onInterrupt = { bg.launch { delay(100); blePsFtpClient.reset() } },
+            onRequest = { firstSent.complete(Unit) }
+        )
+        val cancelled = bg.launch { blePsFtpClient.request(byteArrayOf(0x01, 0x02)) }
+        firstSent.await()
+
+        // Act
+        val elapsed = measureTimeMillis { cancelled.cancelAndJoin() }
+
+        // Assert
+        assertTrue("took ${elapsed}ms", elapsed < 1500L)
+        bg.cancel()
+    }
+
+    @Test
+    fun request_finishesInterruptCleanup_whenAcknowledgementNeverArrives() = runBlocking {
+        // Arrange
+        val sent = Collections.synchronizedList(mutableListOf<Pair<UUID, List<ByteArray>>>())
+        val requestSent = CompletableDeferred<Unit>()
+        blePsFtpClient.interruptTimeoutMs = 100L
+        cancelRequestSetup(sent, ackInterrupt = false, requestSent)
+
+        // Act
+        val job = launch(Dispatchers.Default) { blePsFtpClient.request(byteArrayOf(0x01, 0x02)) }
+        requestSent.await()
+        job.cancelAndJoin()
+
+        // Assert
+        assertEquals(2, sent.size)
+    }
+
+    @Test
+    fun write_waitsForOwnAck_whenLateInterruptAckArrives() = runBlocking {
+        // Arrange
+        val sent = Collections.synchronizedList(mutableListOf<Pair<UUID, List<ByteArray>>>())
+        val writePackets = Collections.synchronizedList(mutableListOf<ByteArray>())
+        val requestSent = CompletableDeferred<Unit>()
+        val firstWriteSent = CompletableDeferred<Unit>()
+        val secondWriteSent = CompletableDeferred<Unit>()
+        blePsFtpClient.interruptTimeoutMs = 100L
+        cancelRequestSetup(sent, ackInterrupt = false, requestSent)
+        blePsFtpClient.setPacketsCount(1)
+        every { mockGattTxInterface.transmitMessage(any(), any(), any(), any()) } answers {
+            writePackets.add(thirdArg<ByteArray>().copyOf())
+            if (writePackets.size == 1) firstWriteSent.complete(Unit)
+            if (writePackets.size == 2) secondWriteSent.complete(Unit)
+        }
+        val cancelled = launch(Dispatchers.Default) { blePsFtpClient.request(byteArrayOf(0x01, 0x02)) }
+        requestSent.await()
+        cancelled.cancelAndJoin()
+        val header = PftpRequest.PbPFtpOperation.newBuilder()
+            .setCommand(PftpRequest.PbPFtpOperation.Command.PUT).setPath("/a.bin").build().toByteArray()
+        val writeJob = launch(Dispatchers.Default) {
+            blePsFtpClient.write(header, java.io.ByteArrayInputStream(ByteArray(2000))).collect { }
+        }
+        firstWriteSent.await()
+
+        // Act
+        blePsFtpClient.processServiceDataWrittenWithResponse(RFC77_PFTP_MTU_CHARACTERISTIC, 0)
+
+        // Assert
+        Assert.assertNull(withTimeoutOrNull(100L) { secondWriteSent.await() })
+        assertEquals(1, writePackets.size)
+
+        // Act
+        blePsFtpClient.processServiceDataWrittenWithResponse(RFC77_PFTP_MTU_CHARACTERISTIC, 0)
+        secondWriteSent.await()
+
+        // Assert
+        assertEquals(2, writePackets.size)
+        every { mockGattTxInterface.isConnected() } returns false
+        writeJob.cancelAndJoin()
+    }
+
+    @Test
+    fun request_doesNotSendInterrupt_whenCancelledWhileDisconnected() = runBlocking {
+        // Arrange
+        val sent = Collections.synchronizedList(mutableListOf<Pair<UUID, List<ByteArray>>>())
+        val requestSent = CompletableDeferred<Unit>()
+        cancelRequestSetup(sent, ackInterrupt = true, requestSent)
+
+        // Act
+        val job = launch(Dispatchers.Default) { blePsFtpClient.request(byteArrayOf(0x01, 0x02)) }
+        requestSent.await()
+        every { mockGattTxInterface.isConnected() } returns false
+        job.cancelAndJoin()
+
+        // Assert
+        assertEquals(1, sent.size)
+    }
+
+    @Test
+    fun request_doesNotSendInterrupt_whenCancelledBehindActiveRequest() = runBlocking {
+        // Arrange
+        val sent = Collections.synchronizedList(mutableListOf<Pair<UUID, List<ByteArray>>>())
+        val requestSent = CompletableDeferred<Unit>()
+        val queuedReady = CompletableDeferred<Unit>()
+        cancelRequestSetup(sent, ackInterrupt = true, requestSent)
+
+        // Act
+        val active = launch(Dispatchers.Default) { blePsFtpClient.request(byteArrayOf(0x01, 0x02)) }
+        requestSent.await()
+        every { mockGattTxInterface.gattClientRequestStopScanning() } answers {
+            queuedReady.complete(Unit)
+            Unit
+        }
+        val queued = launch(Dispatchers.Default) { blePsFtpClient.request(byteArrayOf(0x03, 0x04)) }
+        queuedReady.await()
+        queued.cancelAndJoin()
+
+        // Assert
+        assertEquals(1, sent.size)
+        active.cancelAndJoin()
+    }
+
+    @Test
+    fun write_waitsForInterruptAck_whenCancelledWithOutstandingPacketAck() = runBlocking {
+        // Arrange
+        val transmitted = Collections.synchronizedList(mutableListOf<ByteArray>())
+        val firstWriteSent = CompletableDeferred<Unit>()
+        val interruptSent = CompletableDeferred<Unit>()
+        val querySent = CompletableDeferred<Unit>()
+        every { mockGattTxInterface.gattClientRequestStopScanning() } just runs
+        every { mockGattTxInterface.gattClientResumeScanning() } just runs
+        every { mockGattTxInterface.transmitMessage(any(), any(), any(), any()) } answers {
+            transmitted.add(thirdArg<ByteArray>().copyOf())
+            firstWriteSent.complete(Unit)
+        }
+        every { mockGattTxInterface.transmitMessages(any(), any(), any(), any()) } answers {
+            val packets = thirdArg<List<ByteArray>>()
+            packets.forEach { transmitted.add(it.copyOf()) }
+            if (packets.single().contentEquals(interruptFrame)) interruptSent.complete(Unit)
+            else querySent.complete(Unit)
+        }
+        blePsFtpClient.descriptorWritten(RFC77_PFTP_MTU_CHARACTERISTIC, true, BleGattBase.ATT_SUCCESS)
+        blePsFtpClient.setPacketsCount(1)
+        blePsFtpClient.interruptTimeoutMs = 2_000L
+
+        val header = PftpRequest.PbPFtpOperation.newBuilder()
+            .setCommand(PftpRequest.PbPFtpOperation.Command.PUT).setPath("/a.bin").build().toByteArray()
+        val data = java.io.ByteArrayInputStream(ByteArray(2000))
+
+        // Act
+        val writeJob = launch(Dispatchers.Default) { blePsFtpClient.write(header, data).collect { } }
+        firstWriteSent.await()
+        val next = launch(Dispatchers.Default) { blePsFtpClient.query(1, null) }
+        writeJob.cancel()
+        interruptSent.await()
+        assertTrue(transmitted.last().contentEquals(interruptFrame))
+        val countAfterInterrupt = transmitted.size
+
+        blePsFtpClient.processServiceDataWrittenWithResponse(RFC77_PFTP_MTU_CHARACTERISTIC, 0)
+
+        // Assert
+        assertEquals(countAfterInterrupt, transmitted.size)
+        Assert.assertFalse(querySent.isCompleted)
+
+        blePsFtpClient.processServiceDataWrittenWithResponse(RFC77_PFTP_MTU_CHARACTERISTIC, 0)
+        querySent.await()
+        assertTrue(transmitted.size > countAfterInterrupt)
+        every { mockGattTxInterface.isConnected() } returns false
+        next.cancelAndJoin()
     }
 }

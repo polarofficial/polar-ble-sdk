@@ -458,25 +458,26 @@ struct DeviceSettingsView: View {
                         }.padding(.top, 20)
                             .buttonStyle(SecondaryButtonStyle(buttonState: ButtonState.released))
                     }
-                    if bleSdkManager.fileTransferFeature.isSupported &&
-                        bleSdkManager.deviceConnectionState.get().hasSAGRFCFileSystem {
-                        HStack {
+                    if bleSdkManager.fileTransferFeature.isSupported {
+                        VStack(spacing: 8) {
+                            DeviceLogsExportButton()
+
                             Button("Delete telemetry data") {
                                 showTelemetryDeleteAlert = true
                             }
                             .buttonStyle(SecondaryButtonStyle(buttonState: .released))
-                        }
-                        .padding()
-                        .alert("Confirm telemetry data delete", isPresented: $showTelemetryDeleteAlert) {
-                            Button("Delete", role: .destructive) {
-                                Task {
-                                    await bleSdkManager.deleteTelemetryData()
+                            .alert("Confirm telemetry data delete", isPresented: $showTelemetryDeleteAlert) {
+                                Button("Delete", role: .destructive) {
+                                    Task {
+                                        await bleSdkManager.deleteTelemetryData()
+                                    }
                                 }
+                                Button("Cancel", role: .cancel) {}
+                            } message: {
+                                Text("Are you sure you want to delete telemetry data?")
                             }
-                            Button("Cancel", role: .cancel) {}
-                        } message: {
-                            Text("Are you sure you want to delete telemetry data?")
                         }
+                        .padding(.vertical)
                     }
                     if bleSdkManager.fileTransferFeature.isSupported &&
                         bleSdkManager.deviceConnectionState.get().hasSAGRFCFileSystem {
@@ -745,7 +746,7 @@ struct DeviceSettingsView: View {
         if let deviceId = bleSdkManager.deviceId,
            deviceId == bleSdkManager.checkFirmwareUpdateFeature.polarDeviceInfo?.deviceId,
            let version = selectedFirmwareFileURL?.lastPathComponent ?? bleSdkManager.checkFirmwareUpdateFeature.firmwareVersionAvailable?.0 {
-            if ((bleSdkManager.checkFirmwareUpdateFeature.firmwareVersionAvailable?.1) != nil) {
+            if ((bleSdkManager.checkFirmwareUpdateFeature.firmwareVersionAvailable?.1 == true)) {
                 mandatoryUpdateText += "This is mandatory update."
             } else {
                 mandatoryUpdateText += "This is optional update."

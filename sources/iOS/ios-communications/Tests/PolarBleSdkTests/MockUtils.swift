@@ -199,6 +199,7 @@ class MockPolarGattServiceTransmitter: BleAttributeTransportProtocol {
         // Do nothing
     }
     
+    func requestDisconnect() {}
     func attributeOperationFinished(){
         // Do nothing
     }

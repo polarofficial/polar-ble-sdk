@@ -170,7 +170,6 @@ internal object PolarFileUtils {
 
     /**
      * Fetch a single file from the device and return its raw bytes.
-     * Requires the device to use [FileSystemType.POLAR_FILE_SYSTEM_V2]; throws
      * [PolarOperationNotSupported] for other file system types.
      *
      * @param identifier Polar device ID or BT address
@@ -188,16 +187,11 @@ internal object PolarFileUtils {
         val session = sessionPsFtpClientReady(identifier, listener)
         val client = session.fetchClient(BlePsFtpUtils.RFC77_PFTP_SERVICE) as BlePsFtpClient?
             ?: throw PolarServiceNotAvailable()
-        return when (getFileSystemType(session.polarDeviceType)) {
-            FileSystemType.POLAR_FILE_SYSTEM_V2 -> {
-                val builder = PftpRequest.PbPFtpOperation.newBuilder()
-                builder.command = PftpRequest.PbPFtpOperation.Command.GET
-                builder.path = path
-                BleLogger.d(tag, "getFile: fetching $path")
-                client.request(builder.build().toByteArray()).toByteArray()
-            }
-            else -> throw PolarOperationNotSupported()
-        }
+        val builder = PftpRequest.PbPFtpOperation.newBuilder()
+        builder.command = PftpRequest.PbPFtpOperation.Command.GET
+        builder.path = path
+        BleLogger.d(tag, "getFile: fetching $path")
+        return client.request(builder.build().toByteArray()).toByteArray()
     }
 
     private fun handleError(throwable: Throwable): Exception {

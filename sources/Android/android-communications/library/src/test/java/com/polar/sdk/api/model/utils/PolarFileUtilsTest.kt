@@ -498,24 +498,29 @@ class PolarFileUtilsTest {
     }
 
     @Test
-    fun testGetFile_Throws_When_FileSystemNotSupported() = runTest {
-        // Arrange
+    fun testGetFile_Success_RegardlessOfFileSystemType() = runTest {
         val deviceId = "E123456F"
-        val (client, listener, session) = mockBleConnection(deviceId)
-
+        val path = "/TRC1.BIN"
+        val fileBytes = byteArrayOf(0, 0x80.toByte(), 0xFF.toByte())
+        val expectedRequest = PftpRequest.PbPFtpOperation.newBuilder()
+            .setCommand(PftpRequest.PbPFtpOperation.Command.GET)
+            .setPath(path)
+            .build().toByteArray()
         mockkObject(BlePolarDeviceCapabilitiesUtility)
-        every { getFileSystemType(any()) } returns BlePolarDeviceCapabilitiesUtility.FileSystemType.H10_FILE_SYSTEM
-        every { session.polarDeviceType } returns "h10"
 
-        // Act & Assert
-        try {
-            PolarFileUtils.getFile(deviceId, "/ERRORLOG.BPB", listener, "TestTag")
-            Assert.fail("Expected PolarOperationNotSupported")
-        } catch (e: PolarOperationNotSupported) {
-            // expected
+        for (fileSystemType in BlePolarDeviceCapabilitiesUtility.FileSystemType.values()) {
+            val (client, listener, session) = mockBleConnection(deviceId)
+            every { getFileSystemType(any()) } returns fileSystemType
+            every { session.polarDeviceType } returns "H10"
+            coEvery { client.request(any<ByteArray>()) } returns ByteArrayOutputStream().apply { write(fileBytes) }
+
+            val result = PolarFileUtils.getFile(deviceId, path, listener, "TestTag")
+
+            Assert.assertArrayEquals(fileBytes, result)
+            verify(exactly = 1) { client.isServiceDiscovered }
+            coVerify(exactly = 1) { client.request(match { it.contentEquals(expectedRequest) }) }
         }
-        verify(exactly = 1) { client.isServiceDiscovered }
-        coVerify(exactly = 0) { client.request(any()) }
+        verify(exactly = 0) { getFileSystemType(any()) }
     }
 
     @Test

@@ -17,6 +17,7 @@ import com.polar.androidcommunications.api.ble.model.gatt.BleGattBase
 import com.polar.androidcommunications.common.ble.AtomicSet
 import com.polar.androidcommunications.common.ble.BleUtils
 import com.polar.androidcommunications.enpoints.ble.bluedroid.host.connection.ConnectionHandler
+import com.polar.androidcommunications.enpoints.ble.bluedroid.host.connection.ConnectionHandlerObserver
 import com.polar.androidcommunications.enpoints.ble.bluedroid.host.connection.ConnectionInterface
 import io.mockk.every
 import io.mockk.just
@@ -26,6 +27,7 @@ import io.mockk.mockkStatic
 import io.mockk.runs
 import io.mockk.unmockkAll
 import io.mockk.verify
+import io.mockk.verifyOrder
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
@@ -755,6 +757,92 @@ class BDDeviceListenerImplTest {
         // Assert – a timeout left running would disconnect the open session 10 s later
         assertNull(session.serviceDiscovery)
         searchJob.cancel()
+    }
+
+    @Test
+    fun startServiceDiscovery_whenBonded_requestsHighPriorityBeforeDiscovery() =
+        assertDiscoveryPriority(BluetoothDevice.BOND_BONDED, priorityAccepted = true)
+
+    @Test
+    fun startServiceDiscovery_whenUnbonded_requestsHighPriorityBeforeDiscovery() =
+        assertDiscoveryPriority(BluetoothDevice.BOND_NONE, priorityAccepted = true)
+
+    @Test
+    fun startServiceDiscovery_whenPriorityRejected_stillStartsDiscovery() =
+        assertDiscoveryPriority(BluetoothDevice.BOND_BONDED, priorityAccepted = false)
+
+    @Test
+    fun connectionReestablished_restoresBalancedPriorityOnEachGatt() =
+        assertDiscoveryPriority(BluetoothDevice.BOND_BONDED, priorityAccepted = true, connectionCount = 2)
+
+    @Test
+    fun sessionOpened_whenBalancedPriorityRejected_stillNotifiesApp() =
+        assertDiscoveryPriority(BluetoothDevice.BOND_BONDED, priorityAccepted = true, balancedAccepted = false)
+
+    @Test
+    fun sessionOpened_whenGattMissing_stillNotifiesApp() {
+        val sut = createSut(emptyList(), emptySet(), mockk(relaxed = true))
+        val session = mockk<BDDeviceSessionImpl>(relaxed = true)
+        every { session.sessionState } returns BleDeviceSession.DeviceSessionState.SESSION_OPEN
+        every { session.gattMutex } returns Any()
+        every { session.gatt } returns null
+        val callback = mockk<BleDeviceListener.BleDeviceSessionStateChangedCallback>(relaxed = true)
+        setPrivateField(sut, "changedCallback", callback)
+        val observer = getPrivateField(sut, "connectionHandlerObserver") as ConnectionHandlerObserver
+
+        observer.deviceSessionStateChanged(session)
+
+        verify(exactly = 1) { callback.stateChanged(session, BleDeviceSession.DeviceSessionState.SESSION_OPEN) }
+    }
+
+    private fun assertDiscoveryPriority(
+        bondState: Int,
+        priorityAccepted: Boolean,
+        balancedAccepted: Boolean = true,
+        connectionCount: Int = 1
+    ) = runTest {
+        val address = "AA:BB:CC:00:FF:08"
+        val device = mockBluetoothDevice(address, BluetoothDevice.DEVICE_TYPE_LE)
+        every { device.bondState } returns bondState
+        val sut = createSut(listOf(device), emptySet(), mockk(relaxed = true))
+        val searchJob = launch { sut.search(true).collect { } }
+        testScheduler.advanceUntilIdle()
+        val session = sut.sessionByAddress(address) as BDDeviceSessionImpl
+        val connectionInterface = getPrivateField(sut, "connectionInterface") as ConnectionInterface
+        val observer = getPrivateField(sut, "connectionHandlerObserver") as ConnectionHandlerObserver
+        val callback = mockk<BleDeviceListener.BleDeviceSessionStateChangedCallback>(relaxed = true)
+        setPrivateField(sut, "changedCallback", callback)
+
+        try {
+            repeat(connectionCount) {
+                val gatt = mockk<BluetoothGatt>(relaxed = true)
+                every { gatt.requestConnectionPriority(BluetoothGatt.CONNECTION_PRIORITY_HIGH) } returns priorityAccepted
+                every { gatt.requestConnectionPriority(BluetoothGatt.CONNECTION_PRIORITY_BALANCED) } returns balancedAccepted
+                every { gatt.discoverServices() } returns true
+                session.gatt = gatt
+                session.setSessionStates(BleDeviceSession.DeviceSessionState.SESSION_OPENING)
+                observer.deviceSessionStateChanged(session)
+
+                assertTrue(connectionInterface.startServiceDiscovery(session))
+                verify(exactly = 0) { gatt.requestConnectionPriority(BluetoothGatt.CONNECTION_PRIORITY_BALANCED) }
+
+                session.setSessionStates(BleDeviceSession.DeviceSessionState.SESSION_OPEN)
+                observer.deviceSessionStateChanged(session)
+
+                verifyOrder {
+                    gatt.requestConnectionPriority(BluetoothGatt.CONNECTION_PRIORITY_HIGH)
+                    gatt.discoverServices()
+                    gatt.requestConnectionPriority(BluetoothGatt.CONNECTION_PRIORITY_BALANCED)
+                    callback.stateChanged(session, BleDeviceSession.DeviceSessionState.SESSION_OPEN)
+                }
+                verify(exactly = 1) { gatt.requestConnectionPriority(BluetoothGatt.CONNECTION_PRIORITY_HIGH) }
+                verify(exactly = 1) { gatt.requestConnectionPriority(BluetoothGatt.CONNECTION_PRIORITY_BALANCED) }
+                verify(exactly = 1) { gatt.discoverServices() }
+            }
+        } finally {
+            session.serviceDiscovery?.cancel()
+            searchJob.cancel()
+        }
     }
 
     private fun getPrivateField(target: Any, fieldName: String): Any? {

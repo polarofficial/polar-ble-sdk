@@ -37,6 +37,7 @@ class DataCollector(private val context: Context) {
         private val documentFile: DocumentFile
         private val uriToFile: Uri
         private var isWriteOngoing = false
+        private var isClosed = false
 
         init {
             val baseTreeFolder: DocumentFile = requireNotNull(DocumentFile.fromTreeUri(context, uriToPhoneStorage))
@@ -52,14 +53,19 @@ class DataCollector(private val context: Context) {
             return isWriteOngoing
         }
 
+        @Synchronized
         override fun write(line: String) {
+            if (isClosed) return
             isWriteOngoing = true
             outputStream.write(line.toByteArray())
         }
 
+        @Synchronized
         override fun close() {
-            outputStream.close()
+            if (isClosed) return
+            isClosed = true
             isWriteOngoing = false
+            outputStream.close()
         }
 
         override fun getUri(): Uri {
@@ -79,6 +85,7 @@ class DataCollector(private val context: Context) {
         private val outputStream: FileOutputStream
         private val file: File
         private var isWriteOngoing = false
+        private var isClosed = false
 
         init {
             val directoryName = makeParentDir(tag, logId)
@@ -112,14 +119,19 @@ class DataCollector(private val context: Context) {
             return directoryName
         }
 
+        @Synchronized
         override fun write(line: String) {
+            if (isClosed) return
             isWriteOngoing = true
             outputStream.write(line.toByteArray())
         }
 
+        @Synchronized
         override fun close() {
-            outputStream.close()
+            if (isClosed) return
+            isClosed = true
             isWriteOngoing = false
+            outputStream.close()
         }
 
         override fun getUri(): Uri {
@@ -135,7 +147,8 @@ class DataCollector(private val context: Context) {
         }
     }
 
-    private val logStreams: MutableMap<StreamType, FileOperations> = EnumMap(StreamType::class.java)
+    private val logStreams: MutableMap<StreamType, FileOperations> =
+        Collections.synchronizedMap(EnumMap(StreamType::class.java))
     private var latestTimeStamp: Long = 0
 
     private fun startNewLogWithTag(tag: String, logId: String, startTime: LocalDateTime = LocalDateTime.now()): FileOperations {
@@ -319,7 +332,7 @@ class DataCollector(private val context: Context) {
             }
 
             for (ppgData in ppgData.samples) {
-                var logLine = "${ppgData.timeStamp} "
+                var logLine = "${ppgData.timeStamp}"
                 for (sample in ppgData.channelSamples) {
                     logLine = logLine.plus(" ")
                     logLine = logLine.plus(sample)
@@ -607,17 +620,19 @@ class DataCollector(private val context: Context) {
     @Throws(Exception::class)
     fun finalizeAllStreams(): ArrayList<Uri> {
         val fileUris = ArrayList<Uri>()
-        for (value in logStreams.values) {
-            try {
-                value.close()
-                fileUris.add(value.getUri())
-            } catch (e: IOException) {
-                Log.e(TAG, "Closing the file ${value.fileName} failed")
-            } catch (e: SecurityException) {
-                Log.e(TAG, "Length check the file ${value.fileName} failed")
+        synchronized(logStreams) {
+            for (value in logStreams.values) {
+                try {
+                    value.close()
+                    fileUris.add(value.getUri())
+                } catch (e: IOException) {
+                    Log.e(TAG, "Closing the file ${value.fileName} failed")
+                } catch (e: SecurityException) {
+                    Log.e(TAG, "Length check the file ${value.fileName} failed")
+                }
             }
+            logStreams.clear()
         }
-        logStreams.clear()
         return fileUris
     }
 

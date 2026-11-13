@@ -8,6 +8,7 @@ import io.mockk.mockk
 import io.mockk.runs
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -26,6 +27,61 @@ class BlePsdClientTest {
         every { txInterface.transmitMessages(any(), any(), any(), any()) } just runs
 
         sut = BlePsdClient(txInterface)
+    }
+
+    @Test
+    fun psdResponse_resolvesEveryUnsignedOpcodeByProtocolValue() {
+        for (code in 0..255) {
+            // Arrange
+            val data = byteArrayOf(0xF0.toByte(), code.toByte(), 1, 42)
+            val expected = BlePsdClient.PsdMessage.entries.firstOrNull { it.numVal == code }
+                ?: BlePsdClient.PsdMessage.PSD_UNKNOWN
+
+            // Act
+            val response = BlePsdClient.PsdResponse(data)
+
+            // Assert
+            assertEquals("Opcode $code", expected, response.opCode)
+            assertEquals(1.toByte(), response.status)
+            assertEquals(42.toByte(), response.payload)
+        }
+        for (size in 0..2) {
+            // Arrange
+            val data = ByteArray(size)
+
+            // Act
+            val response = BlePsdClient.PsdResponse(data)
+
+            // Assert
+            assertEquals(BlePsdClient.PsdMessage.PSD_UNKNOWN, response.opCode)
+        }
+    }
+
+    @Test
+    fun processServiceData_ignoresIncompletePpRecords() = runTest {
+        // Arrange
+        val values = mutableListOf<BlePsdClient.PPData>()
+        val job = launch { sut.monitorPPNotifications(true).collect { values.add(it) } }
+        testScheduler.advanceUntilIdle()
+
+        // Act
+        for (size in 1..6) {
+            sut.processServiceData(BlePsdClient.PSD_PP, ByteArray(size), BleGattBase.ATT_SUCCESS, true)
+        }
+        testScheduler.advanceUntilIdle()
+
+        // Assert
+        assertTrue(values.isEmpty())
+
+        // Act
+        sut.processServiceData(BlePsdClient.PSD_PP, ByteArray(10), BleGattBase.ATT_SUCCESS, true)
+        testScheduler.advanceUntilIdle()
+
+        // Assert
+        assertEquals(1, values.size)
+
+        // Cleanup
+        job.cancel()
     }
 
     @Test

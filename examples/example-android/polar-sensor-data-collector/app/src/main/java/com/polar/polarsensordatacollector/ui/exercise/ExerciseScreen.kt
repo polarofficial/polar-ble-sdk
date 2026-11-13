@@ -1,18 +1,26 @@
 package com.polar.polarsensordatacollector.ui.exercise
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.saveable.rememberSaveable
 import com.polar.sdk.api.model.PolarExerciseSession
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import com.polar.polarsensordatacollector.R
+
+private fun PolarExerciseSession.SportProfile.displayName(): String =
+    name.lowercase().replace('_', ' ').replaceFirstChar { it.uppercase() }
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -39,16 +47,24 @@ fun ExerciseScreen(
     val context = LocalContext.current
 
     var expanded by remember { mutableStateOf(false) }
-    var selectedIndex by rememberSaveable {
-        mutableStateOf(vm.sportProfiles.indexOf(PolarExerciseSession.SportProfile.RUNNING))
+    var selectedIndex by rememberSaveable { mutableStateOf(0) }
+    var customSportIdText by rememberSaveable { mutableStateOf("") }
+    val enteredSportId = customSportIdText.trim()
+    val customSportId = enteredSportId.toLongOrNull()
+    val invalidSportId = enteredSportId.isNotEmpty() && customSportId == null
+    val selectedProfile = vm.sportProfiles.getOrElse(selectedIndex) { PolarExerciseSession.SportProfile.RUNNING }
+    val selectedSportId = if (enteredSportId.isEmpty()) {
+        selectedProfile.id.toLong()
+    } else {
+        customSportId
     }
     var saveOnStop by rememberSaveable { mutableStateOf(true) }
     LaunchedEffect(canStop) {
         if (!canStop) saveOnStop = true
     }
 
-    LaunchedEffect(selectedIndex) {
-        vm.selectProfile(vm.sportProfiles[selectedIndex])
+    LaunchedEffect(selectedSportId, invalidSportId) {
+        if (!invalidSportId) vm.selectSportId(selectedSportId)
     }
 
     var lastStatus by remember { mutableStateOf<PolarExerciseSession.ExerciseStatus?>(null) }
@@ -88,21 +104,22 @@ fun ExerciseScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .padding(16.dp)
     ) {
         // --- SPORT "SPINNER" ---
-        val label = vm.sportProfiles[selectedIndex].name
-            .lowercase().replaceFirstChar { it.uppercase() }
+        val label = selectedProfile.displayName()
 
         ExposedDropdownMenuBox(
             expanded = expanded,
-            onExpandedChange = { expanded = !expanded },
+            onExpandedChange = { if (canStart) expanded = !expanded },
             modifier = Modifier.fillMaxWidth()
         ) {
             OutlinedTextField(
                 value = label,
                 onValueChange = { /* readOnly */ },
-                label = { Text(stringResource(R.string.label_sport), color = MaterialTheme.colors.onSurface) },
+                label = { Text(stringResource(R.string.exercise_sport_optional), color = MaterialTheme.colors.onSurface) },
+                enabled = canStart,
                 readOnly = true,
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
@@ -124,16 +141,40 @@ fun ExerciseScreen(
                 vm.sportProfiles.forEachIndexed { idx, profile ->
                     DropdownMenuItem(onClick = {
                         selectedIndex = idx
+                        customSportIdText = ""
                         expanded = false
                     }) {
                         Text(
-                            profile.name.lowercase().replaceFirstChar { it.uppercase() },
+                            profile.displayName(),
                             color = MaterialTheme.colors.onSurface
                         )
                     }
                 }
             }
         }
+
+        OutlinedTextField(
+            value = customSportIdText,
+            onValueChange = { customSportIdText = it },
+            label = { Text(stringResource(R.string.exercise_custom_sport_id)) },
+            enabled = canStart,
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            modifier = Modifier.fillMaxWidth(),
+            colors = TextFieldDefaults.outlinedTextFieldColors(
+                textColor = Color.White,
+                disabledTextColor = Color.White.copy(alpha = ContentAlpha.disabled),
+                cursorColor = Color.White,
+                focusedLabelColor = Color.White,
+                unfocusedLabelColor = Color.White,
+                disabledLabelColor = Color.White.copy(alpha = ContentAlpha.disabled)
+            )
+        )
+        Text(
+            text = stringResource(R.string.exercise_custom_sport_id_help),
+            color = MaterialTheme.colors.onSurface,
+            style = MaterialTheme.typography.caption
+        )
 
         Spacer(Modifier.height(12.dp))
 
@@ -158,8 +199,11 @@ fun ExerciseScreen(
                 .padding(top = 8.dp)
         ) {
             Button(
-                onClick = onStart,
-                enabled = canStart,
+                onClick = {
+                    vm.selectSportId(selectedSportId)
+                    onStart()
+                },
+                enabled = canStart && !invalidSportId,
                 modifier = Modifier
                     .weight(1f)
                     .padding(end = 6.dp)

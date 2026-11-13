@@ -2,6 +2,8 @@ package com.polar.polarsensordatacollector.ui.exercise
 
 import android.content.SharedPreferences
 import android.util.Log
+import com.polar.polarsensordatacollector.repository.DeviceApiCallSerializer
+import com.polar.polarsensordatacollector.repository.DeviceBusyException
 import com.polar.sdk.api.PolarBleApi
 import com.polar.sdk.api.PolarTrainingSessionApi
 import com.polar.sdk.api.model.PolarExerciseSession
@@ -26,6 +28,7 @@ class ExerciseRepository(
     private val bleApi: PolarBleApi,
     private val identifier: String,
     private val prefs: SharedPreferences,
+    private val apiCallSerializer: DeviceApiCallSerializer,
     private val scope: CoroutineScope = CoroutineScope(Dispatchers.IO)
 ) {
     private val _state = MutableStateFlow(
@@ -41,10 +44,16 @@ class ExerciseRepository(
     private var observeJob: Job? = null
     private var autoRefreshJob: Job? = null
 
-    private var lastKnownSport: PolarExerciseSession.SportProfile
-        get() = prefs.getInt(KEY_LAST_SPORT_ID, PolarExerciseSession.SportProfile.OTHER_OUTDOOR.id)
-            .let { id -> PolarExerciseSession.SportProfile.fromId(id) }
-        set(value) { prefs.edit().putInt(KEY_LAST_SPORT_ID, value.id).apply() }
+    private var lastKnownSportId: Long
+        get() = prefs.getLong(
+            KEY_LAST_SPORT_ID_LONG,
+            prefs.getInt(KEY_LAST_SPORT_ID, PolarExerciseSession.SportProfile.OTHER_OUTDOOR.id).toLong()
+        )
+        set(value) { prefs.edit().putLong(KEY_LAST_SPORT_ID_LONG, value).apply() }
+
+    private fun sportProfile(sportId: Long): PolarExerciseSession.SportProfile =
+        PolarExerciseSession.SportProfile.entries.firstOrNull { it.id.toLong() == sportId }
+            ?: PolarExerciseSession.SportProfile.UNKNOWN
 
     fun state(): StateFlow<PolarExerciseSession.ExerciseInfo> = _state.asStateFlow()
 
@@ -52,11 +61,11 @@ class ExerciseRepository(
         if (newInfo.status == PolarExerciseSession.ExerciseStatus.IN_PROGRESS ||
             newInfo.status == PolarExerciseSession.ExerciseStatus.PAUSED
         ) {
-            lastKnownSport = newInfo.sportProfile
+            if (newInfo.sportId > 0) lastKnownSportId = newInfo.sportId
             return newInfo
         }
 
-        val sportMissing = newInfo.sportProfile == PolarExerciseSession.SportProfile.UNKNOWN
+        val sportMissing = newInfo.sportId == 0L
         val isStoppedLike = when (newInfo.status) {
             PolarExerciseSession.ExerciseStatus.STOPPED,
             PolarExerciseSession.ExerciseStatus.NOT_STARTED,
@@ -64,10 +73,9 @@ class ExerciseRepository(
             else -> false
         }
 
-        return if (isStoppedLike && sportMissing &&
-            lastKnownSport != PolarExerciseSession.SportProfile.OTHER_OUTDOOR
-        ) {
-            newInfo.copy(sportProfile = lastKnownSport)
+        return if (isStoppedLike && sportMissing && lastKnownSportId > 0) {
+            val sportId = lastKnownSportId
+            newInfo.copy(sportProfile = sportProfile(sportId), sportId = sportId)
         } else {
             newInfo
         }
@@ -83,7 +91,7 @@ class ExerciseRepository(
                 }
                 .collect { info ->
                     Log.d(TAG, "Exercise status notification received: $info")
-                    _state.value = info
+                    _state.value = mergeWithMemory(info)
                 }
         }
         return observeJob!!
@@ -96,22 +104,35 @@ class ExerciseRepository(
 
     suspend fun refresh() {
         try {
-            val info = mergeWithMemory(api.getExerciseStatus(identifier))
+            val info = mergeWithMemory(
+                apiCallSerializer.serialize(identifier, DeviceApiCallSerializer.STATUS_WAIT_TIMEOUT_MS) { api.getExerciseStatus(identifier) }
+            )
             _state.value = info
             _errorEvent.value = null
+        } catch (e: DeviceBusyException) {
+            // A long operation, such as a download, runs now. Keep the last status and try again later.
+            Log.d(TAG, "refresh skipped: ${e.message}")
         } catch (e: Exception) {
             Log.w(TAG, "refresh failed: ${e.message}")
             _errorEvent.value = "Failed to refresh: ${e.message ?: "unknown error"}"
         }
     }
 
-    suspend fun start(profile: PolarExerciseSession.SportProfile) {
+    suspend fun start(sportId: Long? = null) {
         try {
-            lastKnownSport = profile
-            api.startExercise(identifier, profile)
+            val effectiveSportId = sportId ?: PolarExerciseSession.SportProfile.OTHER_OUTDOOR.id.toLong()
+            apiCallSerializer.serialize(identifier) {
+                if (sportId == null) {
+                    api.startExercise(identifier)
+                } else {
+                    api.startExercise(identifier, sportId)
+                }
+            }
+            lastKnownSportId = effectiveSportId
             _state.value = PolarExerciseSession.ExerciseInfo(
                 status = PolarExerciseSession.ExerciseStatus.IN_PROGRESS,
-                sportProfile = profile
+                sportProfile = sportProfile(effectiveSportId),
+                sportId = effectiveSportId
             )
             _errorEvent.value = null
         } catch (e: Exception) {
@@ -123,12 +144,12 @@ class ExerciseRepository(
 
     suspend fun pause() {
         try {
-            api.pauseExercise(identifier)
+            apiCallSerializer.serialize(identifier) { api.pauseExercise(identifier) }
             // Read the status back from the device instead of assuming the
             // command took effect. This is the single source of truth that
             // feeds every screen that shows pause/resume state, so a failed
             // pause cannot leave the UI showing "paused" by mistake.
-            val info = mergeWithMemory(api.getExerciseStatus(identifier))
+            val info = mergeWithMemory(apiCallSerializer.serialize(identifier) { api.getExerciseStatus(identifier) })
             _state.value = info
             if (info.status != PolarExerciseSession.ExerciseStatus.PAUSED) {
                 val msg = "Pause command did not take effect, exercise status is ${info.status}"
@@ -145,9 +166,9 @@ class ExerciseRepository(
 
     suspend fun resume() {
         try {
-            api.resumeExercise(identifier)
+            apiCallSerializer.serialize(identifier) { api.resumeExercise(identifier) }
             // Verify against the device status, see comment in pause().
-            val info = mergeWithMemory(api.getExerciseStatus(identifier))
+            val info = mergeWithMemory(apiCallSerializer.serialize(identifier) { api.getExerciseStatus(identifier) })
             _state.value = info
             if (info.status != PolarExerciseSession.ExerciseStatus.IN_PROGRESS) {
                 val msg = "Resume command did not take effect, exercise status is ${info.status}"
@@ -163,11 +184,12 @@ class ExerciseRepository(
     }
 
     suspend fun stop(save: Boolean = true) {
-        api.stopExercise(identifier, save)
+        apiCallSerializer.serialize(identifier) { api.stopExercise(identifier, save) }
         _state.value = PolarExerciseSession.ExerciseInfo(
             status = if (save) PolarExerciseSession.ExerciseStatus.SYNC_REQUIRED
                      else PolarExerciseSession.ExerciseStatus.NOT_STARTED,
-            sportProfile = lastKnownSport
+            sportProfile = sportProfile(lastKnownSportId),
+            sportId = lastKnownSportId
         )
         if (save) {
             try {
@@ -193,7 +215,13 @@ class ExerciseRepository(
         withTimeout(timeoutMs) {
             flow {
                 while (true) {
-                    emit(api.getExerciseStatus(identifier))
+                    val status = try {
+                        apiCallSerializer.serialize(identifier, DeviceApiCallSerializer.STATUS_WAIT_TIMEOUT_MS) { api.getExerciseStatus(identifier) }
+                    } catch (e: DeviceBusyException) {
+                        Log.d(TAG, "status poll skipped: ${e.message}")
+                        null
+                    }
+                    status?.let { emit(it) }
                     delay(pollMs)
                 }
             }
@@ -230,5 +258,6 @@ class ExerciseRepository(
     private companion object {
         private const val TAG = "ExerciseRepository"
         private const val KEY_LAST_SPORT_ID = "last_sport_id"
+        private const val KEY_LAST_SPORT_ID_LONG = "last_sport_id_long"
     }
 }

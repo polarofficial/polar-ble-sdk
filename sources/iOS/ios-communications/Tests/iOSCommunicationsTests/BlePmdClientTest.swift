@@ -52,6 +52,7 @@ class BlePmdClientTest: XCTestCase {
             // Do nothing
         }
 
+        func requestDisconnect() {}
         func attributeOperationFinished() {
             // Do nothing
         }
@@ -211,6 +212,86 @@ class BlePmdClientTest: XCTestCase {
             return result
         }
         XCTAssertFalse(ppiClosedWithError, "PPI stream should NOT have been closed by the stop command")
+    }
+
+    func testDeviceStopClosesEveryListedStreamAndAllowsNewObservers() async {
+        // Map heterogeneous streams to Void so every supported PMD type is covered.
+        let streams: [AsyncThrowingStream<Void, Error>] = [
+            voidStream(blePmdClient.observeEcg()), voidStream(blePmdClient.observePpg()),
+            voidStream(blePmdClient.observeAcc()), voidStream(blePmdClient.observePpi()),
+            voidStream(blePmdClient.observeGyro()), voidStream(blePmdClient.observeMagnetometer()),
+            voidStream(blePmdClient.observeTemperature()), voidStream(blePmdClient.observePressure()),
+            voidStream(blePmdClient.observeSkinTemperature())
+        ]
+        blePmdClient.processServiceData(BlePmdClient.PMD_CP,
+                                       data: Data([0x01, 0x00, 0x01, 0x02, 0x03, 0x05, 0x06, 0x07, 0x0B, 0x0C]), err: 0)
+        for stream in streams {
+            do {
+                for try await _ in stream {}
+                XCTFail("Expected device-stop error")
+            } catch {
+                guard case BlePmdError.bleOnlineStreamClosed = error else {
+                    return XCTFail("Unexpected error: \(error)")
+                }
+            }
+        }
+
+        let restarted = blePmdClient.observeAcc()
+        // A new observer must receive the next stop, not the previous error.
+        blePmdClient.disconnected()
+        do {
+            for try await _ in restarted {}
+            XCTFail("Expected disconnect")
+        } catch {
+            guard case BleGattException.gattDisconnected = error else {
+                return XCTFail("New observer inherited old stop error: \(error)")
+            }
+        }
+    }
+
+    private func voidStream<T>(_ source: AsyncThrowingStream<T, Error>) -> AsyncThrowingStream<Void, Error> {
+        AsyncThrowingStream { continuation in
+            let task = Task {
+                do {
+                    for try await _ in source { continuation.yield(()) }
+                    continuation.finish()
+                } catch { continuation.finish(throwing: error) }
+            }
+            continuation.onTermination = { _ in task.cancel() }
+        }
+    }
+
+    func testInvalidDeviceStopIndicationsDoNotCloseStreamsOrEnterResponseQueue() async {
+        let stream = blePmdClient.observeAcc()
+        for data in [Data(), Data([0x01]), Data([0x7F, 0x02]), Data([0x01, 0x3F])] {
+            blePmdClient.processServiceData(BlePmdClient.PMD_CP, data: data, err: 0)
+        }
+        blePmdClient.processServiceData(BlePmdClient.PMD_CP, data: Data([0x01, 0x02]), err: 5)
+        // Disconnect gives a deterministic terminal marker: none of the above should finish ACC.
+        blePmdClient.disconnected()
+        do {
+            for try await _ in stream {}
+            XCTFail("Expected disconnect")
+        } catch {
+            guard case BleGattException.gattDisconnected = error else {
+                return XCTFail("Invalid indication stopped the stream: \(error)")
+            }
+        }
+    }
+
+    func testDeviceStopClearsOnlyAffectedTimestampHistoryAndPreservesResponses() throws {
+        for type in [PmdMeasurementType.acc, .ecg] {
+            let header = Data([type.rawValue, 42, 0, 0, 0, 0, 0, 0, 0, 0])
+            blePmdClient.processServiceData(BlePmdClient.PMD_DATA, data: header, err: 0)
+        }
+        XCTAssertEqual(blePmdClient.getPreviousFrameTimeStamp(.acc, .type_0), 42)
+        let response = Data([0xF0, 0x01, 0x02, 0x00, 0x00])
+        blePmdClient.processServiceData(BlePmdClient.PMD_CP, data: response, err: 0)
+        // Unknown and duplicate measurement ids must not block processing ACC.
+        blePmdClient.processServiceData(BlePmdClient.PMD_CP, data: Data([0x01, 0x3F, 0x02, 0x02]), err: 0)
+        XCTAssertEqual(blePmdClient.getPreviousFrameTimeStamp(.acc, .type_0), 0)
+        XCTAssertEqual(blePmdClient.getPreviousFrameTimeStamp(.ecg, .type_0), 42)
+        XCTAssertEqual(try blePmdClient.pmdCpResponseQueue.pop(), response)
     }
 
     // MARK: - processPmdData error handling tests
@@ -678,5 +759,6 @@ private final class StopMeasurementRespondingTransmitter: BleAttributeTransportP
     func readValue(_ parent: BleGattClientBase, serviceUuid: CBUUID, characteristicUuid: CBUUID) throws {}
     func setCharacteristicNotify(_ parent: BleGattClientBase, serviceUuid: CBUUID, characteristicUuid: CBUUID, notify: Bool) throws {}
     func attributeOperationStarted() {}
+    func requestDisconnect() {}
     func attributeOperationFinished() {}
 }

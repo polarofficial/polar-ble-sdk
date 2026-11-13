@@ -4,6 +4,8 @@ import com.polar.androidcommunications.api.ble.model.gatt.client.BleMdsClient
 import com.polar.sdk.api.DeviceTelemetryConfiguration
 import com.polar.sdk.api.PolarDeviceTelemetryType
 import com.polar.sdk.impl.utils.PolarTelemetryMemfaultUtils
+import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -135,7 +137,7 @@ class PolarTelemetryMemfaultUtilsTest {
             exportData = exportData
         )
         val client = mockk<BleMdsClient>()
-        every { client.startMdsNotifications(true) } returns flowOf(telemetryConfig)
+        coEvery { client.startMdsNotifications(true) } returns flowOf(telemetryConfig)
 
         // Act
         val results = PolarTelemetryMemfaultUtils.startTelemetryStreaming(client).toList()
@@ -150,20 +152,20 @@ class PolarTelemetryMemfaultUtilsTest {
     fun `startTelemetryStreaming starts MDS notifications`() = runTest {
         // Arrange
         val client = mockk<BleMdsClient>()
-        every { client.startMdsNotifications(true) } returns flowOf()
+        coEvery { client.startMdsNotifications(true) } returns flowOf()
 
         // Act
         PolarTelemetryMemfaultUtils.startTelemetryStreaming(client).toList()
 
         // Assert
-        verify(exactly = 1) { client.startMdsNotifications(true) }
+        coVerify(exactly = 1) { client.startMdsNotifications(true) }
     }
 
     @Test
     fun `startTelemetryStreaming emits one event per notification`() = runTest {
         // Arrange
         val client = mockk<BleMdsClient>()
-        every { client.startMdsNotifications(true) } returns flowOf(
+        coEvery { client.startMdsNotifications(true) } returns flowOf(
             BleMdsClient.TelemetryConfiguration(null, null, null, byteArrayOf(0x01)),
             BleMdsClient.TelemetryConfiguration(null, null, null, byteArrayOf(0x02)),
             BleMdsClient.TelemetryConfiguration(null, null, null, byteArrayOf(0x03))

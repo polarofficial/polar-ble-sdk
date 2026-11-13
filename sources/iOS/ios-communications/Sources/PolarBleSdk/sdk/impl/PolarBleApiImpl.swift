@@ -2099,18 +2099,34 @@ extension PolarBleApiImpl: PolarBleApi  {
 
     
     public func startExercise(identifier: String, profile: PolarExerciseSession.SportProfile) async throws {
-        logApiCall("startExercise", ("identifier", identifier), ("profile", profile))
+        try await startExercise(identifier: identifier, sportId: UInt64(profile.rawValue))
+    }
+
+    public func startExercise(identifier: String, sportId: UInt64) async throws {
+        guard sportId > 0, sportId <= UInt64(Int64.max) else {
+            throw PolarErrors.invalidArgument(description: "Sport ID must be in the range 1...Int64.max")
+        }
+        logApiCall("startExercise", ("identifier", identifier), ("sportId", sportId))
         let guardToken = try apiCallGuard.acquire("startExercise", identifier)
         defer { apiCallGuard.release(guardToken) }
         let session = try serviceClientUtils.sessionFtpClientReady(identifier)
         guard let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else { throw PolarErrors.serviceNotFound }
-        var sportId = PbSportIdentifier()
-        sportId.value = UInt64(profile.rawValue)
+        var sportIdentifier = PbSportIdentifier()
+        sportIdentifier.value = sportId
         var params = Protocol_PbPFtpStartExerciseParams()
-        params.sportIdentifier = sportId
+        params.sportIdentifier = sportIdentifier
         let payloadData = try params.serializedData()
         do {
-            _ = try await client.query(Protocol_PbPFtpQuery.startExercise.rawValue, parameters: payloadData as NSData)
+            let response = try await client.query(Protocol_PbPFtpQuery.startExercise.rawValue, parameters: payloadData as NSData)
+            let result = try Protocol_PbPftpStartExerciseResult(serializedBytes: response as Data)
+            switch result.result {
+            case .resultSuccess:
+                break
+            case .resultUnknownSport:
+                throw PolarErrors.sportProfileNotFound(description: "The device does not support sport ID \(sportId)")
+            default:
+                throw PolarErrors.deviceError(description: "Device rejected exercise start with result \(result.result)")
+            }
             BleLogger.trace("Start exercise succeeded for \(identifier)")
         } catch {
             BleLogger.error("Start exercise failed for \(identifier): \(error.localizedDescription)")
@@ -2817,20 +2833,34 @@ extension PolarBleApiImpl: PolarBleApi  {
     }
 
     
-    fileprivate func startStreaming<T, S: AsyncSequence>(_ identifier: String, type: PmdMeasurementType, settings: PolarSensorSetting, observer: @escaping (_ client: BlePmdClient) -> S) -> AsyncThrowingStream<T, Error> where S.Element == T {
+    func startStreaming<T, S: AsyncSequence>(_ identifier: String, type: PmdMeasurementType, settings: PolarSensorSetting, observer: @escaping (_ client: BlePmdClient) -> S) -> AsyncThrowingStream<T, Error> where S.Element == T {
         return AsyncThrowingStream { continuation in
             let task = Task {
                 do {
                     let session = try self.serviceClientUtils.sessionPmdClientReady(identifier)
                     let client = session.fetchGattClient(BlePmdClient.PMD_SERVICE) as! BlePmdClient
                     try await client.startMeasurement(type, settings: settings.map2PmdSetting())
+                    var stoppedByDevice = false
                     defer {
-                        Task { try? await client.stopMeasurement(type) }
+                        if !stoppedByDevice {
+                            Task { try? await client.stopMeasurement(type) }
+                        }
                     }
-                    for try await value in observer(client) { continuation.yield(value) }
+                    do {
+                        for try await value in observer(client) { continuation.yield(value) }
+                    } catch {
+                        if case BlePmdError.bleOnlineStreamClosed = error {
+                            stoppedByDevice = true
+                        }
+                        throw error
+                    }
                     continuation.finish()
                 } catch {
-                    continuation.finish(throwing: PolarErrors.deviceError(description: "\(error)"))
+                    if case BlePmdError.bleOnlineStreamClosed = error {
+                        continuation.finish(throwing: error)
+                    } else {
+                        continuation.finish(throwing: PolarErrors.deviceError(description: "\(error)"))
+                    }
                 }
             }
             continuation.onTermination = { _ in task.cancel() }  // ← link cancellation

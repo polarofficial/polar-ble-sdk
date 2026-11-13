@@ -11,7 +11,7 @@ class SensorSelectPopupViewController: UIViewController, UITableViewDelegate, UI
     var devices = [PolarDeviceInfo]()
     var searchTask: Task<Void, Never>?
     var connectedDevices: [PolarDeviceInfo] = []
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
         cancelButton.layer.cornerRadius = 10
@@ -28,7 +28,7 @@ class SensorSelectPopupViewController: UIViewController, UITableViewDelegate, UI
                     }
                 }
             } catch {
-                print("scan error: \(error)")
+                print("error in search: \(error)")
             }
         }
     }

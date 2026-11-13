@@ -20,11 +20,17 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.updateAndGet
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.shareIn
@@ -38,6 +44,7 @@ import java.io.ByteArrayOutputStream
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicLong
 
 /**
  * Polar simple file transfer client declaration.
@@ -85,9 +92,24 @@ class BlePsFtpClient(txInterface: BleGattTxInterface) :
     private val packetsWrittenWithResponseChannel = Channel<Unit>(Channel.UNLIMITED)
     private val notificationPacketsWrittenChannel = Channel<Unit>(Channel.UNLIMITED)
     private val mtuWaiting = AtomicBoolean(false)
+
+    // GATT writes complete in order, so the n-th write-with-response ack on the MTU characteristic
+    // belongs to the n-th write-with-response sent. This lets the interrupt wait for its own ack
+    // even when earlier packets' acks are still outstanding.
+    private val mtuResponseWritesSent = AtomicLong(0)
+    private val mtuResponseWritesAcked = MutableStateFlow(0L)
+    private val mtuResponseWritesAbandoned = AtomicLong(0)
+    private val mtuResponseWriteLock = Any()
+    @Volatile private var lastMtuResponseWriteStatus = 0
     private val currentOperationWrite = AtomicBoolean(false)
     private val packetsCount = AtomicInteger(5) // default every 5th packet is written with response
     private val extendedWriteTimeoutFilePaths = listOf("/SYNCPART.TGZ")
+    @VisibleForTesting
+    internal var interruptTimeoutMs = INTERRUPT_TIMEOUT_MS
+    @VisibleForTesting
+    internal var interruptDrainQuietMs = INTERRUPT_DRAIN_QUIET_MS
+    @VisibleForTesting
+    internal var interruptDrainMaxMs = INTERRUPT_DRAIN_MAX_MS
 
     /**
      * true  = uses attribute operation WRITE
@@ -159,6 +181,9 @@ class BlePsFtpClient(txInterface: BleGattTxInterface) :
         while (notificationPacketsWrittenChannel.tryReceive().isSuccess) { /* drain pending notification write acks */ }
         while (notificationChannel.tryReceive().isSuccess) { /* drain buffered notifications */ }
         mtuWaiting.set(false)
+        mtuResponseWritesSent.set(0)
+        mtuResponseWritesAcked.value = 0L
+        mtuResponseWritesAbandoned.set(0)
         // Cancel and recreate the notification scope so that any active SharedFlow subscribers
         // are terminated and the new SharedFlow starts fresh for the next connection.
         notificationScope.cancel()
@@ -204,12 +229,20 @@ class BlePsFtpClient(txInterface: BleGattTxInterface) :
     }
 
     override fun processServiceDataWrittenWithResponse(characteristic: UUID, status: Int) {
-        if (status == 0) {
-            if (characteristic == BlePsFtpUtils.RFC77_PFTP_MTU_CHARACTERISTIC) {
-                packetsWrittenWithResponseChannel.trySend(Unit)
+        if (characteristic == BlePsFtpUtils.RFC77_PFTP_MTU_CHARACTERISTIC) {
+            synchronized(mtuResponseWriteLock) {
+                lastMtuResponseWriteStatus = status
+                val acked = mtuResponseWritesAcked.updateAndGet { it + 1 }
+                if (acked <= mtuResponseWritesAbandoned.get()) {
+                    w(TAG, "Late ack of an abandoned PS-FTP write discarded")
+                    return
+                }
+                if (status == 0) packetsWrittenWithResponseChannel.trySend(Unit)
+                processServiceDataWritten(characteristic, status)
             }
+        } else {
+            processServiceDataWritten(characteristic, status)
         }
-        processServiceDataWritten(characteristic, status)
     }
 
     override fun toString(): String {
@@ -254,6 +287,7 @@ class BlePsFtpClient(txInterface: BleGattTxInterface) :
                     if (progressCallback != null) {
                         this@BlePsFtpClient.progressCallback = progressCallback
                     }
+                    var transmissionStarted = false
                     try {
                         resetMtuPipe()
                         val totalStream = BlePsFtpUtils.makeCompleteMessageStream(
@@ -265,6 +299,7 @@ class BlePsFtpClient(txInterface: BleGattTxInterface) :
                             totalStream, mtuSize.get(), sequenceNumber
                         )
                         val outputStream = ByteArrayOutputStream()
+                        transmissionStarted = true
                         txInterface.transmitMessages(
                             BlePsFtpUtils.RFC77_PFTP_SERVICE,
                             BlePsFtpUtils.RFC77_PFTP_MTU_CHARACTERISTIC,
@@ -276,6 +311,7 @@ class BlePsFtpClient(txInterface: BleGattTxInterface) :
                         outputStream
                     } catch (ex: CancellationException) {
                         this@BlePsFtpClient.progressCallback = previousCallback
+                        if (transmissionStarted) interruptTransaction(disconnectSignal)
                         throw ex
                     } catch (ex: Exception) {
                         this@BlePsFtpClient.progressCallback = previousCallback
@@ -288,6 +324,80 @@ class BlePsFtpClient(txInterface: BleGattTxInterface) :
             }
         } finally {
             txInterface.gattClientResumeScanning()
+        }
+    }
+
+    /**
+     * Sends the host interrupt frame (00 00 00) on the PS-FTP MTU characteristic for a cancelled,
+     * unfinished transaction. Must be called while still holding [operationMutex]. Runs
+     * independently of the cancelled caller, is bounded by [interruptTimeoutMs], exits on
+     * disconnect and never throws; delivery failures are logged. Late acks after timeout are
+     * discarded rather than requesting a disconnect as on iOS. This relies on one ordered ATT
+     * callback per counted write; a transport-dropped write without a callback cannot be recovered
+     * without a connection reset.
+     */
+    private suspend fun interruptTransaction(disconnectSignal: CompletableDeferred<Unit>) {
+        withContext(NonCancellable) {
+            if (!txInterface.isConnected()) {
+                w(TAG, "Transaction cancelled while disconnected, interrupt not sent")
+                return@withContext
+            }
+            try {
+                resetMtuPipe()
+                val target = mtuResponseWritesSent.incrementAndGet()
+                val delivered = withTimeoutOrNull(interruptTimeoutMs) {
+                    txInterface.transmitMessages(
+                        BlePsFtpUtils.RFC77_PFTP_SERVICE,
+                        BlePsFtpUtils.RFC77_PFTP_MTU_CHARACTERISTIC,
+                        listOf(INTERRUPT_FRAME.copyOf()), true
+                    )
+                    // wait until the interrupt's own ack (and any earlier outstanding ones) arrived
+                    coroutineScope {
+                        val acked = async { mtuResponseWritesAcked.first { it >= target } }
+                        select<Unit> {
+                            acked.onAwait { }
+                            disconnectSignal.onAwait { }
+                        }
+                    }
+                    true
+                }
+                if (delivered == null) {
+                    synchronized(mtuResponseWriteLock) {
+                        mtuResponseWritesAbandoned.set(target)
+                    }
+                    e(TAG, "PS-FTP interrupt delivery not acknowledged within ${interruptTimeoutMs}ms")
+                } else if (lastMtuResponseWriteStatus != 0) {
+                    e(TAG, "PS-FTP interrupt write failed with status $lastMtuResponseWriteStatus")
+                } else {
+                    d(TAG, "PS-FTP transaction interrupt delivered")
+                }
+                drainStaleFrames(disconnectSignal)
+            } catch (ex: Exception) {
+                e(TAG, "PS-FTP interrupt delivery failed: ${ex.message}")
+            } finally {
+                // in-flight response frames may still arrive; discard them and stale acks
+                synchronized(mtuResponseWriteLock) {
+                    resetMtuPipe()
+                }
+            }
+        }
+    }
+
+    /**
+     * Discards response frames the device sent before it processed the interrupt
+     * (RFC76 "Response interruption by host"). Ends when no frame arrives during
+     * [interruptDrainQuietMs], after [interruptDrainMaxMs], or on disconnect.
+     */
+    private suspend fun drainStaleFrames(disconnectSignal: CompletableDeferred<Unit>) {
+        withTimeoutOrNull(interruptDrainMaxMs) {
+            while (true) {
+                withTimeoutOrNull(interruptDrainQuietMs) {
+                    select<Unit> {
+                        mtuResponseChannel.onReceive { }
+                        disconnectSignal.onAwait { }
+                    }
+                } ?: break
+            }
         }
     }
 
@@ -338,6 +448,8 @@ class BlePsFtpClient(txInterface: BleGattTxInterface) :
             operationMutex.withLock {
                 if (pftpMtuEnabled?.get() == ATT_SUCCESS) {
                     d(TAG, "Start write")
+                    var transmissionStarted = false
+                    try {
                     currentOperationWrite.set(true)
                     var pCounter: Long = 0
                     resetMtuPipe()
@@ -360,6 +472,8 @@ class BlePsFtpClient(txInterface: BleGattTxInterface) :
                         )
                         next = 1
                         useAttributeLevelResponse.set((++pCounter % packetsCount.get()) == 0L)
+                        transmissionStarted = true
+                        if (useAttributeLevelResponse.get()) mtuResponseWritesSent.incrementAndGet()
                         txInterface.transmitMessage(
                             BlePsFtpUtils.RFC77_PFTP_SERVICE,
                             BlePsFtpUtils.RFC77_PFTP_MTU_CHARACTERISTIC,
@@ -397,6 +511,11 @@ class BlePsFtpClient(txInterface: BleGattTxInterface) :
                     val response = ByteArrayOutputStream()
                     suspendReadResponse(response, timeoutSeconds * 1000L, disconnectSignal)
                     // channel completes naturally on scope exit
+                    } catch (ex: CancellationException) {
+                        currentOperationWrite.set(false)
+                        if (transmissionStarted) interruptTransaction(disconnectSignal)
+                        throw ex
+                    }
                 } else {
                     throw BleCharacteristicNotificationNotEnabled("PS-FTP MTU not enabled")
                 }
@@ -435,6 +554,8 @@ class BlePsFtpClient(txInterface: BleGattTxInterface) :
                 if (pftpMtuEnabled?.get() == ATT_SUCCESS) {
                     d(TAG, "Send query id: $id")
                     resetMtuPipe()
+                    var transmissionStarted = false
+                    try {
                     val totalStream = BlePsFtpUtils.makeCompleteMessageStream(
                         if (parameters != null) ByteArrayInputStream(parameters) else null,
                         null,
@@ -444,6 +565,7 @@ class BlePsFtpClient(txInterface: BleGattTxInterface) :
                     val sequenceNumber = Rfc76SequenceNumber()
                     val requs = BlePsFtpUtils.buildRfc76MessageFrameAll(totalStream, mtuSize.get(), sequenceNumber)
                     val response = ByteArrayOutputStream()
+                    transmissionStarted = true
                     txInterface.transmitMessages(
                         BlePsFtpUtils.RFC77_PFTP_SERVICE,
                         BlePsFtpUtils.RFC77_PFTP_MTU_CHARACTERISTIC,
@@ -452,6 +574,10 @@ class BlePsFtpClient(txInterface: BleGattTxInterface) :
                     suspendWaitPacketsWritten(packetsWrittenChannel, requs.size, PROTOCOL_TIMEOUT_SECONDS * 1000L, disconnectSignal)
                     suspendReadResponse(response, PROTOCOL_TIMEOUT_SECONDS * 1000L, disconnectSignal)
                     response
+                    } catch (ex: CancellationException) {
+                        if (transmissionStarted) interruptTransaction(disconnectSignal)
+                        throw ex
+                    }
                 } else {
                     e(TAG, "Query $id failed. PS-FTP MTU not enabled")
                     throw BleCharacteristicNotificationNotEnabled("PS-FTP MTU not enabled")
@@ -603,6 +729,7 @@ class BlePsFtpClient(txInterface: BleGattTxInterface) :
                 if (sequenceNumber.seq != response.sequenceNumber) {
                     if (response.status == BlePsFtpUtils.RFC76_STATUS_MORE) {
                         val cancelPacket = byteArrayOf(0x00, 0x00, 0x00)
+                        mtuResponseWritesSent.incrementAndGet()
                         txInterface.transmitMessages(
                             BlePsFtpUtils.RFC77_PFTP_SERVICE,
                             BlePsFtpUtils.RFC77_PFTP_MTU_CHARACTERISTIC,
@@ -652,19 +779,19 @@ class BlePsFtpClient(txInterface: BleGattTxInterface) :
     }
 
     /**
-     * Converts any PftpResponseError into a descriptive Exception with enum name.
+     * Preserves exception types so callers can handle individual PFTP error codes.
+     * PftpResponseError already includes the enum name and code in its message.
      */
     private fun toPftpException(throwable: Throwable): Exception {
-        if (throwable is PftpResponseError) {
-            val name = throwable.errorName
-            val code = throwable.error
-            return Exception("PFTP error: " + (name ?: "UNKNOWN") + " (" + code + ")", throwable)
-        }
         return throwable as? Exception ?: Exception(throwable)
     }
 
     companion object {
         private const val TAG = "BlePsFtpClient"
+        private const val INTERRUPT_TIMEOUT_MS = 5000L
+        private const val INTERRUPT_DRAIN_QUIET_MS = 250L
+        private const val INTERRUPT_DRAIN_MAX_MS = 2000L
+        private val INTERRUPT_FRAME = byteArrayOf(0x00, 0x00, 0x00)
         private const val PROTOCOL_TIMEOUT_SECONDS = 90
         private const val PROTOCOL_TIMEOUT_EXTENDED_SECONDS = 900
     }

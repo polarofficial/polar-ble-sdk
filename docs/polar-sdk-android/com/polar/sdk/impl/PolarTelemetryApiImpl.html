@@ -293,6 +293,14 @@ public final class <span class="typeNameLabel"><a href=PolarTelemetryApiImpl.htm
                                         </tr>
                                         
                                         <tr id="i4" class="altColor">
+                                            <td class="colFirst"><code><a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a></code>
+                                            </td>
+                                            <th class="colSecond" scope="row"><code><a href=PolarTelemetryApiImpl.html#refreshTelemetryReadiness(java.lang.String)>refreshTelemetryReadiness</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
+                                            </th>
+                                            <td class="colLast">NOTE: this is an experimental API intended for Polar internal use only.</td>
+                                        </tr>
+                                        
+                                        <tr id="i5" class="rowColor">
                                             <td class="colFirst"><code><a href=../api/DeviceTelemetrySupport.html>DeviceTelemetrySupport</a></code>
                                             </td>
                                             <th class="colSecond" scope="row"><code><a href=PolarTelemetryApiImpl.html#getAvailableTelemetryTypes(java.lang.String)>getAvailableTelemetryTypes</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier) </code>
@@ -462,6 +470,39 @@ public final class <span class="typeNameLabel"><a href=PolarTelemetryApiImpl.htm
                                         
                                             <dt><span class="returnLabel">Returns:</span></dt>
                                             <dd><p>true if the device supports telemetry data streaming and the streaming was stopped successfully, false otherwise.</p></dd>
+                                        
+
+                                        
+
+                                        </dl>
+                                    </li>
+                                </ul>
+                                
+                                <a id="refreshTelemetryReadiness(java.lang.String)">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockList"
+                                          >
+                                    <li class="blockList">
+                                        <h4>refreshTelemetryReadiness</h4>
+                                        <pre class="methodSignature"> <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> <a href=PolarTelemetryApiImpl.html#refreshTelemetryReadiness(java.lang.String)>refreshTelemetryReadiness</a>(<a href=https://developer.android.com/reference/kotlin/java/lang/String.html>String</a> identifier)</pre>
+                                        <div class="block"><p>NOTE: this is an experimental API intended for Polar internal use only. Polar will not support 3rd party users with this API. Re-evaluates telemetry readiness for an already connected device, e.g. after the device has started to permit telemetry again. Re-writes the MDS notification descriptor if an earlier write was refused. When telemetry is ready, <code>bleSdkFeatureReady</code> is emitted for FEATURE_TELEMETRY if it was not reported yet.</p></div>
+
+                                        <dl>
+
+                                        
+                                            <dt><span class="paramLabel">Parameters:</span></dt>
+                                            
+                                            
+                                            <dd><code>identifier</code> - : Polar device ID or BT address.</dd>
+                                            
+                                            
+                                        
+
+                                        
+                                            <dt><span class="returnLabel">Returns:</span></dt>
+                                            <dd><p>true if telemetry is ready for use, false otherwise.</p></dd>
                                         
 
                                         

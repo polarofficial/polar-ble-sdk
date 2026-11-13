@@ -16,6 +16,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import com.polar.polarsensordatacollector.R
 import com.polar.polarsensordatacollector.di.PolarBleSdkModule
+import com.polar.polarsensordatacollector.repository.DeviceApiCallSerializer
 import com.polar.polarsensordatacollector.repository.PolarDeviceRepository
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -24,6 +25,7 @@ import javax.inject.Inject
 class ExerciseActivity : AppCompatActivity() {
 
     @Inject lateinit var polarDeviceRepository: PolarDeviceRepository
+    @Inject lateinit var apiCallSerializer: DeviceApiCallSerializer
 
     private lateinit var deviceId: String
     private lateinit var viewModel: ExerciseViewModel
@@ -56,7 +58,7 @@ class ExerciseActivity : AppCompatActivity() {
 
         viewModel = ViewModelProvider(
             this,
-            ExerciseViewModelFactory(exerciseApi, deviceId, this)
+            ExerciseViewModelFactory(exerciseApi, deviceId, this, apiCallSerializer)
         )[ExerciseViewModel::class.java]
 
         setContent {

@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.polar.polarsensordatacollector.repository.DeviceApiCallSerializer
 import com.polar.polarsensordatacollector.repository.ExerciseV2Repository
 import com.polar.polarsensordatacollector.ui.exercise.ExerciseRepository
 import com.polar.polarsensordatacollector.ui.landing.ONLINE_OFFLINE_KEY_DEVICE_ID
@@ -27,6 +28,7 @@ private const val EXERCISE_PREFS_NAME = "exercise_prefs"
 class ExerciseV2ViewModel @Inject constructor(
     private val repository: ExerciseV2Repository,
     private val onlineApi: BDBleApiImpl,
+    private val apiCallSerializer: DeviceApiCallSerializer,
     @ApplicationContext private val appContext: Context,
     state: SavedStateHandle
 ) : ViewModel() {
@@ -38,7 +40,7 @@ class ExerciseV2ViewModel @Inject constructor(
     // not the offline-recording API used for start/stop.
     private val onlineExerciseRepository: ExerciseRepository by lazy {
         val prefs = appContext.getSharedPreferences(EXERCISE_PREFS_NAME, Context.MODE_PRIVATE)
-        ExerciseRepository(onlineApi, onlineApi, identifier, prefs)
+        ExerciseRepository(onlineApi, onlineApi, identifier, prefs, apiCallSerializer)
     }
 
     // Single source of truth for the online exercise status (and therefore

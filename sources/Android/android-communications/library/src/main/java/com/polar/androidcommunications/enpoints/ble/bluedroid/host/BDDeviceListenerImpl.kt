@@ -427,7 +427,8 @@ class BDDeviceListenerImpl(
             }
             synchronized(session.gattMutex) {
                 if (session.gatt != null) {
-                    session.gatt!!.requestConnectionPriority(BluetoothGatt.CONNECTION_PRIORITY_BALANCED)
+                    val accepted = session.gatt!!.requestConnectionPriority(BluetoothGatt.CONNECTION_PRIORITY_HIGH)
+                    d(TAG, "High connection priority requested before service discovery: $accepted")
                     result = session.gatt!!.discoverServices()
                 }
             }
@@ -518,7 +519,19 @@ class BDDeviceListenerImpl(
     }
 
     private val connectionHandlerObserver: ConnectionHandlerObserver = object : ConnectionHandlerObserver {
+        @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
         override fun deviceSessionStateChanged(session: BDDeviceSessionImpl) {
+            if (session.sessionState == DeviceSessionState.SESSION_OPEN) {
+                // High priority is only needed during connection setup. Restore the
+                // power-efficient default after negotiation, also on reconnections.
+                synchronized(session.gattMutex) {
+                    session.gatt?.let { gatt ->
+                        val accepted = gatt.requestConnectionPriority(BluetoothGatt.CONNECTION_PRIORITY_BALANCED)
+                        d(TAG, "Balanced connection priority requested after connection setup: $accepted")
+                    }
+                }
+            }
+
             if (sessions.fetch { s: BDDeviceSessionImpl? -> s?.sessionState == DeviceSessionState.SESSION_OPEN_PARK } != null) {
                 scanCallback.clientAdded()
             } else {

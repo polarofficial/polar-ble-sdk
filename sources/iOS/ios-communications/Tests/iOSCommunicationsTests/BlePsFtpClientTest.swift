@@ -38,6 +38,69 @@ private final class NeverAcknowledgingTransmitter: MockGattServiceTransmitterImp
     ) throws {}
 }
 
+private final class RecordingTransmitter: MockGattServiceTransmitterImpl, @unchecked Sendable {
+    private let lock = NSLock()
+    private var _sent: [(CBUUID, Data)] = []
+    private var _deferred: [(parent: BleGattClientBase, chr: CBUUID, withResponse: Bool)] = []
+    var sent: [(CBUUID, Data)] { lock.lock(); defer { lock.unlock() }; return _sent }
+    var deferredCount: Int { lock.lock(); defer { lock.unlock() }; return _deferred.count }
+    var responses: [Data] = []
+    private var _disconnectRequests = 0
+    var disconnectRequests: Int { lock.lock(); defer { lock.unlock() }; return _disconnectRequests }
+
+    override func requestDisconnect() {
+        lock.lock(); _disconnectRequests += 1; lock.unlock()
+    }
+
+    /// Return true to hold back the write acknowledgement of the packet with the given index.
+    var deferAck: (Int, Data) -> Bool = { _, _ in false }
+    /// Called after each packet is recorded, before it is acknowledged.
+    var onSend: (Int, Data, BleGattClientBase) -> Void = { _, _, _ in }
+    var dataFrames: [Data] { sent.map { $0.1 }.filter { $0 != BlePsFtpClient.HOST_INTERRUPT_FRAME } }
+    var interruptCount: Int { sent.filter { $0.1 == BlePsFtpClient.HOST_INTERRUPT_FRAME }.count }
+
+    override func transmitMessage(
+        _ parent: BleGattClientBase,
+        serviceUuid: CBUUID,
+        characteristicUuid: CBUUID,
+        packet: Data,
+        withResponse: Bool
+    ) throws {
+        lock.lock()
+        let index = _sent.count
+        _sent.append((characteristicUuid, packet))
+        lock.unlock()
+        onSend(index, packet, parent)
+        if deferAck(index, packet) {
+            lock.lock(); _deferred.append((parent, characteristicUuid, withResponse)); lock.unlock()
+        } else {
+            parent.serviceDataWritten(characteristicUuid, err: 0)
+        }
+        if !responses.isEmpty && packet != BlePsFtpClient.HOST_INTERRUPT_FRAME {
+            parent.processServiceData(characteristicUuid, data: responses.removeFirst(), err: 0)
+        }
+    }
+
+    /// Index into `sent` at the time the parked packet was discarded.
+    private(set) var discardedAtSentCount: Int?
+
+    private(set) var discardedTarget: (BleGattClientBase, CBUUID)?
+
+    override func discardPendingWriteWithoutResponse(_ parent: BleGattClientBase, characteristicUuid: CBUUID) {
+        lock.lock()
+        discardedTarget = (parent, characteristicUuid)
+        discardedAtSentCount = _sent.count
+        // only the parked write-without-response of that client and characteristic is dropped
+        _deferred.removeAll { !$0.withResponse && $0.parent === parent && $0.chr == characteristicUuid }
+        lock.unlock()
+    }
+
+    func flushDeferredAcks(count: Int = Int.max) {
+        lock.lock(); let pending = Array(_deferred.prefix(count)); _deferred.removeFirst(pending.count); lock.unlock()
+        for entry in pending { entry.parent.serviceDataWritten(entry.chr, err: 0) }
+    }
+}
+
 // MARK: - Test class
 
 class BlePsFtpClientTest: XCTestCase {
@@ -938,6 +1001,294 @@ class BlePsFtpClientTest: XCTestCase {
 
             _ = await task.value
         }
+    }
+
+    // MARK: - Cancellation interrupt
+
+    private func waitFor(_ cond: () -> Bool) async {
+        for _ in 0..<100 where !cond() { try? await Task.sleep(nanoseconds: 50_000_000) }
+    }
+
+    func testRequest_cancelledWhileAwaitingResponse_sendsInterruptFrameOnMtuCharacteristic() async throws {
+        let transmitter = RecordingTransmitter()
+        let client = BlePsFtpClient(gattServiceTransmitter: transmitter)
+        client.mtuNotificationEnabled.set(client.ATT_NOTIFY_OR_INDICATE_ON)
+        let task = Task { try await client.request(Data([1, 2, 3])) }
+        await waitFor { transmitter.sent.count >= 1 }
+        task.cancel()
+        do { _ = try await task.value; XCTFail("expected cancellation") } catch {
+            if case BlePsFtpException.operationCanceled = error {} else { XCTFail("unexpected \(error)") }
+        }
+        await waitFor { transmitter.sent.count >= 2 }
+        let sent = transmitter.sent
+        XCTAssertEqual(sent.count, 2)
+        XCTAssertEqual(sent.last?.0, BlePsFtpClient.PSFTP_MTU_CHARACTERISTIC)
+        XCTAssertEqual(sent.last?.1, Data([0x00, 0x00, 0x00]))
+    }
+
+    func testQuery_cancelledWhileAwaitingResponse_sendsInterruptFrame() async throws {
+        let transmitter = RecordingTransmitter()
+        let client = BlePsFtpClient(gattServiceTransmitter: transmitter)
+        client.mtuNotificationEnabled.set(client.ATT_NOTIFY_OR_INDICATE_ON)
+        let task = Task { try await client.query(1, parameters: nil) }
+        await waitFor { transmitter.sent.count >= 1 }
+        task.cancel()
+        _ = try? await task.value
+        await waitFor { transmitter.sent.count >= 2 }
+        XCTAssertEqual(transmitter.sent.last?.1, Data([0x00, 0x00, 0x00]))
+    }
+
+    func testRequest_cancelledWhileQueued_doesNotSendInterrupt() async throws {
+        let transmitter = RecordingTransmitter()
+        let client = BlePsFtpClient(gattServiceTransmitter: transmitter)
+        client.mtuNotificationEnabled.set(client.ATT_NOTIFY_OR_INDICATE_ON)
+        let first = Task { try await client.request(Data([1])) }
+        await waitFor { transmitter.sent.count >= 1 }
+        let queued = Task { try await client.request(Data([2])) }
+        try await Task.sleep(nanoseconds: 200_000_000)
+        queued.cancel()
+        try await Task.sleep(nanoseconds: 300_000_000)
+        XCTAssertEqual(transmitter.sent.count, 1)
+        first.cancel()
+        _ = try? await first.value
+        _ = try? await queued.value
+        await waitFor { transmitter.sent.count >= 2 }
+        XCTAssertEqual(transmitter.sent.count, 2)
+        XCTAssertEqual(transmitter.sent.filter { $0.1 == Data([0, 0, 0]) }.count, 1)
+    }
+
+    func testRequest_normalCompletion_doesNotSendInterrupt() async throws {
+        let transmitter = RecordingTransmitter()
+        transmitter.responses = [makeLASTFrame(payload: Data([0xAB]))]
+        let client = BlePsFtpClient(gattServiceTransmitter: transmitter)
+        client.mtuNotificationEnabled.set(client.ATT_NOTIFY_OR_INDICATE_ON)
+        let response = try await client.request(Data([1]))
+        XCTAssertEqual(Data(response), Data([0xAB]))
+        try await Task.sleep(nanoseconds: 300_000_000)
+        XCTAssertFalse(transmitter.sent.contains { $0.1 == Data([0, 0, 0]) })
+    }
+
+    private func makeClient(_ transmitter: MockGattServiceTransmitterImpl, mtu: Int = 20) -> BlePsFtpClient {
+        let client = BlePsFtpClient(gattServiceTransmitter: transmitter)
+        client.mtuNotificationEnabled.set(client.ATT_NOTIFY_OR_INDICATE_ON)
+        client.mtuSize = mtu
+        return client
+    }
+
+    func testWrite_cancelledMidUpload_sendsInterruptAfterLastFrameAndStopsScheduling() async throws {
+        let transmitter = RecordingTransmitter()
+        let client = makeClient(transmitter)
+        let payload = Data((0..<400).map { UInt8($0 % 251) })
+        // hold back the ack of the 3rd frame so the upload is parked mid-stream
+        transmitter.deferAck = { index, _ in index == 2 }
+        let task = Task {
+            for try await _ in client.write(Data([1, 2, 3]) as NSData, data: InputStream(data: payload)) { }
+        }
+        await waitFor { transmitter.sent.count >= 3 }
+        task.cancel()
+        // cancelling the consuming Task ends an AsyncThrowingStream without an error
+        _ = try? await task.value
+        await waitFor { transmitter.sent.count >= 4 }
+        try await Task.sleep(nanoseconds: 500_000_000)
+        let sent = transmitter.sent
+        XCTAssertEqual(sent.count, 4, "3 payload frames followed by exactly one interrupt")
+        XCTAssertTrue(sent.allSatisfy { $0.0 == BlePsFtpClient.PSFTP_MTU_CHARACTERISTIC })
+        XCTAssertEqual(sent.last?.1, Data([0x00, 0x00, 0x00]))
+        XCTAssertEqual(transmitter.interruptCount, 1)
+        XCTAssertTrue(sent.dropLast().allSatisfy { $0.1 != BlePsFtpClient.HOST_INTERRUPT_FRAME })
+    }
+
+    func testWrite_cancelledWhileAwaitingResponse_sendsInterruptAndFailsWithCancellation() async throws {
+        let transmitter = RecordingTransmitter()
+        let client = makeClient(transmitter)
+        let task = Task {
+            for try await _ in client.write(Data([1]) as NSData, data: InputStream(data: Data([9, 9]))) { }
+        }
+        await waitFor { transmitter.sent.count >= 1 }
+        try await Task.sleep(nanoseconds: 300_000_000)
+        let framesBeforeCancel = transmitter.sent.count
+        task.cancel()
+        _ = try? await task.value
+        await waitFor { transmitter.interruptCount >= 1 }
+        XCTAssertEqual(transmitter.sent.count, framesBeforeCancel + 1)
+        XCTAssertEqual(transmitter.sent.last?.1, Data([0x00, 0x00, 0x00]))
+        XCTAssertEqual(transmitter.sent.last?.0, BlePsFtpClient.PSFTP_MTU_CHARACTERISTIC)
+    }
+
+    func testRequest_cancelledDuringMultiFrameDownload_throwsAndInterruptsAfterRequestFrames() async throws {
+        let transmitter = RecordingTransmitter()
+        transmitter.responses = [makeMOREFrame(seqNum: 0, payload: Data([1, 2, 3]))]
+        let client = makeClient(transmitter)
+        let task = Task { try await client.request(Data([7])) }
+        await waitFor { transmitter.sent.count >= 1 }
+        try await Task.sleep(nanoseconds: 300_000_000)
+        task.cancel()
+        do { let partial = try await task.value; XCTFail("partial result returned as success: \(partial)") } catch {
+            if case BlePsFtpException.operationCanceled = error {} else { XCTFail("unexpected \(error)") }
+        }
+        await waitFor { transmitter.interruptCount >= 1 }
+        let sent = transmitter.sent
+        XCTAssertEqual(sent.count, 2)
+        XCTAssertNotEqual(sent[0].1, BlePsFtpClient.HOST_INTERRUPT_FRAME)
+        XCTAssertEqual(sent[1].1, Data([0x00, 0x00, 0x00]))
+    }
+
+    func testRequest_repeatedCancellation_sendsSingleInterrupt() async throws {
+        let transmitter = RecordingTransmitter()
+        let client = makeClient(transmitter)
+        let task = Task { try await client.request(Data([1])) }
+        await waitFor { transmitter.sent.count >= 1 }
+        task.cancel()
+        task.cancel()
+        _ = try? await task.value
+        await waitFor { transmitter.interruptCount >= 1 }
+        task.cancel()
+        try await Task.sleep(nanoseconds: 500_000_000)
+        XCTAssertEqual(transmitter.interruptCount, 1)
+        XCTAssertEqual(transmitter.sent.count, 2)
+    }
+
+    func testRequest_interruptNeverAcknowledged_requestsDisconnectAndLateCallbacksCannotReleaseNextWrite() async throws {
+        let transmitter = RecordingTransmitter()
+        transmitter.deferAck = { _, _ in true }
+        let client = makeClient(transmitter)
+        client.INTERRUPT_TIMEOUT = 0.5
+        client.INTERRUPT_DRAIN_QUIET = 0.05
+        client.INTERRUPT_DRAIN_MAX = 0.2
+        let first = Task { try await client.request(Data([1])) }
+        await waitFor { transmitter.sent.count >= 1 }
+        first.cancel()
+        _ = try? await first.value
+        await waitFor { transmitter.disconnectRequests >= 1 }
+        XCTAssertEqual(transmitter.disconnectRequests, 1)
+        XCTAssertEqual(transmitter.interruptCount, 1)
+
+        // callbacks of the cancelled write and the interrupt arrive late, before the connection is reset
+        transmitter.flushDeferredAcks()
+        let sentBefore = transmitter.sent.count
+        do {
+            _ = try await client.request(Data([2]))
+            XCTFail("ordinary transactions must not resume before the connection is reset")
+        } catch {
+            guard case BleGattException.gattDisconnected = error else { return XCTFail("unexpected \(error)") }
+        }
+        XCTAssertEqual(transmitter.sent.count, sentBefore, "no frame may be sent before the reset")
+
+        // the reset completes: a fresh transaction works again
+        client.disconnected()
+        transmitter.deferAck = { _, _ in false }
+        transmitter.responses = [makeLASTFrame(payload: Data([0xCD]))]
+        let response = try await client.request(Data([2]))
+        XCTAssertEqual(Data(response), Data([0xCD]))
+        XCTAssertEqual(transmitter.disconnectRequests, 1)
+    }
+
+    func testRequest_cancelledWriteFailedCallback_doesNotDiscardInterruptAck() async throws {
+        let transmitter = RecordingTransmitter()
+        transmitter.deferAck = { index, _ in index == 0 }
+        let client = makeClient(transmitter)
+        client.INTERRUPT_TIMEOUT = 3
+        client.INTERRUPT_DRAIN_QUIET = 0.05
+        client.INTERRUPT_DRAIN_MAX = 0.2
+        let first = Task { try await client.request(Data([1])) }
+        await waitFor { transmitter.sent.count >= 1 }
+        first.cancel()
+        client.serviceDataWritten(BlePsFtpClient.PSFTP_MTU_CHARACTERISTIC, err: 1)
+        _ = try? await first.value
+        // the next request starts only after the queued interrupt cleanup has finished
+        transmitter.responses = [makeLASTFrame(payload: Data([0x42]))]
+        let start = Date()
+        let response = try await client.request(Data([2]))
+        XCTAssertEqual(Data(response), Data([0x42]))
+        XCTAssertLessThan(Date().timeIntervalSince(start), 1.5, "interrupt ack was discarded as stale and cleanup waited for its timeout")
+        XCTAssertEqual(transmitter.interruptCount, 1)
+    }
+
+    func testRequest_lateResponseFrameAfterInterrupt_doesNotCorruptNextRequest() async throws {
+        let transmitter = RecordingTransmitter()
+        let client = makeClient(transmitter)
+        client.INTERRUPT_DRAIN_QUIET = 0.2
+        client.INTERRUPT_DRAIN_MAX = 1
+        transmitter.onSend = { _, packet, parent in
+            guard packet == BlePsFtpClient.HOST_INTERRUPT_FRAME else { return }
+            DispatchQueue.global().asyncAfter(deadline: .now() + 0.05) {
+                parent.processServiceData(BlePsFtpClient.PSFTP_MTU_CHARACTERISTIC, data: self.makeLASTFrame(payload: Data([0xEE])), err: 0)
+            }
+        }
+        let first = Task { try await client.request(Data([1])) }
+        await waitFor { transmitter.sent.count >= 1 }
+        first.cancel()
+        _ = try? await first.value
+        await waitFor { transmitter.interruptCount >= 1 }
+        transmitter.responses = [makeLASTFrame(payload: Data([0x42]))]
+        let response = try await client.request(Data([2]))
+        XCTAssertEqual(Data(response), Data([0x42]))
+        XCTAssertEqual(transmitter.interruptCount, 1)
+    }
+
+    func testRequest_lateAckOfCancelledFrame_doesNotConfirmInterruptOrReleaseNextTransaction() async throws {
+        let transmitter = RecordingTransmitter()
+        // request frame (0) and interrupt (1) are acknowledged only when the test releases them
+        transmitter.deferAck = { index, _ in index <= 1 }
+        let client = makeClient(transmitter)
+        client.INTERRUPT_DRAIN_QUIET = 0.05
+        client.INTERRUPT_DRAIN_MAX = 0.1
+        let first = Task { try await client.request(Data([1])) }
+        await waitFor { transmitter.sent.count >= 1 }
+        first.cancel()
+        _ = try? await first.value
+        let second = Task {
+            for try await _ in client.write(Data([2]) as NSData, data: InputStream(data: Data(repeating: 7, count: 100))) { }
+        }
+        await waitFor { transmitter.sent.count >= 2 }
+        // the late ack of the cancelled request frame must not be taken as the interrupt's ack
+        transmitter.flushDeferredAcks(count: 1)
+        try await Task.sleep(nanoseconds: 500_000_000)
+        XCTAssertEqual(transmitter.sent.count, 2, "next transaction must wait for the interrupt's own ack")
+        transmitter.flushDeferredAcks()
+        await waitFor { transmitter.sent.count >= 3 }
+        XCTAssertGreaterThanOrEqual(transmitter.sent.count, 3)
+        second.cancel()
+        _ = try? await second.value
+    }
+
+    func testWrite_cancelledWhileWriteWithoutResponseIsParked_discardsItBeforeInterruptAndInterruptAckIsHonoured() async throws {
+        let transmitter = RecordingTransmitter()
+        let client = makeClient(transmitter)
+        client.packetChunks.set(0) // all payload frames are write-without-response
+        // the second frame is parked by the transport: neither sent nor acknowledged
+        transmitter.deferAck = { index, _ in index == 1 }
+        let task = Task {
+            for try await _ in client.write(Data([1]) as NSData, data: InputStream(data: Data(repeating: 5, count: 200))) { }
+        }
+        await waitFor { transmitter.sent.count >= 2 }
+        task.cancel()
+        let start = Date()
+        _ = try? await task.value
+        await waitFor { transmitter.interruptCount >= 1 }
+        // the interrupt is acknowledged by its own callback, so the next transaction is not held up
+        let next = Task { try await client.request(Data([2])) }
+        await waitFor { transmitter.sent.count >= 4 }
+        XCTAssertLessThan(Date().timeIntervalSince(start), 2, "interrupt ack must not be mistaken for the parked write's ack")
+        XCTAssertEqual(transmitter.sent.count, 4)
+        XCTAssertEqual(transmitter.sent[2].1, Data([0x00, 0x00, 0x00]))
+        XCTAssertEqual(transmitter.discardedAtSentCount, 2, "parked packet discarded before the interrupt is transmitted")
+        XCTAssertTrue(transmitter.discardedTarget?.0 === client, "only the cancelled client's parked write may be discarded")
+        XCTAssertEqual(transmitter.discardedTarget?.1, BlePsFtpClient.PSFTP_MTU_CHARACTERISTIC)
+        next.cancel()
+        _ = try? await next.value
+    }
+
+    func testDisconnect_duringUnacknowledgedInterrupt_returnsQuickly() async throws {
+        let transmitter = NeverAcknowledgingTransmitter()
+        let client = BlePsFtpClient(gattServiceTransmitter: transmitter)
+        let task = Task<NSData, Error> { try await client.request(Data([0x00])) }
+        try await Task.sleep(nanoseconds: 100_000_000)
+        task.cancel()
+        try await Task.sleep(nanoseconds: 300_000_000)
+        let start = Date()
+        await Task { client.disconnected() }.value
+        XCTAssertLessThan(Date().timeIntervalSince(start), 2)
     }
 }
 

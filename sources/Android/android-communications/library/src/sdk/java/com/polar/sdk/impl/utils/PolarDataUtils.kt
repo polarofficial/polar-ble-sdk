@@ -390,7 +390,13 @@ internal object PolarDataUtils {
         val selected: MutableMap<PmdSetting.PmdSettingType, Int> = mutableMapOf()
         if (polarSensorSetting != null) {
             for ((key, value) in polarSensorSetting.settings) {
-                selected[PmdSetting.PmdSettingType.values()[key.numVal]] = Collections.max(value)
+                val pmdType = when (key) {
+                    PolarSensorSetting.SettingType.SAMPLE_RATE -> PmdSetting.PmdSettingType.SAMPLE_RATE
+                    PolarSensorSetting.SettingType.RESOLUTION -> PmdSetting.PmdSettingType.RESOLUTION
+                    PolarSensorSetting.SettingType.RANGE -> PmdSetting.PmdSettingType.RANGE
+                    PolarSensorSetting.SettingType.CHANNELS -> PmdSetting.PmdSettingType.CHANNELS
+                }
+                selected[pmdType] = Collections.max(value)
             }
         }
         return PmdSetting(selected)

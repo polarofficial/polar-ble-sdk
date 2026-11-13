@@ -55,8 +55,10 @@ class PolarNightlyRechargeUtilsTests: XCTestCase {
 
         mockClient.requestReturnValue = .success(try proto.serializedData())
 
-        let createdTimestamp = DateComponents(calendar: Calendar.current, year: 2023, month: 12, day: 5, hour: 10, minute: 0).date!
-        let modifiedTimestamp = DateComponents(calendar: Calendar.current, year: 2023, month: 12, day: 5, hour: 10, minute: 30).date!
+        var utcCalendar = Calendar(identifier: .gregorian)
+        utcCalendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        let createdTimestamp = DateComponents(calendar: utcCalendar, year: 2023, month: 12, day: 5, hour: 10, minute: 0).date!
+        let modifiedTimestamp = DateComponents(calendar: utcCalendar, year: 2023, month: 12, day: 5, hour: 10, minute: 30).date!
         let sleepResultDate = DateComponents(year: 2024, month: 12, day: 5)
 
         let expectedResult = PolarNightlyRechargeData(

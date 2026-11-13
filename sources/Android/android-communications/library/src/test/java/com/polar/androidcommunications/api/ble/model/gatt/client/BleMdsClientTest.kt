@@ -10,6 +10,7 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.verify
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
@@ -133,6 +134,40 @@ class BleMdsClientTest {
 
         // Assert
         assertNull(sut.supportedFeatures)
+    }
+
+    @Test
+    fun clientReady_retriesCccWriteAfterEarlierRefusal() = runTest {
+        // Arrange
+        sut.descriptorWritten(BleMdsClient.MDS_DATA_EXPORT, false, 3)
+        every {
+            txInterface.setCharacteristicNotify(BleMdsClient.MDS_SERVICE, BleMdsClient.MDS_DATA_EXPORT, true)
+        } answers {
+            sut.descriptorWritten(BleMdsClient.MDS_DATA_EXPORT, true, BleGattBase.ATT_SUCCESS)
+        }
+        sut.processServiceData(BleMdsClient.MDS_SUPPORTED_FEATURES, byteArrayOf(0x01), BleGattBase.ATT_SUCCESS, false)
+
+        // Act
+        sut.clientReady(true)
+
+        // Assert
+        verify(exactly = 1) {
+            txInterface.setCharacteristicNotify(BleMdsClient.MDS_SERVICE, BleMdsClient.MDS_DATA_EXPORT, true)
+        }
+    }
+
+    @Test
+    fun clientReady_whenCccRetryAlsoRefused_throwsAttributeError() = runTest {
+        // Arrange
+        sut.descriptorWritten(BleMdsClient.MDS_DATA_EXPORT, false, 3)
+        every {
+            txInterface.setCharacteristicNotify(BleMdsClient.MDS_SERVICE, BleMdsClient.MDS_DATA_EXPORT, true)
+        } answers {
+            sut.descriptorWritten(BleMdsClient.MDS_DATA_EXPORT, false, 3)
+        }
+
+        // Act & Assert
+        assertThrows(BleAttributeError::class.java) { runBlocking { sut.clientReady(true) } }
     }
 
     @Test
@@ -690,6 +725,7 @@ class BleMdsClientTest {
     @Test
     fun startMdsNotifications_successfulWriteWithoutChunkReturnsFlow() = runTest {
         // Arrange
+        sut.descriptorWritten(BleMdsClient.MDS_DATA_EXPORT, true, BleGattBase.ATT_SUCCESS)
         respondToDataExportWrite(BleGattBase.ATT_SUCCESS)
 
         // Act
@@ -712,6 +748,7 @@ class BleMdsClientTest {
     @Test
     fun startMdsNotifications_registersObserverBeforeEnablingDataExport() = runTest {
         // Arrange
+        sut.descriptorWritten(BleMdsClient.MDS_DATA_EXPORT, true, BleGattBase.ATT_SUCCESS)
         val notification = byteArrayOf(0x05, 0x11, 0x22)
         every {
             txInterface.transmitMessages(
@@ -736,6 +773,44 @@ class BleMdsClientTest {
         // Assert
         assertEquals(1, emitted.size)
         assertArrayEquals(byteArrayOf(0x11, 0x22), emitted.single().exportData)
+    }
+
+    @Test
+    fun startMdsNotifications_rewritesCccWhenEarlierWriteWasRefused() = runTest {
+        // Arrange
+        sut.descriptorWritten(BleMdsClient.MDS_DATA_EXPORT, false, 3)
+        every {
+            txInterface.setCharacteristicNotify(BleMdsClient.MDS_SERVICE, BleMdsClient.MDS_DATA_EXPORT, true)
+        } answers {
+            sut.descriptorWritten(BleMdsClient.MDS_DATA_EXPORT, true, BleGattBase.ATT_SUCCESS)
+        }
+        respondToDataExportWrite(BleGattBase.ATT_SUCCESS)
+
+        // Act
+        sut.startMdsNotifications(true)
+
+        // Assert
+        verify(exactly = 1) {
+            txInterface.setCharacteristicNotify(BleMdsClient.MDS_SERVICE, BleMdsClient.MDS_DATA_EXPORT, true)
+        }
+        verify(exactly = 1) { txInterface.transmitMessages(BleMdsClient.MDS_SERVICE, BleMdsClient.MDS_DATA_EXPORT, any(), true) }
+    }
+
+    @Test
+    fun startMdsNotifications_whenCccStillRefused_throwsWithoutWritingModeByte() = runTest {
+        // Arrange
+        sut.descriptorWritten(BleMdsClient.MDS_DATA_EXPORT, false, 3)
+        every {
+            txInterface.setCharacteristicNotify(BleMdsClient.MDS_SERVICE, BleMdsClient.MDS_DATA_EXPORT, true)
+        } answers {
+            sut.descriptorWritten(BleMdsClient.MDS_DATA_EXPORT, false, 3)
+        }
+
+        // Act & Assert
+        var caught: Throwable? = null
+        try { sut.startMdsNotifications(true) } catch (e: Throwable) { caught = e }
+        assertTrue(caught is BleAttributeError)
+        verify(exactly = 0) { txInterface.transmitMessages(any(), any(), any(), any()) }
     }
 
     // --- monitorMdsNotifications ---

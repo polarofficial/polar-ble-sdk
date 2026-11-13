@@ -1,7 +1,6 @@
 package com.polar.androidcommunications.common.ble
 
 import com.polar.androidcommunications.api.ble.BleLogger.Companion.e
-import java.util.Objects
 
 class BleUtils private constructor() {
     init {
@@ -43,52 +42,33 @@ class BleUtils private constructor() {
 
     companion object {
         val TAG: String = BleUtils::class.java.simpleName
+        private val adTypesByValue = AD_TYPE.entries.associateBy { it.numVal }
 
         private fun getCode(type: Byte): AD_TYPE {
-            return try {
-                if (type.toInt() == -1) AD_TYPE.GAP_ADTYPE_MANUFACTURER_SPECIFIC else AD_TYPE.entries[type.toInt()]
-            } catch (ex: IndexOutOfBoundsException) {
-                e(TAG, "Unknown AD type 0x${type.toInt().and(0xFF).toString(16)}, returning GAP_ADTYPE_UNKNOWN: ${ex.localizedMessage}")
-                AD_TYPE.GAP_ADTYPE_UNKNOWN
-            }
+            return adTypesByValue[type.toInt() and 0xFF] ?: AD_TYPE.GAP_ADTYPE_UNKNOWN
         }
 
         fun advertisementBytes2Map(advBytes: ByteArray): HashMap<AD_TYPE, ByteArray> {
             var offset = 0
             val adTypeHashMap = HashMap<AD_TYPE, ByteArray>()
-            try {
-                while ((offset + 2) < advBytes.size) {
-                    val type = getCode(advBytes[offset + 1])
-                    val fieldLen = advBytes[offset].toInt()
-                    if (fieldLen <= 0) {
-                        // skip if incorrect adv is detected
-                        break
-                    }
-                    if (adTypeHashMap.containsKey(type) && type == AD_TYPE.GAP_ADTYPE_MANUFACTURER_SPECIFIC) {
-                        val data = ByteArray(
-                            (Objects.requireNonNull(
-                                adTypeHashMap[type]
-                            )?.size ?: 0) + fieldLen - 1
-                        )
-                        System.arraycopy(advBytes, offset + 2, data, 0, fieldLen - 1)
-                        Objects.requireNonNull(adTypeHashMap[type])?.let {
-                            System.arraycopy(
-                                Objects.requireNonNull(
-                                    adTypeHashMap[type]
-                                ), 0, data, fieldLen - 1,
-                                it.size
-                            )
-                        }
-                        adTypeHashMap[type] = data
-                    } else {
-                        val data = ByteArray(fieldLen - 1)
-                        System.arraycopy(advBytes, offset + 2, data, 0, fieldLen - 1)
-                        adTypeHashMap[type] = data
-                    }
-                    offset += fieldLen + 1
+            while (offset < advBytes.size) {
+                // The length includes the type byte, but not the length byte itself.
+                val fieldLen = advBytes[offset].toInt() and 0xFF
+                if (fieldLen == 0) break
+                if (fieldLen > advBytes.size - offset - 1) {
+                    e(TAG, "Truncated advertisement field at offset $offset")
+                    break
                 }
-            } catch (ex: ArrayIndexOutOfBoundsException) {
-                e(TAG, "incorrect advertisement data detected: " + ex.localizedMessage)
+                val type = getCode(advBytes[offset + 1])
+                val data = advBytes.copyOfRange(offset + 2, offset + fieldLen + 1)
+                val previous = adTypeHashMap[type]
+                // Preserve the existing ordering for repeated manufacturer fields.
+                adTypeHashMap[type] = if (type == AD_TYPE.GAP_ADTYPE_MANUFACTURER_SPECIFIC && previous != null) {
+                    data + previous
+                } else {
+                    data
+                }
+                offset += fieldLen + 1
             }
             return adTypeHashMap
         }

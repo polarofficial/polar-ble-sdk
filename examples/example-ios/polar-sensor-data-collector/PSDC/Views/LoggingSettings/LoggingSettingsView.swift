@@ -34,12 +34,6 @@ struct LoggingSettingsView: View {
 
     @State private var isLoading = true
 
-    @State private var isExportingDeviceLogs = false
-    @State private var isDeviceLogsSharePresented = false
-    @State private var deviceLogsZipURL: URL?
-    @State private var exportDeviceLogsError: String?
-    @State private var showExportDeviceLogsAlert = false
-
     var body: some View {
         if case .connected = bleSdkManager.deviceConnectionState,
            bleSdkManager.deviceInfoFeature.isSupported {
@@ -212,35 +206,8 @@ struct LoggingSettingsView: View {
 
                 Spacer()
 
-                ZStack {
-                    Button("Export device logs and telemetry") {
-                        Task {
-                            await exportDeviceLogs()
-                        }
-                    }
-                    .buttonStyle(SecondaryButtonStyle(buttonState: .pressedDown))
-                    .disabled(isExportingDeviceLogs)
-                    .opacity(isExportingDeviceLogs ? 0 : 1)
-
-                    if isExportingDeviceLogs {
-                        ProgressView()
-                    }
-                }
-                .padding(.bottom)
-                .alert("Export Device Logs", isPresented: $showExportDeviceLogsAlert) {
-                    Button("OK", role: .cancel) {}
-                } message: {
-                    if let error = exportDeviceLogsError {
-                        Text("Export failed: \(error)")
-                    } else {
-                        Text("No log files found on device.")
-                    }
-                }
-                .sheet(isPresented: $isDeviceLogsSharePresented) {
-                    if let url = deviceLogsZipURL {
-                        ExportLogsView(text: "Export Device Logs", fileURL: url)
-                    }
-                }
+                DeviceLogsExportButton()
+                    .padding(.bottom)
                 } // end else
             }
             .onAppear() {
@@ -285,45 +252,6 @@ struct LoggingSettingsView: View {
                     isLoading = false
                 }
             }
-        }
-    }
-
-    private func exportDeviceLogs() async {
-        isExportingDeviceLogs = true
-        exportDeviceLogsError = nil
-        defer { isExportingDeviceLogs = false }
-
-        do {
-            let logs = try await bleSdkManager.exportDeviceLogs()
-            if logs.isEmpty {
-                showExportDeviceLogsAlert = true
-                return
-            }
-
-            let tempDir = FileManager.default.temporaryDirectory
-                .appendingPathComponent("device_logs_\(Int(Date().timeIntervalSince1970))", isDirectory: true)
-            try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
-
-            var fileURLs: [URL] = []
-            for log in logs {
-                let filename = (log.path as NSString).lastPathComponent
-                let fileURL = tempDir.appendingPathComponent(filename)
-                try log.data.write(to: fileURL)
-                fileURLs.append(fileURL)
-            }
-
-            let deviceId = bleSdkManager.deviceId ?? "device"
-            let zipFileName = "device_logs_\(deviceId)_\(Int(Date().timeIntervalSince1970)).zip"
-            let zipURL = FileManager.default.temporaryDirectory.appendingPathComponent(zipFileName)
-
-            try Zip.zipFiles(paths: fileURLs, zipFilePath: zipURL, password: nil, progress: nil)
-
-            deviceLogsZipURL = zipURL
-            isDeviceLogsSharePresented = true
-        } catch {
-            AppLogger.log("Export device logs failed: \(error)")
-            exportDeviceLogsError = error.localizedDescription
-            showExportDeviceLogsAlert = true
         }
     }
 
@@ -391,6 +319,87 @@ struct LoggingSettingsView: View {
         !hrSensorLogDevice.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
+}
+
+struct DeviceLogsExportButton: View {
+    @EnvironmentObject private var bleSdkManager: PolarBleSdkManager
+    @State private var isExportingDeviceLogs = false
+    @State private var isDeviceLogsSharePresented = false
+    @State private var deviceLogsZipURL: URL?
+    @State private var exportDeviceLogsError: String?
+    @State private var showExportDeviceLogsAlert = false
+
+    var body: some View {
+        ZStack {
+            Button("Export device logs and telemetry") {
+                Task { @MainActor in
+                    await exportDeviceLogs()
+                }
+            }
+            .buttonStyle(SecondaryButtonStyle(buttonState: .released))
+            .disabled(isExportingDeviceLogs)
+            .opacity(isExportingDeviceLogs ? 0 : 1)
+
+            if isExportingDeviceLogs {
+                ProgressView()
+            }
+        }
+        .alert("Export Device Logs", isPresented: $showExportDeviceLogsAlert) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            if let error = exportDeviceLogsError {
+                Text("Export failed: \(error)")
+            } else {
+                Text("No log files found on device.")
+            }
+        }
+        .sheet(isPresented: $isDeviceLogsSharePresented) {
+            if let url = deviceLogsZipURL {
+                ExportLogsView(text: "Export Device Logs", fileURL: url)
+            }
+        }
+    }
+
+    @MainActor
+    private func exportDeviceLogs() async {
+        guard !isExportingDeviceLogs else { return }
+        isExportingDeviceLogs = true
+        exportDeviceLogsError = nil
+        defer { isExportingDeviceLogs = false }
+
+        do {
+            let logs = try await bleSdkManager.exportDeviceLogs()
+            if logs.isEmpty {
+                showExportDeviceLogsAlert = true
+                return
+            }
+
+            let tempDir = FileManager.default.temporaryDirectory
+                .appendingPathComponent("device_logs_\(Int(Date().timeIntervalSince1970))", isDirectory: true)
+            try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
+
+            var fileURLs: [URL] = []
+            for log in logs {
+                let filename = (log.path as NSString).lastPathComponent
+                let fileURL = tempDir.appendingPathComponent(filename)
+                try log.data.write(to: fileURL)
+                fileURLs.append(fileURL)
+            }
+
+            let deviceId = bleSdkManager.deviceId ?? "device"
+            let zipFileName = "device_logs_\(deviceId)_\(Int(Date().timeIntervalSince1970)).zip"
+            let zipURL = FileManager.default.temporaryDirectory.appendingPathComponent(zipFileName)
+
+            try Zip.zipFiles(paths: fileURLs, zipFilePath: zipURL, password: nil, progress: nil)
+
+            deviceLogsZipURL = zipURL
+            isDeviceLogsSharePresented = true
+        } catch {
+            AppLogger.log("Export device logs failed: \(error)")
+            exportDeviceLogsError = error.localizedDescription
+            showExportDeviceLogsAlert = true
+        }
+    }
 }
 
 struct ExportLogsView: UIViewControllerRepresentable {

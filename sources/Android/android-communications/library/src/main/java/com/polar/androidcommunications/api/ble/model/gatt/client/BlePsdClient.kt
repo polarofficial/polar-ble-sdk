@@ -65,7 +65,8 @@ class BlePsdClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, P
         constructor(data: ByteArray) {
             if (data.size > 2) {
                 responseCode = data[0]
-                opCode = PsdMessage.entries[data[1].toInt()]
+                val code = data[1].toInt() and 0xFF
+                opCode = PsdMessage.entries.firstOrNull { it.numVal == code } ?: PsdMessage.PSD_UNKNOWN
                 status = data[2]
                 if (data.size > 3) {
                     payload = data[3]
@@ -161,7 +162,7 @@ class BlePsdClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, P
     private fun splitPP(data: ByteArray): List<ByteArray> {
         var offset = 0
         val components: MutableList<ByteArray> = ArrayList()
-        while (offset < data.size) {
+        while (data.size - offset >= 7) {
             components.add(Arrays.copyOfRange(data, offset, offset + 7))
             offset += 7
         }

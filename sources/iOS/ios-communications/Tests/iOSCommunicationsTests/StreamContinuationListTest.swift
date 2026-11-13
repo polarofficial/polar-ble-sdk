@@ -239,6 +239,7 @@ private class MockConnectedTransport: BleAttributeTransportProtocol {
     func readValue(_ parent: BleGattClientBase, serviceUuid: CBUUID, characteristicUuid: CBUUID) throws {}
     func setCharacteristicNotify(_ parent: BleGattClientBase, serviceUuid: CBUUID, characteristicUuid: CBUUID, notify: Bool) throws {}
     func attributeOperationStarted() {}
+    func requestDisconnect() {}
     func attributeOperationFinished() {}
 }
 
@@ -250,5 +251,6 @@ private class MockDisconnectedTransport: BleAttributeTransportProtocol {
     func readValue(_ parent: BleGattClientBase, serviceUuid: CBUUID, characteristicUuid: CBUUID) throws {}
     func setCharacteristicNotify(_ parent: BleGattClientBase, serviceUuid: CBUUID, characteristicUuid: CBUUID, notify: Bool) throws {}
     func attributeOperationStarted() {}
+    func requestDisconnect() {}
     func attributeOperationFinished() {}
 }

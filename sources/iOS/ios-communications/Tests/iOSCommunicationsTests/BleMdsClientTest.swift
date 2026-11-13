@@ -783,5 +783,6 @@ private class MockMdsGattTransmitter: BleAttributeTransportProtocol {
     }
 
     func attributeOperationStarted() {}
+    func requestDisconnect() {}
     func attributeOperationFinished() {}
 }

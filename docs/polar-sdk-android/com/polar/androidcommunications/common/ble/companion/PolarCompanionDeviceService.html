@@ -125,7 +125,7 @@ var pathtoroot = "../../../../../../";
 public final class <span class="typeNameLabel"><a href=PolarCompanionDeviceService.html>PolarCompanionDeviceService</a></span>
 extends <a href=PolarCompanionDeviceServiceBase.html>PolarCompanionDeviceServiceBase</a>
                     </pre>
-                    <div class="block"><p>Concrete <a href=https://developer.android.com/reference/kotlin/android/companion/CompanionDeviceService.html>CompanionDeviceService</a> declared in the SDK's own manifest, so host applications get presence callbacks automatically.</p></div>
+                    <div class="block"><p>Ready-to-use <a href=https://developer.android.com/reference/kotlin/android/companion/CompanionDeviceService.html>CompanionDeviceService</a> that forwards presence callbacks to the SDK. It is not registered in the SDK manifest: host applications must explicitly declare this service, or a subclass of <a href=PolarCompanionDeviceServiceBase.html>PolarCompanionDeviceServiceBase</a>, with the permission and intent filter shown in <a href=PolarCompanionDeviceServiceBase.html>PolarCompanionDeviceServiceBase</a>. Apps using their own companion service do not need to register this service.</p></div>
 
                     <dl>
 

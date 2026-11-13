@@ -114,6 +114,11 @@
     <string name="toast_data_viewer_failed">Failed to load data from file</string>
 
     <string name="label_sport">Sport</string>
+    <string name="exercise_sport_optional">Sport (optional)</string>
+    <string name="exercise_sport_default">Default (Other outdoor)</string>
+    <string name="exercise_custom_sport_id">Custom sport ID (optional)</string>
+    <string name="exercise_custom_sport_id_help">Overrides the sport selection above.</string>
+    <string name="exercise_sport_id">Sport ID %1$d</string>
     <string name="btn_start">Start</string>
     <string name="btn_pause">Pause</string>
     <string name="btn_resume">Resume</string>
@@ -292,6 +297,7 @@
     <!-- Online recording service -->
     <string name="online_recording_notification_title">PSDC online recording</string>
     <string name="online_recording_notification_text">Online recording is active</string>
+    <string name="online_stream_stopped_by_device">Device stopped %1$s streaming.</string>
 
     <!-- Activity samples data -->
     <string name="activity_samples_label">Activity samples</string>

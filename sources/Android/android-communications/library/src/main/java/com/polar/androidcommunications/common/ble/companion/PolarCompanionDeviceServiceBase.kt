@@ -10,7 +10,9 @@ import androidx.annotation.RequiresApi
  * [PolarCompanionDevicePresenceBus], so that [PolarCompanionDeviceManager] based consumers
  * (e.g. `PolarCompanionDeviceApiImpl`) can react to them regardless of process lifecycle.
  *
- * To use this in a host application:
+ * The SDK does not register a companion service automatically. To receive SDK presence callbacks,
+ * explicitly register [PolarCompanionDeviceService] or a subclass of this base in the host
+ * application's manifest, inside its `<application>` element:
  * ```xml
  * <service
  *     android:name=".MyCompanionDeviceService"
@@ -22,6 +24,12 @@ import androidx.annotation.RequiresApi
  * </service>
  * ```
  * where `MyCompanionDeviceService` extends [PolarCompanionDeviceServiceBase].
+ * Overrides of presence callbacks must call `super` to forward events to the SDK.
+ *
+ * Apps that handle presence independently can keep their own service without registering an SDK
+ * service. If multiple companion services are declared, Android binds all of them but delivers
+ * presence callbacks only to the primary service. Explicitly select it using the service-level
+ * `android.companion.PROPERTY_PRIMARY_COMPANION_DEVICE_SERVICE` property with `android:value="true"`.
  */
 @RequiresApi(Build.VERSION_CODES.O)
 abstract class PolarCompanionDeviceServiceBase : CompanionDeviceService() {

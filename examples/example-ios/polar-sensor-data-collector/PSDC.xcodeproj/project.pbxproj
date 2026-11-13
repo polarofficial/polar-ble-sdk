@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5CFD257F8794FF4EFC56153B /* DeviceApiCallSerializer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42F00000100000002 /* DeviceApiCallSerializer.swift */; };
 		6C2EDE8922B9FE370031AA17 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6C2EDE8822B9FE370031AA17 /* Assets.xcassets */; };
 		6C2EDE8C22B9FE370031AA17 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6C2EDE8A22B9FE370031AA17 /* LaunchScreen.storyboard */; };
 		8415B05A2C2C38FB00AA4C9B /* FirmwareUpdateFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8415B0592C2C38FB00AA4C9B /* FirmwareUpdateFeature.swift */; };
@@ -19,9 +20,6 @@
 		8453583A2F166AE800FCA56F /* AccGraphViewWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 845358392F166AE000FCA56F /* AccGraphViewWrapper.swift */; };
 		8453583C2F166B0600FCA56F /* AccGraphViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8453583B2F166AFF00FCA56F /* AccGraphViewController.swift */; };
 		8453583E2F166B1000FCA56F /* AccDataHolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8453583D2F166B0A00FCA56F /* AccDataHolder.swift */; };
-		AA000001EC4E0001000ECG01 /* EcgDataHolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000001EC4E0000000ECG01 /* EcgDataHolder.swift */; };
-		AA000002EC4E0002000ECG01 /* EcgGraphView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000002EC4E0000000ECG01 /* EcgGraphView.swift */; };
-		AA000003EC4E0003000ECG01 /* EcgGraphViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000003EC4E0000000ECG01 /* EcgGraphViewController.swift */; };
 		845402372F4DC22000C460A2 /* OfflineExerciseV2View.swift in Sources */ = {isa = PBXBuildFile; fileRef = 845402362F4DC21800C460A2 /* OfflineExerciseV2View.swift */; };
 		84698A0F2DB778E2006AD8FA /* TrainingSessionListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84698A0E2DB778E2006AD8FA /* TrainingSessionListView.swift */; };
 		84698A112DB77922006AD8FA /* TrainingSessionDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84698A102DB77922006AD8FA /* TrainingSessionDetailsView.swift */; };
@@ -38,16 +36,21 @@
 		84F749012C63556500038A4B /* ActivityDatePickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84F749002C63556500038A4B /* ActivityDatePickerView.swift */; };
 		84F749032C63559A00038A4B /* ActivityRecordingDetailsview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84F749022C63559A00038A4B /* ActivityRecordingDetailsview.swift */; };
 		84F749052C6355C400038A4B /* ActivityRecordingData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84F749042C6355C400038A4B /* ActivityRecordingData.swift */; };
+		8FFE85E750FC7AEA9D51C6E2 /* DeviceApiCallSerializerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26FBE68655D72C9289FAC311 /* DeviceApiCallSerializerTests.swift */; };
+		D57E69531A00000200000001 /* PolarBleSdkManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D57E69531A00000200000002 /* PolarBleSdkManagerTests.swift */; };
 		92FBE43AA64F8BA789791D08 /* Pods_PSDC.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 56B381F61EB246E31F2A7D63 /* Pods_PSDC.framework */; };
 		9537D58B2CFF06E200B6A1E6 /* PolarBleDeviceManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9537D58A2CFF06D900B6A1E6 /* PolarBleDeviceManager.swift */; };
 		957CBBE72EC74182000E008B /* TextViewerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 957CBBE62EC74182000E008B /* TextViewerView.swift */; };
 		95B4F1032CEB7A880010E2B6 /* CheckFirmwareUpdateFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95B4F1022CEB7A7C0010E2B6 /* CheckFirmwareUpdateFeature.swift */; };
 		95BA028D2D64B1030037F44E /* FilePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95BA028C2D64B1030037F44E /* FilePicker.swift */; };
 		95EA2BA22D40E7B200657DE5 /* SleepRecordingFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95EA2BA12D40E7A800657DE5 /* SleepRecordingFeature.swift */; };
+		A1B2C3D42F00000100000001 /* DeviceApiCallSerializer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D42F00000100000002 /* DeviceApiCallSerializer.swift */; };
+		AA000001EC4E0001000ECG01 /* EcgDataHolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000001EC4E0000000ECG01 /* EcgDataHolder.swift */; };
+		AA000002EC4E0002000ECG01 /* EcgGraphView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000002EC4E0000000ECG01 /* EcgGraphView.swift */; };
+		AA000003EC4E0003000ECG01 /* EcgGraphViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000003EC4E0000000ECG01 /* EcgGraphViewController.swift */; };
 		AA65F27E2FC42F89008C09FA /* FeatureSupported.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA65F27D2FC42F89008C09FA /* FeatureSupported.swift */; };
 		AA74C2212BDA377D005E0908 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA74C2202BDA377D005E0908 /* ContentView.swift */; };
 		AA74C2232BDA39D6005E0908 /* PolarBleSdkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA74C2222BDA39D6005E0908 /* PolarBleSdkManager.swift */; };
-		AB0000000000000000000001 /* AppLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB0000000000000000000002 /* AppLogger.swift */; };
 		AA74C2262BDA3A49005E0908 /* DeviceConnectionState.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA74C2252BDA3A49005E0908 /* DeviceConnectionState.swift */; };
 		AA74C2282BDA3B67005E0908 /* DeviceSearch.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA74C2272BDA3B67005E0908 /* DeviceSearch.swift */; };
 		AA74C22A2BDA3B99005E0908 /* Messages.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA74C2292BDA3B99005E0908 /* Messages.swift */; };
@@ -91,9 +94,21 @@
 		AAFA1C6C2C97EB74004DC8C8 /* MenuStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAFA1C6B2C97EB74004DC8C8 /* MenuStyle.swift */; };
 		AAFD0B262F35C0C9009E833A /* GenericApiView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAFD0B252F35C0C3009E833A /* GenericApiView.swift */; };
 		AAFD0B282F35C146009E833A /* GenericApiUIState.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAFD0B272F35C13D009E833A /* GenericApiUIState.swift */; };
+		AB0000000000000000000001 /* AppLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB0000000000000000000002 /* AppLogger.swift */; };
 		CC57B5DC2E60618900E90F5B /* ExerciseUIState.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC57B5DB2E60617F00E90F5B /* ExerciseUIState.swift */; };
 		CC57B5DE2E60619400E90F5B /* ExerciseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC57B5DD2E60618D00E90F5B /* ExerciseView.swift */; };
+		E130A5129C90E4EDD6DACD38 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 038F06D00845487C884F9756 /* Foundation.framework */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		D57E69531A00000200000003 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 6C2EDE7622B9FE350031AA17 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 6C2EDE7D22B9FE360031AA17;
+			remoteInfo = PSDC;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
 		A5560E23256400EF00C3F75D /* Embed Frameworks */ = {
@@ -109,6 +124,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		038F06D00845487C884F9756 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
+		26FBE68655D72C9289FAC311 /* DeviceApiCallSerializerTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DeviceApiCallSerializerTests.swift; sourceTree = "<group>"; };
+		D57E69531A00000200000002 /* PolarBleSdkManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarBleSdkManagerTests.swift; sourceTree = "<group>"; };
 		56B381F61EB246E31F2A7D63 /* Pods_PSDC.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PSDC.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		68808B0A44187284ADA4865B /* Pods-PSDC.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PSDC.release.xcconfig"; path = "Target Support Files/Pods-PSDC/Pods-PSDC.release.xcconfig"; sourceTree = "<group>"; };
 		6C2EDE7E22B9FE360031AA17 /* PSDC.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PSDC.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -125,9 +143,6 @@
 		845358392F166AE000FCA56F /* AccGraphViewWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccGraphViewWrapper.swift; sourceTree = "<group>"; };
 		8453583B2F166AFF00FCA56F /* AccGraphViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccGraphViewController.swift; sourceTree = "<group>"; };
 		8453583D2F166B0A00FCA56F /* AccDataHolder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccDataHolder.swift; sourceTree = "<group>"; };
-		AA000001EC4E0000000ECG01 /* EcgDataHolder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EcgDataHolder.swift; sourceTree = "<group>"; };
-		AA000002EC4E0000000ECG01 /* EcgGraphView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EcgGraphView.swift; sourceTree = "<group>"; };
-		AA000003EC4E0000000ECG01 /* EcgGraphViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EcgGraphViewController.swift; sourceTree = "<group>"; };
 		845402362F4DC21800C460A2 /* OfflineExerciseV2View.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineExerciseV2View.swift; sourceTree = "<group>"; };
 		84698A0E2DB778E2006AD8FA /* TrainingSessionListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingSessionListView.swift; sourceTree = "<group>"; };
 		84698A102DB77922006AD8FA /* TrainingSessionDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainingSessionDetailsView.swift; sourceTree = "<group>"; };
@@ -151,12 +166,15 @@
 		95B4F1022CEB7A7C0010E2B6 /* CheckFirmwareUpdateFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckFirmwareUpdateFeature.swift; sourceTree = "<group>"; };
 		95BA028C2D64B1030037F44E /* FilePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilePicker.swift; sourceTree = "<group>"; };
 		95EA2BA12D40E7A800657DE5 /* SleepRecordingFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SleepRecordingFeature.swift; sourceTree = "<group>"; };
+		A1B2C3D42F00000100000002 /* DeviceApiCallSerializer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceApiCallSerializer.swift; sourceTree = "<group>"; };
 		A588B0DB25B81B7800F6D7A3 /* PolarBleSdk.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = PolarBleSdk.xcframework; path = dependencies/PolarBleSdk.xcframework; sourceTree = "<group>"; };
 		A588B0DE25B81B7D00F6D7A3 /* RxSwift.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = RxSwift.xcframework; path = dependencies/RxSwift.xcframework; sourceTree = "<group>"; };
+		AA000001EC4E0000000ECG01 /* EcgDataHolder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EcgDataHolder.swift; sourceTree = "<group>"; };
+		AA000002EC4E0000000ECG01 /* EcgGraphView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EcgGraphView.swift; sourceTree = "<group>"; };
+		AA000003EC4E0000000ECG01 /* EcgGraphViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EcgGraphViewController.swift; sourceTree = "<group>"; };
 		AA65F27D2FC42F89008C09FA /* FeatureSupported.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureSupported.swift; sourceTree = "<group>"; };
 		AA74C2202BDA377D005E0908 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		AA74C2222BDA39D6005E0908 /* PolarBleSdkManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PolarBleSdkManager.swift; sourceTree = "<group>"; };
-		AB0000000000000000000002 /* AppLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLogger.swift; sourceTree = "<group>"; };
 		AA74C2252BDA3A49005E0908 /* DeviceConnectionState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceConnectionState.swift; sourceTree = "<group>"; };
 		AA74C2272BDA3B67005E0908 /* DeviceSearch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceSearch.swift; sourceTree = "<group>"; };
 		AA74C2292BDA3B99005E0908 /* Messages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Messages.swift; sourceTree = "<group>"; };
@@ -201,9 +219,11 @@
 		AAFA1C6B2C97EB74004DC8C8 /* MenuStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuStyle.swift; sourceTree = "<group>"; };
 		AAFD0B252F35C0C3009E833A /* GenericApiView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenericApiView.swift; sourceTree = "<group>"; };
 		AAFD0B272F35C13D009E833A /* GenericApiUIState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenericApiUIState.swift; sourceTree = "<group>"; };
+		AB0000000000000000000002 /* AppLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLogger.swift; sourceTree = "<group>"; };
 		BD6067E6FE5A1A2573A9B9E1 /* Pods-PSDC.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PSDC.debug.xcconfig"; path = "Target Support Files/Pods-PSDC/Pods-PSDC.debug.xcconfig"; sourceTree = "<group>"; };
 		CC57B5DB2E60617F00E90F5B /* ExerciseUIState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseUIState.swift; sourceTree = "<group>"; };
 		CC57B5DD2E60618D00E90F5B /* ExerciseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseView.swift; sourceTree = "<group>"; };
+		E2C3E93D6493058A1C0ADCDF /* PSDCTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PSDCTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -215,9 +235,27 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		96EB0F73B826B1853837507C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E130A5129C90E4EDD6DACD38 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		4ECF3F37F4C240FC3A51713E /* PSDCTests */ = {
+			isa = PBXGroup;
+			children = (
+				26FBE68655D72C9289FAC311 /* DeviceApiCallSerializerTests.swift */,
+				D57E69531A00000200000002 /* PolarBleSdkManagerTests.swift */,
+			);
+			name = PSDCTests;
+			path = PSDCTests;
+			sourceTree = "<group>";
+		};
 		6C2EDE7522B9FE350031AA17 = {
 			isa = PBXGroup;
 			children = (
@@ -225,6 +263,7 @@
 				6C2EDE7F22B9FE360031AA17 /* Products */,
 				6C2EDE9A22BA42070031AA17 /* Frameworks */,
 				6F9B5877CFCD0DFD62DE31CA /* Pods */,
+				4ECF3F37F4C240FC3A51713E /* PSDCTests */,
 			);
 			sourceTree = "<group>";
 		};
@@ -232,6 +271,7 @@
 			isa = PBXGroup;
 			children = (
 				6C2EDE7E22B9FE360031AA17 /* PSDC.app */,
+				E2C3E93D6493058A1C0ADCDF /* PSDCTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -241,6 +281,7 @@
 			children = (
 				AA74C2222BDA39D6005E0908 /* PolarBleSdkManager.swift */,
 				AB0000000000000000000002 /* AppLogger.swift */,
+				A1B2C3D42F00000100000002 /* DeviceApiCallSerializer.swift */,
 				9537D58A2CFF06D900B6A1E6 /* PolarBleDeviceManager.swift */,
 				AA74C25D2BDA3F77005E0908 /* PSDCApp.swift */,
 				AA74C2442BDA3D6D005E0908 /* Views */,
@@ -261,6 +302,7 @@
 				A588B0DE25B81B7D00F6D7A3 /* RxSwift.xcframework */,
 				A588B0DB25B81B7800F6D7A3 /* PolarBleSdk.xcframework */,
 				56B381F61EB246E31F2A7D63 /* Pods_PSDC.framework */,
+				946C5001CC24D04231B54422 /* iOS */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -278,16 +320,16 @@
 			isa = PBXGroup;
 			children = (
 				845358372F166AC600FCA56F /* AccGraphView.swift */,
-                845358392F166AE000FCA56F /* AccGraphViewWrapper.swift */,
-                8453583B2F166AFF00FCA56F /* AccGraphViewController.swift */,
-                8453583D2F166B0A00FCA56F /* AccDataHolder.swift */,
-                8446A2612F0E918400141093 /* HrGraphViewWrapper.swift */,
-                843A2B8F2F0E78B200F3B2EC /* HrGraphViewController.swift */,
-                843A2B8D2F0E774C00F3B2EC /* HrGraphView.swift */,
-                843A2B8B2F0E769B00F3B2EC /* HrDataHolder.swift */,
-                AA000001EC4E0000000ECG01 /* EcgDataHolder.swift */,
-                AA000002EC4E0000000ECG01 /* EcgGraphView.swift */,
-                AA000003EC4E0000000ECG01 /* EcgGraphViewController.swift */,
+				845358392F166AE000FCA56F /* AccGraphViewWrapper.swift */,
+				8453583B2F166AFF00FCA56F /* AccGraphViewController.swift */,
+				8453583D2F166B0A00FCA56F /* AccDataHolder.swift */,
+				8446A2612F0E918400141093 /* HrGraphViewWrapper.swift */,
+				843A2B8F2F0E78B200F3B2EC /* HrGraphViewController.swift */,
+				843A2B8D2F0E774C00F3B2EC /* HrGraphView.swift */,
+				843A2B8B2F0E769B00F3B2EC /* HrDataHolder.swift */,
+				AA000001EC4E0000000ECG01 /* EcgDataHolder.swift */,
+				AA000002EC4E0000000ECG01 /* EcgGraphView.swift */,
+				AA000003EC4E0000000ECG01 /* EcgGraphViewController.swift */,
 			);
 			path = Graph;
 			sourceTree = "<group>";
@@ -335,6 +377,14 @@
 				84F749022C63559A00038A4B /* ActivityRecordingDetailsview.swift */,
 			);
 			path = Activity;
+			sourceTree = "<group>";
+		};
+		946C5001CC24D04231B54422 /* iOS */ = {
+			isa = PBXGroup;
+			children = (
+				038F06D00845487C884F9756 /* Foundation.framework */,
+			);
+			name = iOS;
 			sourceTree = "<group>";
 		};
 		AA74C2242BDA3A2C005E0908 /* Models */ = {
@@ -490,6 +540,24 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		26681F8021E478AE9378A7AF /* PSDCTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 8650ED54B7FA5FD309689FCC /* Build configuration list for PBXNativeTarget "PSDCTests" */;
+			buildPhases = (
+				6DFFD5C09A1BD2A7DE4A8C15 /* Sources */,
+				96EB0F73B826B1853837507C /* Frameworks */,
+				2470B2C627B65FE54685C59A /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				D57E69531A00000200000004 /* PBXTargetDependency */,
+			);
+			name = PSDCTests;
+			productName = PSDCTests;
+			productReference = E2C3E93D6493058A1C0ADCDF /* PSDCTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		6C2EDE7D22B9FE360031AA17 /* PSDC */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 6C2EDE9022B9FE370031AA17 /* Build configuration list for PBXNativeTarget "PSDC" */;
@@ -546,11 +614,27 @@
 			projectRoot = "";
 			targets = (
 				6C2EDE7D22B9FE360031AA17 /* PSDC */,
+				26681F8021E478AE9378A7AF /* PSDCTests */,
 			);
 		};
 /* End PBXProject section */
 
+/* Begin PBXTargetDependency section */
+		D57E69531A00000200000004 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 6C2EDE7D22B9FE360031AA17 /* PSDC */;
+			targetProxy = D57E69531A00000200000003 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin PBXResourcesBuildPhase section */
+		2470B2C627B65FE54685C59A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		6C2EDE7C22B9FE360031AA17 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -647,6 +731,7 @@
 				8453583C2F166B0600FCA56F /* AccGraphViewController.swift in Sources */,
 				8453583A2F166AE800FCA56F /* AccGraphViewWrapper.swift in Sources */,
 				AA74C2492BDA3DAF005E0908 /* DeviceSearchRow.swift in Sources */,
+				A1B2C3D42F00000100000001 /* DeviceApiCallSerializer.swift in Sources */,
 				9537D58B2CFF06E200B6A1E6 /* PolarBleDeviceManager.swift in Sources */,
 				AA74C22E2BDA3BC4005E0908 /* OfflineRecordingFeature.swift in Sources */,
 				AAFD0B262F35C0C9009E833A /* GenericApiView.swift in Sources */,
@@ -697,11 +782,10 @@
 				AA74C2562BDA3E9B005E0908 /* OfflineRecordingListView.swift in Sources */,
 				8415B05A2C2C38FB00AA4C9B /* FirmwareUpdateFeature.swift in Sources */,
 				849400072ECC96C10093A8C8 /* HrBroadcastView.swift in Sources */,
-                8453583E2F166B1000FCA56F /* AccDataHolder.swift in Sources */,
-                AA000001EC4E0001000ECG01 /* EcgDataHolder.swift in Sources */,
-                AA000002EC4E0002000ECG01 /* EcgGraphView.swift in Sources */,
-                AA000003EC4E0003000ECG01 /* EcgGraphViewController.swift in Sources */,
-                AA000004EC4E0004000ECG01 /* EcgGraphViewWrapper.swift in Sources */,
+				8453583E2F166B1000FCA56F /* AccDataHolder.swift in Sources */,
+				AA000001EC4E0001000ECG01 /* EcgDataHolder.swift in Sources */,
+				AA000002EC4E0002000ECG01 /* EcgGraphView.swift in Sources */,
+				AA000003EC4E0003000ECG01 /* EcgGraphViewController.swift in Sources */,
 				95EA2BA22D40E7B200657DE5 /* SleepRecordingFeature.swift in Sources */,
 				AA74C2342BDA3C08005E0908 /* OnlineStreamingFeature.swift in Sources */,
 				8446A2622F0E918F00141093 /* HrGraphViewWrapper.swift in Sources */,
@@ -714,6 +798,16 @@
 				AA74C2582BDA3EBF005E0908 /* OfflineRecordingDetailsView.swift in Sources */,
 				AA74C2602BDA3FD5005E0908 /* SettingsView.swift in Sources */,
 				845402372F4DC22000C460A2 /* OfflineExerciseV2View.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		6DFFD5C09A1BD2A7DE4A8C15 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8FFE85E750FC7AEA9D51C6E2 /* DeviceApiCallSerializerTests.swift in Sources */,
+				D57E69531A00000200000001 /* PolarBleSdkManagerTests.swift in Sources */,
+				5CFD257F8794FF4EFC56153B /* DeviceApiCallSerializer.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -739,6 +833,43 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		2F991E4CD4A49DF1F42691EA /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 68808B0A44187284ADA4865B /* Pods-PSDC.release.xcconfig */;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 48T8QNDCP9;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.polar.PSDCTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/PSDC.app/PSDC";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		4F4EFDA40CA5704F776074AD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = BD6067E6FE5A1A2573A9B9E1 /* Pods-PSDC.debug.xcconfig */;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 48T8QNDCP9;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.polar.PSDCTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/PSDC.app/PSDC";
+			};
+			name = Debug;
+		};
 		6C2EDE8E22B9FE370031AA17 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -948,6 +1079,15 @@
 			buildConfigurations = (
 				6C2EDE9122B9FE370031AA17 /* Debug */,
 				6C2EDE9222B9FE370031AA17 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		8650ED54B7FA5FD309689FCC /* Build configuration list for PBXNativeTarget "PSDCTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2F991E4CD4A49DF1F42691EA /* Release */,
+				4F4EFDA40CA5704F776074AD /* Debug */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

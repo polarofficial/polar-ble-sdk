@@ -71,6 +71,24 @@ class PolarTelemetryApiImpl(val listener: BleDeviceListener): PolarBleTelemetryA
         }
     }
 
+    override suspend fun refreshTelemetryReadiness(identifier: String): Boolean {
+        val client = try {
+            val session = PolarServiceClientUtils.sessionMdsClientReady(identifier, listener)
+            session.fetchClient(BleMdsClient.MDS_SERVICE) as? BleMdsClient
+        } catch (throwable: Throwable) {
+            BleLogger.d(TAG, "refreshTelemetryReadiness: MDS not available for $identifier: $throwable")
+            null
+        } ?: return false
+
+        return try {
+            client.clientReady(true)
+            true
+        } catch (throwable: Throwable) {
+            BleLogger.d(TAG, "refreshTelemetryReadiness: MDS not ready for $identifier: $throwable")
+            false
+        }
+    }
+
     override suspend fun getAvailableTelemetryTypes(identifier: String): DeviceTelemetrySupport {
         val session = PolarServiceClientUtils.sessionMdsClientReady(identifier, listener)
         val client = session.fetchClient(BleMdsClient.MDS_SERVICE) as? BleMdsClient
