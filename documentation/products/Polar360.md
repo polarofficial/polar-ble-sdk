@@ -159,14 +159,12 @@ Activity and sleep data is passively recorded by the device overtime and will st
 |:----------------:|:-----------------:|:-------------------------------------:|:----------------------------------------------------:|:----------:|
 | Acc              | Online streaming  | 12Hz, 25Hz, **50Hz**, 100Hz, 200Hz, 400Hz | 2g, 4g, **8g**, 16g                                      |16          |
 | Acc              | Offline recording | **1Hz**, **10Hz**, 12Hz, 25Hz, **50Hz**                      | 2g, 4g, **8g**, 16g                                      |16          |
-| PPG              | Online streaming  | **22Hz**, 50Hz, [1] 100Hz                 | -                                                        |24          |
-| PPG              | Offline recording | **22Hz**, 50Hz, [1] 100Hz                 | -                                                        |24          |
+| PPG              | Online streaming  | **22Hz**                 | -                                                        |24          |
+| PPG              | Offline recording | **22Hz**                 | -                                                        |24          |
 | Skin temperature | Online streaming  | **1Hz**, 2Hz, 4Hz                         | -                                                    |32          |
 | Skin temperature | Offline recording | **1Hz**, 2Hz, 4Hz                         | -                                                    |32          |
 | PPI              | PPI online stream or offline recording is not supported in SDK MODE             |
 | HR               | HR online stream or offline recording is not supported in SDK MODE              |
-
-[1] Sampling rate of 100Hz in PPG is not confirmed yet (FW. 2.0.8).
 
 Bolded values are available in normal mode, unbolded values are available in SDK mode only.
    
