@@ -42,8 +42,7 @@ public class PolarBackupManager {
             var backupDirectories: [String] = []
             if let backupEntry = entries.first(where: { $0.hasSuffix("BACKUP.TXT") }) {
                 BleLogger.trace("Found BACKUP.TXT: \(backupEntry)")
-                let backupData = try await loadFile(path: backupEntry)
-                let data = Data(backupData)
+                let data = try await loadFile(path: backupEntry)
                 let stream = InputStream(data: data)
                 var accumulatedString = ""
                 stream.open()
@@ -115,14 +114,7 @@ public class PolarBackupManager {
             }
             BleLogger.trace("Restoring: \(backupFileData.fileName)")
             do {
-                var operation = Protocol_PbPFtpOperation()
-                operation.command = .put
-                operation.path = backupFileData.directory + backupFileData.fileName
-                let header = try operation.serializedData() as NSData
-                let dataStream = InputStream(data: backupFileData.data)
-                for try await bytes in client.write(header, data: dataStream) {
-                    BleLogger.trace("Writing firmware update file: \(backupFileData.directory)\(backupFileData.fileName), bytes to write: \(bytes)")
-                }
+                try await restoreFile(backupFileData)
                 BleLogger.trace("Restored: \(backupFileData.directory)\(backupFileData.fileName)")
             } catch {
                 BleLogger.error("Failed to restore \(backupFileData.directory)\(backupFileData.fileName): \(error)")
@@ -141,12 +133,49 @@ public class PolarBackupManager {
         BleLogger.trace("Backup restoration complete")
     }
 
-    private func loadFile(path: String) async throws -> [UInt8] {
+    private func restoreFile(_ file: BackupFileData) async throws {
+        let path = file.directory + file.fileName
+        var operation = Protocol_PbPFtpOperation()
+        operation.command = .put
+        operation.path = path
+        let header = try operation.serializedData() as NSData
+
+        for attempt in 0..<2 {
+            try Task.checkCancellation()
+            do {
+                // Each attempt needs a fresh stream; the previous write has consumed it.
+                for try await bytes in client.write(header, data: InputStream(data: file.data)) {
+                    BleLogger.trace("Writing firmware update file: \(path), bytes to write: \(bytes)")
+                }
+            } catch let error as BlePsFtpException {
+                guard case .protocolError = error else { throw error }
+                // An early success response does not prove that the entire file was written.
+                // Only accept it if the device's contents match the original backup exactly.
+                if let restored = try? await loadFile(path: path), restored == file.data {
+                    BleLogger.trace("Verified restored backup after protocol interruption: \(path)")
+                    return
+                }
+                try Task.checkCancellation()
+                guard attempt == 0 else { throw error }
+                BleLogger.trace("Retrying backup restoration after protocol interruption: \(path)")
+                continue
+            }
+            if attempt > 0 {
+                // Recovery requires an exact readback: PFTP provides no checksum here.
+                // Keep this outside the write-error handler so a mismatch or read failure
+                // cannot trigger another expensive download of the same file.
+                let restored = try await loadFile(path: path)
+                guard restored == file.data else { throw BlePsFtpException.protocolError }
+            }
+            return
+        }
+    }
+
+    private func loadFile(path: String) async throws -> Data {
         var operation = Protocol_PbPFtpOperation()
         operation.command = .get
         operation.path = path
-        let data = try await client.request(try operation.serializedBytes())
-        return [UInt8](data)
+        return try await client.request(try operation.serializedBytes()) as Data
     }
 
     private func backupDirectory(backupDirectory: String) async throws -> [BackupFileData] {
@@ -172,7 +201,7 @@ public class PolarBackupManager {
                     let data = try await loadFile(path: path)
                     let file = (path as NSString).lastPathComponent
                     let filePath = (path as NSString).deletingLastPathComponent + "/"
-                    result.append(BackupFileData(data: Data(data), directory: filePath, fileName: file))
+                    result.append(BackupFileData(data: data, directory: filePath, fileName: file))
                 } catch {
                     BleLogger.error("Error loading file: \(path), error: \(error)")
                 }

@@ -141,6 +141,168 @@ final class BleMdsClientTest: XCTestCase {
         }
     }
 
+    // MARK: - read slot lifecycle
+
+    func test_readSupportedFeatures_rejectsOverlappingRead_whenFirstReadIsInFlight() async throws {
+        // Arrange
+        let readStarted = expectation(description: "supported features read started")
+        transmitter.readValueHandler = { chr in
+            if chr == BleMdsClient.MDS_SUPPORTED_FEATURES { readStarted.fulfill() }
+        }
+        let localClient = client!
+        let firstRead = Task { try await localClient.readSupportedFeatures() }
+        await fulfillment(of: [readStarted], timeout: 2.0)
+
+        // Act
+        do {
+            _ = try await localClient.readSupportedFeatures()
+            XCTFail("Expected operationInProgress")
+        } catch BleMdsClientError.operationInProgress {
+            // expected
+        }
+        localClient.processServiceData(BleMdsClient.MDS_SUPPORTED_FEATURES, data: Data([0x01]), err: 0)
+
+        // Assert
+        let result = try await firstRead.value
+        XCTAssertEqual(result, 0x01)
+    }
+
+    func test_readSupportedFeatures_overlappingReadOfOtherCharacteristic_isNotRejected() async throws {
+        // Arrange
+        let readStarted = expectation(description: "supported features read started")
+        transmitter.readValueHandler = { [weak self] chr in
+            if chr == BleMdsClient.MDS_SUPPORTED_FEATURES {
+                readStarted.fulfill()
+            } else if chr == BleMdsClient.MDS_DEVICE_IDENTIFIER {
+                self?.client.processServiceData(chr, data: Data("ID".utf8), err: 0)
+            }
+        }
+        let localClient = client!
+        let firstRead = Task { try await localClient.readSupportedFeatures() }
+        await fulfillment(of: [readStarted], timeout: 2.0)
+
+        // Act
+        let identifier = try await localClient.readDeviceIdentifier()
+        localClient.processServiceData(BleMdsClient.MDS_SUPPORTED_FEATURES, data: Data([0x01]), err: 0)
+
+        // Assert
+        XCTAssertEqual(identifier, "ID")
+        let features = try await firstRead.value
+        XCTAssertEqual(features, 0x01)
+    }
+
+    func test_readSupportedFeatures_cancelledAfterIssued_keepsSlotUntilLateCallbackThenReleasesIt() async throws {
+        // Arrange
+        let readStarted = expectation(description: "supported features read started")
+        transmitter.readValueHandler = { chr in
+            if chr == BleMdsClient.MDS_SUPPORTED_FEATURES { readStarted.fulfill() }
+        }
+        let localClient = client!
+        let firstRead = Task { try await localClient.readSupportedFeatures() }
+        await fulfillment(of: [readStarted], timeout: 2.0)
+
+        // Act
+        firstRead.cancel()
+        let cancelledError = await firstRead.result.failureError
+
+        // Assert
+        XCTAssertTrue(cancelledError is CancellationError, "Expected CancellationError, got \(String(describing: cancelledError))")
+        do {
+            _ = try await localClient.readSupportedFeatures()
+            XCTFail("The slot must stay reserved until the late callback arrives")
+        } catch BleMdsClientError.operationInProgress {
+            // expected
+        }
+
+        // Act: late callback of the cancelled read
+        localClient.processServiceData(BleMdsClient.MDS_SUPPORTED_FEATURES, data: Data([0x01]), err: 0)
+
+        // Assert: slot is free and the stale data is not delivered to the next read
+        transmitter.readValueHandler = { [weak self] chr in
+            self?.client.processServiceData(chr, data: Data([0x02]), err: 0)
+        }
+        let result = try await localClient.readSupportedFeatures()
+        XCTAssertEqual(result, 0x02)
+    }
+
+    func test_readSupportedFeatures_cancelledBeforeIssued_doesNotIssueReadAndReleasesSlot() async throws {
+        // Arrange
+        var issuedReads = 0
+        transmitter.readValueHandler = { [weak self] chr in
+            issuedReads += 1
+            self?.client.processServiceData(chr, data: Data([0x03]), err: 0)
+        }
+        let localClient = client!
+        let latch = Latch()
+        let cancelledRead = Task { () -> UInt32 in
+            await latch.wait()
+            return try await localClient.readSupportedFeatures()
+        }
+
+        // Act
+        cancelledRead.cancel()
+        await latch.open()
+        let cancelledError = await cancelledRead.result.failureError
+
+        // Assert
+        XCTAssertTrue(cancelledError is CancellationError, "Expected CancellationError, got \(String(describing: cancelledError))")
+        XCTAssertEqual(issuedReads, 0)
+        let result = try await localClient.readSupportedFeatures()
+        XCTAssertEqual(result, 0x03)
+    }
+
+    func test_readSupportedFeatures_transportThrows_propagatesErrorAndReleasesSlot() async throws {
+        // Arrange
+        transmitter.readValueError = BleGattException.gattDisconnected
+
+        // Act
+        do {
+            _ = try await client.readSupportedFeatures()
+            XCTFail("Expected the transport error")
+        } catch BleGattException.gattDisconnected {
+            // expected
+        }
+
+        // Assert
+        transmitter.readValueError = nil
+        transmitter.readValueHandler = { [weak self] chr in
+            self?.client.processServiceData(chr, data: Data([0x01]), err: 0)
+        }
+        let result = try await client.readSupportedFeatures()
+        XCTAssertEqual(result, 0x01)
+    }
+
+    func test_readSupportedFeatures_transportDeallocated_throwsGattTransportNotAvailable() async {
+        // Arrange
+        var orphanTransmitter: MockMdsGattTransmitter? = MockMdsGattTransmitter()
+        let orphanClient = BleMdsClient(gattServiceTransmitter: orphanTransmitter!)
+        orphanTransmitter = nil
+
+        // Act
+        do {
+            _ = try await orphanClient.readSupportedFeatures()
+            XCTFail("Expected gattTransportNotAvailable")
+        } catch BleGattException.gattTransportNotAvailable {
+            // expected
+        } catch {
+            XCTFail("Expected gattTransportNotAvailable, got \(error)")
+        }
+    }
+
+    func test_processServiceData_readableCharacteristicWithoutPendingRead_isIgnored() async throws {
+        // Arrange
+        transmitter.readValueHandler = { [weak self] chr in
+            self?.client.processServiceData(chr, data: Data([0x05]), err: 0)
+        }
+
+        // Act
+        client.processServiceData(BleMdsClient.MDS_SUPPORTED_FEATURES, data: Data([0x01]), err: 0)
+        let value = try await client.readSupportedFeatures()
+
+        // Assert
+        XCTAssertEqual(value, 0x05, "The stray callback must not affect the next read")
+    }
+
     // MARK: - readSupportedFeatures
 
     func testReadSupportedFeatures_fourBytes_returnsCorrectBitmask() async throws {
@@ -368,6 +530,19 @@ final class BleMdsClientTest: XCTestCase {
         XCTAssertEqual(dataExportWrites.count, 1, "Exactly one write to DATA_EXPORT expected")
         XCTAssertEqual(dataExportWrites.first?.data, Data([0x01]),
                        "Mode byte 0x01 (streaming enabled) must be written")
+    }
+
+    func testEnableDataExportNotification_cccdWriteFailure_throwsGattCharacteristicNotifyError() async {
+        transmitter.cccdWriteError = 5
+
+        do {
+            try await client.enableDataExportNotification()
+            XCTFail("Expected gattCharacteristicNotifyError")
+        } catch BleGattException.gattCharacteristicNotifyError(let errorCode, _) {
+            XCTAssertEqual(errorCode, 5)
+        } catch {
+            XCTFail("Expected gattCharacteristicNotifyError, got \(error)")
+        }
     }
 
     func testEnableDataExportNotification_attWriteFailure_throwsGattCharacteristicError() async {
@@ -761,6 +936,8 @@ final class BleMdsClientTest: XCTestCase {
 
 private class MockMdsGattTransmitter: BleAttributeTransportProtocol {
     var readValueHandler: ((CBUUID) -> Void)?
+    var readValueError: Error?
+    var cccdWriteError = 0
     /// Called for every `transmitMessage`. Arguments: (characteristicUUID, packet, withResponse)
     var transmitMessageHandler: ((CBUUID, Data, Bool) -> Void)?
 
@@ -773,16 +950,42 @@ private class MockMdsGattTransmitter: BleAttributeTransportProtocol {
 
     func readValue(_ parent: BleGattClientBase, serviceUuid: CBUUID,
                    characteristicUuid: CBUUID) throws {
+        if let readValueError { throw readValueError }
         readValueHandler?(characteristicUuid)
     }
 
     func setCharacteristicNotify(_ parent: BleGattClientBase, serviceUuid: CBUUID,
                                   characteristicUuid: CBUUID, notify: Bool) throws {
         // Immediately simulate a successful CCCD write response
-        parent.notifyDescriptorWritten(characteristicUuid, enabled: notify, err: 0)
+        parent.notifyDescriptorWritten(characteristicUuid, enabled: notify, err: cccdWriteError)
     }
 
     func attributeOperationStarted() {}
     func requestDisconnect() {}
     func attributeOperationFinished() {}
+}
+
+// MARK: - Test helpers
+
+private actor Latch {
+    private var isOpen = false
+    private var waiters: [CheckedContinuation<Void, Never>] = []
+
+    func wait() async {
+        if isOpen { return }
+        await withCheckedContinuation { waiters.append($0) }
+    }
+
+    func open() {
+        isOpen = true
+        waiters.forEach { $0.resume() }
+        waiters.removeAll()
+    }
+}
+
+private extension Result {
+    var failureError: Failure? {
+        if case .failure(let error) = self { return error }
+        return nil
+    }
 }

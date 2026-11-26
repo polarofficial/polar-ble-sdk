@@ -208,6 +208,9 @@ class PolarDeviceRepository @Inject constructor(
         MutableStateFlow(DeviceInformation())
     val deviceInformation: StateFlow<DeviceInformation> = _deviceInformation.asStateFlow()
 
+    private val _deviceChargingStates = MutableStateFlow<Map<String, ChargeState>>(emptyMap())
+    val deviceChargingStates: StateFlow<Map<String, ChargeState>> = _deviceChargingStates.asStateFlow()
+
     private val _isOfflineRecordingSecurityEnabled: MutableStateFlow<Boolean> =
         MutableStateFlow(false)
     val isOfflineRecordingSecurityEnabled: StateFlow<Boolean> =
@@ -661,6 +664,7 @@ class PolarDeviceRepository @Inject constructor(
 
     private fun handleDeviceDisconnected(polarDeviceInfo: PolarDeviceInfo) {
         connectedDeviceIds.remove(polarDeviceInfo.deviceId)
+        _deviceChargingStates.update { it - polarDeviceInfo.deviceId }
         _deviceConnectionStatus.update {
             DeviceConnectionState.DeviceNotConnected(
                 identifier = polarDeviceInfo.deviceId
@@ -716,6 +720,7 @@ class PolarDeviceRepository @Inject constructor(
     }
 
     override fun batteryChargingStatusReceived(identifier: String, chargingStatus: ChargeState) {
+        _deviceChargingStates.update { it + (identifier to chargingStatus) }
         _deviceInformation.update {
             it.copy(identifier = identifier, batteryChargingStatus = chargingStatus)
         }

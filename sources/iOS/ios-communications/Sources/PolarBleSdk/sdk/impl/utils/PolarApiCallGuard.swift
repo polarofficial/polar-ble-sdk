@@ -3,16 +3,18 @@
 import Foundation
 
 /// Single-flight guard that prevents overlapping device-side API calls to the same device.
-/// Calls targeting different devices do not block each other. Calls are rejected, not queued.
+/// Calls targeting different devices do not block each other. The identifier (Polar device id or BLE address UUID)
+/// is mapped to a canonical key by `resolveKey`, so both forms of the same device share one lock. Calls are rejected, not queued.
 /// Streams take the lock when consumption starts (not when the function returns the stream) and hold it until the
 /// producer has finished. Long-lived observers (e.g. exercise status) and the telemetry APIs, which use a separate
-/// BLE client, are intentionally not guarded.
+/// BLE client, are intentionally not guarded by the shared instance. MDS configuration reads use their own instance.
 final class PolarApiCallGuard: @unchecked Sendable {
 
     struct Token {
         fileprivate let id = UUID()
         fileprivate let callName: String
         fileprivate let identifier: String
+        fileprivate let key: String
     }
 
     private struct ActiveCall {
@@ -23,8 +25,15 @@ final class PolarApiCallGuard: @unchecked Sendable {
         var description: String { "\(callName)(\(identifier))" }
     }
 
+    private let resolveKey: (String) -> String
     private let lock = NSLock()
     private var activeCalls: [String: ActiveCall] = [:]
+
+    /// - Parameter resolveKey: Maps a caller supplied device identifier to the key the lock is held under.
+    ///   The default uses the identifier as is, upper-cased.
+    init(resolveKey: @escaping (String) -> String = { $0.uppercased() }) {
+        self.resolveKey = resolveKey
+    }
 
     /// Acquires the lock of the device. Must be paired with `release(_:)`.
     ///
@@ -38,15 +47,16 @@ final class PolarApiCallGuard: @unchecked Sendable {
         if allowConcurrent {
             return nil
         }
-        let token = Token(callName: callName, identifier: identifier)
+        // Resolved before taking the lock so the resolver can never deadlock against it.
+        let token = Token(callName: callName, identifier: identifier, key: resolveKey(identifier))
         lock.lock()
         defer { lock.unlock() }
-        if let current = activeCalls[identifier] {
+        if let current = activeCalls[token.key] {
             throw PolarErrors.concurrentApiCall(
                 description: "Cannot start \(callName) while \(current.description) is still in progress"
             )
         }
-        activeCalls[identifier] = ActiveCall(id: token.id, callName: callName, identifier: identifier)
+        activeCalls[token.key] = ActiveCall(id: token.id, callName: callName, identifier: identifier)
         return token
     }
 
@@ -55,8 +65,8 @@ final class PolarApiCallGuard: @unchecked Sendable {
         guard let token else { return }
         lock.lock()
         defer { lock.unlock() }
-        if activeCalls[token.identifier]?.id == token.id {
-            activeCalls[token.identifier] = nil
+        if activeCalls[token.key]?.id == token.id {
+            activeCalls[token.key] = nil
         }
     }
 

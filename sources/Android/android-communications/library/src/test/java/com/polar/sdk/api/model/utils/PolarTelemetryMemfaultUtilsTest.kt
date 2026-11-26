@@ -1,8 +1,10 @@
 package com.polar.sdk.api.model.utils
 
+import com.polar.androidcommunications.api.ble.exceptions.BleOperationInProgress
 import com.polar.androidcommunications.api.ble.model.gatt.client.BleMdsClient
 import com.polar.sdk.api.DeviceTelemetryConfiguration
 import com.polar.sdk.api.PolarDeviceTelemetryType
+import com.polar.sdk.api.errors.PolarSdkConcurrentApiCallException
 import com.polar.sdk.impl.utils.PolarTelemetryMemfaultUtils
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -10,10 +12,12 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -96,30 +100,42 @@ class PolarTelemetryMemfaultUtilsTest {
     // region stopTelemetryStreaming
 
     @Test
-    fun `stopTelemetryStreaming returns true when sendControlPointCommand returns 0`() {
+    fun `stopTelemetryStreaming returns true when sendControlPointCommand returns 0`() = runTest {
         // Arrange
         val client = mockk<BleMdsClient>()
-        every { client.sendControlPointCommand(0) } returns 0
+        coEvery { client.sendControlPointCommand(0) } returns 0
 
         // Act
         val result = PolarTelemetryMemfaultUtils.stopTelemetryStreaming(client)
 
         // Assert
         assertTrue(result)
-        verify(exactly = 1) { client.sendControlPointCommand(0) }
+        coVerify(exactly = 1) { client.sendControlPointCommand(0) }
     }
 
     @Test
-    fun `stopTelemetryStreaming returns false when sendControlPointCommand returns non-zero`() {
+    fun `stopTelemetryStreaming returns false when sendControlPointCommand returns non-zero`() = runTest {
         // Arrange
         val client = mockk<BleMdsClient>()
-        every { client.sendControlPointCommand(0) } returns 1
+        coEvery { client.sendControlPointCommand(0) } returns 1
 
         // Act
         val result = PolarTelemetryMemfaultUtils.stopTelemetryStreaming(client)
 
         // Assert
         assertFalse(result)
+    }
+
+    @Test
+    fun `stopTelemetryStreaming maps BleOperationInProgress to PolarSdkConcurrentApiCallException`() = runTest {
+        // Arrange
+        val client = mockk<BleMdsClient>()
+        coEvery { client.sendControlPointCommand(0) } throws BleOperationInProgress("busy")
+
+        // Act & Assert
+        assertThrows(PolarSdkConcurrentApiCallException::class.java) {
+            runBlocking { PolarTelemetryMemfaultUtils.stopTelemetryStreaming(client) }
+        }
     }
 
     // endregion

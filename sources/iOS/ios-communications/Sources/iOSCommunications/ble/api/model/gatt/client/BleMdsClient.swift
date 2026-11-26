@@ -2,6 +2,12 @@ import CoreBluetooth
 import Foundation
 import Combine
 
+/// Internal errors of `BleMdsClient`. Kept out of the public API to preserve source compatibility.
+enum BleMdsClientError: Error {
+    /// A read of the same characteristic is already in flight.
+    case operationInProgress
+}
+
 open class BleMdsClient: BleGattClientBase, @unchecked Sendable {
     
     /// NOTE: this is an experimental BLE client
@@ -75,10 +81,17 @@ open class BleMdsClient: BleGattClientBase, @unchecked Sendable {
     public static let MDS_DATA_EXPORT        = CBUUID(string: "54220005-f6a5-4007-a371-722f4ebd8436")
 
     // MARK: - Internal response continuations for read characteristics
-    private var featuresContinuation: CheckedContinuation<Data, Error>? = nil
-    private var deviceIdContinuation: CheckedContinuation<Data, Error>? = nil
-    private var dataUriContinuation: CheckedContinuation<Data, Error>? = nil
-    private var authContinuation: CheckedContinuation<Data, Error>? = nil
+    // One pending read per characteristic. Written from the caller's task and the GATT callback queue,
+    // so every access goes through `readSlotsLock`.
+    private let readSlotsLock = NSLock()
+    // A cancelled read keeps its slot (continuation nil) until the outstanding GATT callback arrives,
+    // so a late callback can never be delivered to a newer read of the same characteristic.
+    private var readSlots: [CBUUID: ReadSlot] = [:]
+
+    private struct ReadSlot {
+        let id: UUID
+        var continuation: CheckedContinuation<Data, Error>?
+    }
 
     // MARK: - Streaming (DATA_EXPORT notifications → Memfault chunks)
     private let chunkStreams = StreamContinuationList<Data>()
@@ -115,14 +128,11 @@ open class BleMdsClient: BleGattClientBase, @unchecked Sendable {
         super.disconnected()
         
         // Cancel any pending reads
-        featuresContinuation?.resume(throwing: BleGattException.gattDisconnected)
-        featuresContinuation = nil
-        deviceIdContinuation?.resume(throwing: BleGattException.gattDisconnected)
-        deviceIdContinuation = nil
-        dataUriContinuation?.resume(throwing: BleGattException.gattDisconnected)
-        dataUriContinuation = nil
-        authContinuation?.resume(throwing: BleGattException.gattDisconnected)
-        authContinuation = nil
+        readSlotsLock.lock()
+        let pending = readSlots.values.compactMap { $0.continuation }
+        readSlots.removeAll()
+        readSlotsLock.unlock()
+        pending.forEach { $0.resume(throwing: BleGattException.gattDisconnected) }
         
         cccdContinuation?.resume(throwing: BleGattException.gattDisconnected)
         cccdContinuation = nil
@@ -135,44 +145,20 @@ open class BleMdsClient: BleGattClientBase, @unchecked Sendable {
     }
 
     override public func processServiceData(_ chr: CBUUID, data: Data, err: Int) {
-        if chr == BleMdsClient.MDS_SUPPORTED_FEATURES {
-            guard let continuation = featuresContinuation else { return }
-            featuresContinuation = nil
-            if err == 0 {
-                BleLogger.trace("MDS_SUPPORTED_FEATURES received (\(data.count) bytes)")
-                continuation.resume(returning: data)
-            } else {
-                BleLogger.error("MDS_SUPPORTED_FEATURES read error: \(err)")
-                continuation.resume(throwing: BleGattException.gattCharacteristicError)
+        if BleMdsClient.readableCharacteristics.contains(chr) {
+            readSlotsLock.lock()
+            let slot = readSlots.removeValue(forKey: chr)
+            readSlotsLock.unlock()
+            guard let slot else { return }
+            guard let continuation = slot.continuation else {
+                BleLogger.trace("\(chr.uuidString) result dropped, read was cancelled")
+                return
             }
-        } else if chr == BleMdsClient.MDS_DEVICE_IDENTIFIER {
-            guard let continuation = deviceIdContinuation else { return }
-            deviceIdContinuation = nil
             if err == 0 {
-                BleLogger.trace("MDS_DEVICE_IDENTIFIER received (\(data.count) bytes)")
+                BleLogger.trace("\(chr.uuidString) received (\(data.count) bytes)")
                 continuation.resume(returning: data)
             } else {
-                BleLogger.error("MDS_DEVICE_IDENTIFIER read error: \(err)")
-                continuation.resume(throwing: BleGattException.gattCharacteristicError)
-            }
-        } else if chr == BleMdsClient.MDS_DATA_URI {
-            guard let continuation = dataUriContinuation else { return }
-            dataUriContinuation = nil
-            if err == 0 {
-                BleLogger.trace("MDS_DATA_URI received (\(data.count) bytes)")
-                continuation.resume(returning: data)
-            } else {
-                BleLogger.error("MDS_DATA_URI read error: \(err)")
-                continuation.resume(throwing: BleGattException.gattCharacteristicError)
-            }
-        } else if chr == BleMdsClient.MDS_AUTHORIZATION {
-            guard let continuation = authContinuation else { return }
-            authContinuation = nil
-            if err == 0 {
-                BleLogger.trace("MDS_AUTHORIZATION received (\(data.count) bytes)")
-                continuation.resume(returning: data)
-            } else {
-                BleLogger.error("MDS_AUTHORIZATION read error: \(err)")
+                BleLogger.error("\(chr.uuidString) read error: \(err)")
                 continuation.resume(throwing: BleGattException.gattCharacteristicError)
             }
         } else if chr == BleMdsClient.MDS_DATA_EXPORT {
@@ -215,6 +201,67 @@ open class BleMdsClient: BleGattClientBase, @unchecked Sendable {
         }
     }
 
+    private static let readableCharacteristics: Set<CBUUID> = [
+        MDS_SUPPORTED_FEATURES, MDS_DEVICE_IDENTIFIER, MDS_DATA_URI, MDS_AUTHORIZATION
+    ]
+
+    /// Reads a characteristic, allowing a single in-flight read per characteristic.
+    /// A second overlapping read fails with `BleMdsClientError.operationInProgress`. Cancelling the task
+    /// ends the wait with `CancellationError`; the slot is released when the outstanding callback arrives.
+    private func readCharacteristic(_ chr: CBUUID, transport: BleAttributeTransportProtocol) async throws -> Data {
+        let id = UUID()
+        return try await withTaskCancellationHandler {
+            try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Data, Error>) in
+                readSlotsLock.lock()
+                if readSlots[chr] != nil {
+                    readSlotsLock.unlock()
+                    continuation.resume(throwing: BleMdsClientError.operationInProgress)
+                    return
+                }
+                readSlots[chr] = ReadSlot(id: id, continuation: continuation)
+                // Decide atomically between cancelling and issuing the read.
+                let cancelled = Task.isCancelled
+                if cancelled {
+                    readSlots[chr] = nil
+                }
+                readSlotsLock.unlock()
+                if cancelled {
+                    continuation.resume(throwing: CancellationError())
+                    return
+                }
+                do {
+                    try transport.readValue(self, serviceUuid: BleMdsClient.MDS_SERVICE, characteristicUuid: chr)
+                } catch {
+                    failRead(chr, id: id, error: error)
+                }
+            }
+        } onCancel: { [weak self] in
+            self?.cancelRead(chr, id: id)
+        }
+    }
+
+    /// Ends the caller's wait. The slot stays reserved until the callback of the issued read arrives.
+    private func cancelRead(_ chr: CBUUID, id: UUID) {
+        readSlotsLock.lock()
+        var continuation: CheckedContinuation<Data, Error>?
+        if let slot = readSlots[chr], slot.id == id {
+            continuation = slot.continuation
+            readSlots[chr]?.continuation = nil
+        }
+        readSlotsLock.unlock()
+        continuation?.resume(throwing: CancellationError())
+    }
+
+    private func failRead(_ chr: CBUUID, id: UUID, error: Error) {
+        readSlotsLock.lock()
+        var continuation: CheckedContinuation<Data, Error>?
+        if readSlots[chr]?.id == id {
+            continuation = readSlots.removeValue(forKey: chr)?.continuation
+        }
+        readSlotsLock.unlock()
+        continuation?.resume(throwing: error)
+    }
+
     /// Read Supported Features bitmask.
     /// Bit 0 = streaming supported, Bit 1 = data export supported.
     /// The MDS spec defines this as a variable-length little-endian field (1–4 bytes).
@@ -223,16 +270,7 @@ open class BleMdsClient: BleGattClientBase, @unchecked Sendable {
             throw BleGattException.gattTransportNotAvailable
         }
         
-        let data = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Data, Error>) in
-            featuresContinuation = continuation
-            do {
-                try transport.readValue(self, serviceUuid: BleMdsClient.MDS_SERVICE,
-                                        characteristicUuid: BleMdsClient.MDS_SUPPORTED_FEATURES)
-            } catch {
-                featuresContinuation = nil
-                continuation.resume(throwing: error)
-            }
-        }
+        let data = try await readCharacteristic(BleMdsClient.MDS_SUPPORTED_FEATURES, transport: transport)
         
         guard data.count >= 1 && data.count <= 4 else {
             BleLogger.error("MDS_SUPPORTED_FEATURES unexpected length: \(data.count) bytes")
@@ -250,16 +288,7 @@ open class BleMdsClient: BleGattClientBase, @unchecked Sendable {
             throw BleGattException.gattTransportNotAvailable
         }
         
-        let data = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Data, Error>) in
-            deviceIdContinuation = continuation
-            do {
-                try transport.readValue(self, serviceUuid: BleMdsClient.MDS_SERVICE,
-                                        characteristicUuid: BleMdsClient.MDS_DEVICE_IDENTIFIER)
-            } catch {
-                deviceIdContinuation = nil
-                continuation.resume(throwing: error)
-            }
-        }
+        let data = try await readCharacteristic(BleMdsClient.MDS_DEVICE_IDENTIFIER, transport: transport)
         
         return String(bytes: data, encoding: .utf8) ?? ""
     }
@@ -270,16 +299,7 @@ open class BleMdsClient: BleGattClientBase, @unchecked Sendable {
             throw BleGattException.gattTransportNotAvailable
         }
         
-        let data = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Data, Error>) in
-            dataUriContinuation = continuation
-            do {
-                try transport.readValue(self, serviceUuid: BleMdsClient.MDS_SERVICE,
-                                        characteristicUuid: BleMdsClient.MDS_DATA_URI)
-            } catch {
-                dataUriContinuation = nil
-                continuation.resume(throwing: error)
-            }
-        }
+        let data = try await readCharacteristic(BleMdsClient.MDS_DATA_URI, transport: transport)
         
         return String(bytes: data, encoding: .utf8) ?? ""
     }
@@ -290,16 +310,7 @@ open class BleMdsClient: BleGattClientBase, @unchecked Sendable {
             throw BleGattException.gattTransportNotAvailable
         }
         
-        let data = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Data, Error>) in
-            authContinuation = continuation
-            do {
-                try transport.readValue(self, serviceUuid: BleMdsClient.MDS_SERVICE,
-                                        characteristicUuid: BleMdsClient.MDS_AUTHORIZATION)
-            } catch {
-                authContinuation = nil
-                continuation.resume(throwing: error)
-            }
-        }
+        let data = try await readCharacteristic(BleMdsClient.MDS_AUTHORIZATION, transport: transport)
         
         return String(bytes: data, encoding: .utf8) ?? ""
     }

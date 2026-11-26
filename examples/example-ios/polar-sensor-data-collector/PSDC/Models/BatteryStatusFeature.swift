@@ -35,3 +35,38 @@ struct BatteryStatusFeature {
     }
 }
 
+/// Tracks the transition into charging while HR is streaming, independently of
+/// whether the UI has already consumed the warning.
+struct HrChargingWarningState {
+    private var chargingDevices: Set<String> = []
+    private var streamingDevice: String?
+    private(set) var isActive = false
+
+    mutating func setChargeState(_ state: BleBasClient.ChargeState, for identifier: String) -> Bool {
+        if state == .charging {
+            chargingDevices.insert(identifier)
+        } else {
+            chargingDevices.remove(identifier)
+        }
+        return update()
+    }
+
+    mutating func setStreamingDevice(_ identifier: String?) -> Bool {
+        streamingDevice = identifier
+        return update()
+    }
+
+    mutating func disconnect(_ identifier: String) -> Bool {
+        chargingDevices.remove(identifier)
+        if streamingDevice == identifier { streamingDevice = nil }
+        return update()
+    }
+
+    private mutating func update() -> Bool {
+        let active = streamingDevice.map { chargingDevices.contains($0) } ?? false
+        let shouldWarn = active && !isActive
+        isActive = active
+        return shouldWarn
+    }
+}
+

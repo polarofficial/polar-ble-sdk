@@ -17,8 +17,7 @@ class PolarBleDeviceManager: ObservableObject {
     // Single shared api instance used for both scanning and device connections.
     // Sharing ensures peripherals discovered during scan are in the same session
     // map that connectToDevice looks up — preventing "session not found" errors.
-    private var api =
-        PolarBleApiDefaultImpl.polarImplementation(DispatchQueue.main, features: [], restoreIdentifier: "com.polar.PolarSensorDataCollector-iOS.scan")
+    private var api: PolarBleApi
     
     private var h10ExerciseEntry: PolarExerciseEntry?
     private var searchDevicesTask: Task<Void, Never>? = nil
@@ -34,17 +33,20 @@ class PolarBleDeviceManager: ObservableObject {
     private struct WeakManagerWrapper { weak var manager: PolarBleSdkManager? }
     private var allManagers: [WeakManagerWrapper] = []
 
-    init() {
+    /// `api` is injectable so tests can avoid creating a real `CBCentralManager`.
+    init(api: PolarBleApi? = nil) {
+        self.api = api ?? PolarBleApiDefaultImpl.polarImplementation(
+            DispatchQueue.main, features: [], restoreIdentifier: "com.polar.PolarSensorDataCollector-iOS.scan")
         self.isBluetoothOn = false
-        api.polarFilter(true)
+        self.api.polarFilter(true)
         // This is the single shared api instance, so this device manager is the sole
         // owner of its delegate slots. Callbacks are routed per-device to the owning
         // PolarBleSdkManager below, instead of each manager overwriting these slots.
-        api.observer = self
-        api.deviceFeaturesObserver = self
-        api.deviceInfoObserver = self
-        api.powerStateObserver = self
-        api.logger = self
+        self.api.observer = self
+        self.api.deviceFeaturesObserver = self
+        self.api.deviceInfoObserver = self
+        self.api.powerStateObserver = self
+        self.api.logger = self
     }
 
     /// Marks `manager` as the one that should own the next device connection whose id isn't yet known.

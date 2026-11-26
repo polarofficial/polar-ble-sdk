@@ -772,7 +772,14 @@ open class BlePsFtpClient: BleGattClientBase, @unchecked Sendable {
                                     BleLogger.trace("Frame sending interrupted by device!")
                                     let resp = try BlePsFtpUtility.processRfc76MessageFrame((cancelPacket.first?.0)!)
                                     if resp.status == BlePsFtpUtility.RFC76_STATUS_ERROR_OR_RESPONSE, let errorCode = resp.error {
-                                        result.finish(throwing: BlePsFtpException.responseError(errorCode: errorCode))
+                                        // A zero response is success only after the final frame. Do not
+                                        // silently accept a potentially truncated file on an early response.
+                                        if errorCode == 0 {
+                                            BleLogger.error("PS-FTP success response received before the final write frame")
+                                            result.finish(throwing: BlePsFtpException.protocolError)
+                                        } else {
+                                            result.finish(throwing: BlePsFtpException.responseError(errorCode: errorCode))
+                                        }
                                     } else {
                                         result.finish(throwing: BlePsFtpException.protocolError)
                                     }

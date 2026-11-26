@@ -15,7 +15,8 @@ struct LoggingSettingsView: View {
     @State private var isCaloriesLoggingEnabled = false
     @State private var isMetLoggingEnabled = false
     @State private var isSleepLoggingEnabled = false
-    
+    @State private var isWearLoggingEnabled = false
+
     @State private var accTitle = "No Acc settings available"
     @State private var calTitle = "No Calories settings available"
     @State private var metTitle = "No MET settings available"
@@ -162,6 +163,14 @@ struct LoggingSettingsView: View {
                 }
                 .buttonStyle(getButtonStyle(toggle: isSkinTempLoggingEnabled))
 
+                Button(isWearLoggingEnabled ? "Disable Wear Detection logging" : "Enable Wear Detection logging") {
+                    isWearLoggingEnabled.toggle()
+                    bleSdkManager.toggleWearLogging()
+                }
+                .buttonStyle(getButtonStyle(toggle: isWearLoggingEnabled))
+                .disabled(bleSdkManager.logConfig == nil)
+                .accessibilityIdentifier("wearLoggingButton")
+
                 Spacer()
                 VStack(alignment: .center, spacing: 8) {
                     Text("Set HR sensor log device")
@@ -242,6 +251,7 @@ struct LoggingSettingsView: View {
                             isSkinTempLoggingEnabled = val
                             skinTempTitle = getButtonText(measurement: "skinTemp")
                         }
+                        isWearLoggingEnabled = config.wearLogEnabled == true
                         if let val = config.hrSensorConfig {
                             waitUntilConnect = val.waitUntilConnected ?? false
                             deviceInfo = val.deviceInformation ?? ""

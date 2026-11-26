@@ -1,0 +1,26 @@
+// swift-tools-version:5.5
+import PackageDescription
+
+let package = Package(
+    name: "PolarBleSdk",
+    platforms: [
+        .iOS(.v15), .watchOS(.v7)
+    ],
+    products: [
+        .library( name: "iOSCommunications", targets: ["PolarBleSdk"]),
+        .library( name: "PolarBleSdk", targets: ["PolarBleSdk"]),
+    ],
+    dependencies: [
+        .package(name: "SwiftProtobuf", url: "https://github.com/apple/swift-protobuf.git", from: "1.6.0"),
+	    .package(url: "https://github.com/marmelroy/Zip.git", from: "2.1.2"),
+    ],
+    targets: [
+        .target(
+            name: "PolarBleSdk",
+            dependencies: ["SwiftProtobuf", "Zip"],
+            path: "Sources",
+            exclude: ["iOSCommunications/Info.plist", "PolarBleSdk/Info.plist"],
+            resources: [.process("iOSCommunications/Resources")]
+        ),
+    ]
+)

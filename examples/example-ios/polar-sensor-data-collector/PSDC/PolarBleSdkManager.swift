@@ -80,6 +80,12 @@ class PolarBleSdkManager : ObservableObject {
     @Published var firmwareUpdateFeature = FirmwareUpdateFeature()
     
     @Published var generalMessage: Message? = nil
+    @Published private(set) var deviceStoppedStreamMessage: Message? = nil
+    private var pendingDeviceStoppedStreams: Set<PolarDeviceDataType> = []
+    private var deviceStoppedStreamMessageTask: Task<Void, Never>?
+    @Published private(set) var hrChargingWarning: Message? = nil
+    private var hrChargingWarningState = HrChargingWarningState()
+    private var hrStreamingGeneration: UUID?
     @Published var logConfig: LogConfig? = nil
     @Published var hrRecordingData: HrRecordingFeature = HrRecordingFeature()
     @Published var ecgRecordingData: EcgRecordingFeature = EcgRecordingFeature()
@@ -309,7 +315,8 @@ extension PolarBleSdkManager {
     }
     
     private func updateStateWhenDeviceDisconnected(withId deviceId: String, info: PolarBleDisconnectInfo) {
-        
+        updateHrChargingWarning(hrChargingWarningState.disconnect(deviceId))
+
         guard false == updatingDevices.contains(where: { $0.deviceId == deviceId}) else {
             AppLogger.log("Device \(deviceId) is being updated, ignoring disconnect during firmware update")
             return
@@ -758,7 +765,11 @@ extension PolarBleSdkManager {
         AppLogger.log("onlineStreamStop: \(feature)")
 
         let capturedTask = onlineStreamingTasks.removeValue(forKey: feature)
+        let stoppedHrGeneration = hrStreamingGeneration
         onlineRecordingDataTypes.removeAll { $0 == feature }
+        if feature == .hr {
+            updateHrChargingWarning(hrChargingWarningState.setStreamingDevice(nil))
+        }
 
         Task { @MainActor [weak self] in
             guard let self else { return }
@@ -785,7 +796,9 @@ extension PolarBleSdkManager {
                 somethingFailed(text: "onlineStreamStop failed for \(feature.displayName): \(error)")
             }
             capturedTask?.cancel()
-            self.onlineStreamingFeature.isStreaming[feature] = .success(url: nil)
+            if feature != .hr || self.hrStreamingGeneration == stoppedHrGeneration {
+                self.onlineStreamingFeature.isStreaming[feature] = .success(url: nil)
+            }
         }
 
         if feature == .hr { HrDataHolder.shared.clear() }
@@ -1059,16 +1072,60 @@ extension PolarBleSdkManager {
         return onlineStreamingTasks[feature] != nil
     }
 
+    private func updateHrChargingWarning(_ shouldWarn: Bool) {
+        if shouldWarn {
+            hrChargingWarning = Message(text: NSLocalizedString("online.hr.chargerWarning", comment: "HR streaming charger warning"))
+        } else if !hrChargingWarningState.isActive {
+            hrChargingWarning = nil
+        }
+    }
+
+    func acknowledgeHrChargingWarning(_ id: UUID) {
+        if hrChargingWarning?.id == id { hrChargingWarning = nil }
+    }
+
     @MainActor
     func handleDeviceStoppedStream(_ error: Error, feature: PolarDeviceDataType) {
         guard case BlePmdError.bleOnlineStreamClosed = error else { return }
         // The SDK already terminated this stream. Do not send another stop request
         // or cancel unrelated streams. The stream's defer closes and preserves its log.
+        recordDeviceStoppedStream(feature)
+    }
+
+    private func recordDeviceStoppedStream(_ feature: PolarDeviceDataType) {
         onlineStreamingTasks.removeValue(forKey: feature)
         onlineRecordingDataTypes.removeAll { $0 == feature }
-        let message = "Device stopped \(feature.displayName) streaming."
-        AppLogger.log(message)
-        generalMessage = Message(text: message)
+        if feature == .hr {
+            updateHrChargingWarning(hrChargingWarningState.setStreamingDevice(nil))
+        }
+        hrChargingWarning = nil
+        AppLogger.log("Device stopped \(feature.displayName) streaming.")
+        pendingDeviceStoppedStreams.insert(feature)
+        scheduleDeviceStoppedStreamMessage()
+    }
+
+    private func scheduleDeviceStoppedStreamMessage() {
+        guard deviceStoppedStreamMessage == nil, !pendingDeviceStoppedStreams.isEmpty else { return }
+        deviceStoppedStreamMessageTask?.cancel()
+        // Device stop notifications arrive separately; collect a short burst before presenting.
+        deviceStoppedStreamMessageTask = Task { @MainActor [weak self] in
+            do {
+                try await Task.sleep(nanoseconds: 300_000_000)
+            } catch {
+                return
+            }
+            guard let self, self.deviceStoppedStreamMessage == nil else { return }
+            let names = self.pendingDeviceStoppedStreams.map(\.displayName).sorted().joined(separator: ", ")
+            self.pendingDeviceStoppedStreams.removeAll()
+            self.deviceStoppedStreamMessageTask = nil
+            self.deviceStoppedStreamMessage = Message(text: "Device stopped \(names) streaming.")
+        }
+    }
+
+    func acknowledgeDeviceStoppedStreamMessage(_ id: UUID) {
+        guard deviceStoppedStreamMessage?.id == id else { return }
+        deviceStoppedStreamMessage = nil
+        scheduleDeviceStoppedStreamMessage()
     }
 
     func ecgStreamStart(settings: PolarBleSdk.PolarSensorSetting) {
@@ -1387,30 +1444,34 @@ extension PolarBleSdkManager {
     
     func hrStreamStart() {
         if case .connected(let device) = deviceConnectionState {
-            
-            Task { @MainActor in
-                self.onlineStreamingFeature.isStreaming[.hr] = OnlineStreamingState.inProgress
-            }
-            
+            let generation = UUID()
+            hrStreamingGeneration = generation
+            onlineStreamingFeature.isStreaming[.hr] = OnlineStreamingState.inProgress
+
             let logFile: (url: URL, fileHandle: FileHandle)? = openOnlineStreamLogFile(type: .hr)
             
             onlineStreamingTasks[.hr] = Task {
                 defer {
                     if let fileHandle = logFile?.fileHandle { self.closeOnlineStreamLogFile(fileHandle) }
-                    Task { @MainActor in self.onlineStreamingFeature.isStreaming[.hr] = OnlineStreamingState.success(url: logFile?.url) }
+                    if self.hrStreamingGeneration == generation {
+                        self.hrStreamingGeneration = nil
+                        self.onlineStreamingTasks.removeValue(forKey: .hr)
+                        self.updateHrChargingWarning(self.hrChargingWarningState.setStreamingDevice(nil))
+                        self.onlineStreamingFeature.isStreaming[.hr] = OnlineStreamingState.success(url: logFile?.url)
+                    }
                 }
+                guard !Task.isCancelled else { return }
                 do {
                     for try await data in api.startHrStreaming(device.deviceId) {
+                        guard !Task.isCancelled else { break }
                         if let fileHandle = logFile?.fileHandle { self.writeOnlineStreamLogFile(fileHandle, data) }
                         AppLogger.log("HR    BPM: \(data[0].hr) rrs: \(data[0].rrsMs) rrAvailable: \(data[0].rrAvailable) contact status: \(data[0].contactStatus) contact supported: \(data[0].contactStatusSupported)")
-                        Task { @MainActor in
-                            self.hrRecordingData.hr = data[0].hr
-                            self.hrRecordingData.rrs = data[0].rrsMs
-                            self.hrRecordingData.rrAvailable = data[0].rrAvailable
-                            self.hrRecordingData.contactStatus = data[0].contactStatus
-                            self.hrRecordingData.contactStatusSupported = data[0].contactStatusSupported
-                            HrDataHolder.shared.updateHr(Int(data[0].hr))
-                        }
+                        self.hrRecordingData.hr = data[0].hr
+                        self.hrRecordingData.rrs = data[0].rrsMs
+                        self.hrRecordingData.rrAvailable = data[0].rrAvailable
+                        self.hrRecordingData.contactStatus = data[0].contactStatus
+                        self.hrRecordingData.contactStatusSupported = data[0].contactStatusSupported
+                        HrDataHolder.shared.updateHr(Int(data[0].hr))
                     }
                     AppLogger.log("Hr stream completed")
                 } catch {
@@ -1418,6 +1479,7 @@ extension PolarBleSdkManager {
                     if let fileHandle = logFile?.fileHandle { self.writeErrorOnlineStreamLogFile(fileHandle, error) }
                 }
             }
+            updateHrChargingWarning(hrChargingWarningState.setStreamingDevice(device.deviceId))
         } else {
             AppLogger.log("Device is not connected \(deviceConnectionState)")
         }
@@ -2134,8 +2196,13 @@ extension PolarBleSdkManager {
         }
     }
     
-    func setLogConfig(logConfig: LogConfig) {
+    func toggleWearLogging() {
+        guard var config = logConfig else { return }
+        config.wearLogEnabled = config.wearLogEnabled != true
+        setLogConfig(logConfig: config)
+    }
 
+    func setLogConfig(logConfig: LogConfig) {
         if case .connected(let device) = deviceConnectionState {
             Task.detached {
                 do {
@@ -2296,7 +2363,8 @@ extension PolarBleSdkManager {
                     speed3DLogEnabled: config.speed3DLogEnabled,
                     logTrigger: config.logTrigger,
                     magnetometerFrequency: config.magnetometerFrequency,
-                    hrSensorConfig: config.hrSensorConfig
+                    hrSensorConfig: config.hrSensorConfig,
+                    wearLogEnabled: config.wearLogEnabled
                 )
             }
         } catch {
@@ -4015,10 +4083,25 @@ extension PolarBleSdkManager : PolarBleApiDeviceInfoObserver {
     nonisolated func batteryChargingStatusReceived(_ identifier: String, chargingStatus: BleBasClient.ChargeState) {
         AppLogger.log("battery charging status updated: \(chargingStatus)")
         Task { @MainActor in
-            self.batteryStatusFeature.chargeState = chargingStatus
+            self.updateBatteryChargingStatus(chargingStatus, for: identifier)
         }
     }
-    
+
+    func updateBatteryChargingStatus(_ chargingStatus: BleBasClient.ChargeState, for identifier: String) {
+        batteryStatusFeature.chargeState = chargingStatus
+        let startedChargingWhileStreamingHr = hrChargingWarningState.setChargeState(chargingStatus, for: identifier)
+        guard startedChargingWhileStreamingHr, let hrTask = onlineStreamingTasks[.hr] else {
+            updateHrChargingWarning(false)
+            return
+        }
+
+        // HR uses GATT notifications and may not receive a PMD stream-closed error.
+        // Cancel our subscription without sending a redundant stop command to the device.
+        hrTask.cancel()
+        HrDataHolder.shared.clear()
+        recordDeviceStoppedStream(.hr)
+    }
+
     nonisolated func batteryPowerSourcesStateReceived(_ identifier: String, powerSourcesState: BleBasClient.PowerSourcesState) {
         AppLogger.log("battery power sources status updated: \(powerSourcesState)")
         Task { @MainActor in

@@ -2,17 +2,18 @@
 
 import SwiftUI
 import UserNotifications
+import PolarBleSdk
 
 @MainActor
 class AppState: ObservableObject {
     @Published var bleDeviceManager: PolarBleDeviceManager
     @Published var bleSdkManager: PolarBleSdkManager
 
-    init() {
+    init(api: PolarBleApi? = nil) {
         // Create bleDeviceManager first, then create the initial bleSdkManager
         // using its shared api — so only ONE CBDeviceListenerImpl / CBCentralManager
         // is ever instantiated at startup.
-        let deviceManager = PolarBleDeviceManager()
+        let deviceManager = PolarBleDeviceManager(api: api)
         self.bleDeviceManager = deviceManager
         self.bleSdkManager = deviceManager.makeSdkManager()
     }

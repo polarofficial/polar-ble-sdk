@@ -36,14 +36,14 @@ open class BlePolarDeviceCapabilitiesUtility {
         // Priority 1: app's main bundle.
         // An app can ship its own polar_device_capabilities.json in its target resources
         // to override the SDK's baseline entirely. This works consistently whether the SDK
-        // is integrated via CocoaPods or SPM.
+        // is integrated via SPM or XCFramework.
         if let url = Bundle.main.url(forResource: "polar_device_capabilities", withExtension: "json"),
            let data = try? Data(contentsOf: url) {
             return data
         }
         // Priority 2: SDK's own bundled baseline.
         // SPM synthesises Bundle.module pointing at the package resource bundle.
-        // CocoaPods use_frameworks! puts resources in the class's framework bundle.
+        // Other builds put resources in the class's framework bundle.
         // SWIFT_PACKAGE is set automatically by the SPM build system.
 #if SWIFT_PACKAGE
         if let url = Bundle.module.url(forResource: "polar_device_capabilities", withExtension: "json"),

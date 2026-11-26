@@ -2,6 +2,8 @@ package com.polar.androidcommunications.api.ble.model.gatt.client
 
 import com.polar.androidcommunications.api.ble.exceptions.BleAttributeError
 import com.polar.androidcommunications.api.ble.exceptions.BleDisconnected
+import com.polar.androidcommunications.api.ble.exceptions.BleOperationInProgress
+import com.polar.androidcommunications.api.ble.exceptions.BleTimeout
 import com.polar.androidcommunications.api.ble.model.gatt.BleGattBase
 import com.polar.androidcommunications.api.ble.model.gatt.BleGattTxInterface
 import com.polar.androidcommunications.testrules.BleLoggerTestRule
@@ -13,6 +15,10 @@ import io.mockk.verify
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.async
+import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
@@ -65,15 +71,17 @@ class BleMdsClientTest {
     }
 
     @Test
-    fun reset_clearsResponseQueue() {
+    fun reset_wakesPendingControlPointCommandWithDisconnected() = runTest {
         // Arrange
-        sut.mdsResponseQueue.add(Pair(byteArrayOf(0x01), BleGattBase.ATT_SUCCESS))
+        val deferred = async { runCatching { sut.sendControlPointCommand(0x01) } }
+        testScheduler.runCurrent()
 
         // Act
         sut.reset()
+        testScheduler.runCurrent()
 
         // Assert
-        assertTrue(sut.mdsResponseQueue.isEmpty())
+        assertTrue(deferred.await().exceptionOrNull() is BleDisconnected)
     }
 
     @Test
@@ -489,19 +497,23 @@ class BleMdsClientTest {
     // --- processServiceData: MDS_DATA_EXPORT ---
 
     @Test
-    fun processServiceData_dataExport_notifying_doesNotAddToResponseQueue() {
+    fun processServiceData_dataExport_notifying_doesNotCompleteControlPointCommand() = runTest {
         // Arrange
-        val data = byteArrayOf(0x05, 0x01, 0x02, 0x03)
+        val command = async { sut.sendControlPointCommand(0x01) }
+        testScheduler.runCurrent()
 
         // Act
-        sut.processServiceData(BleMdsClient.MDS_DATA_EXPORT, data, BleGattBase.ATT_SUCCESS, true)
+        sut.processServiceData(BleMdsClient.MDS_DATA_EXPORT, byteArrayOf(0x05, 0x01, 0x02, 0x03), BleGattBase.ATT_SUCCESS, true)
+        testScheduler.runCurrent()
 
         // Assert
-        assertTrue(sut.mdsResponseQueue.isEmpty())
+        assertFalse(command.isCompleted)
+        sut.processServiceDataWritten(BleMdsClient.MDS_DATA_EXPORT, BleGattBase.ATT_SUCCESS)
+        assertEquals(0, command.await())
     }
 
     @Test
-    fun processServiceData_dataExport_notifying_emptyData_doesNotAddToQueueOrEmitTelemetry() = runTest {
+    fun processServiceData_dataExport_notifying_emptyData_doesNotEmitTelemetry() = runTest {
         // Arrange
         val emitted = mutableListOf<BleMdsClient.TelemetryConfiguration>()
         val job = launch { sut.monitorMdsNotifications(true).collect { emitted.add(it) } }
@@ -514,7 +526,6 @@ class BleMdsClientTest {
 
         // Assert
         assertTrue(emitted.isEmpty())
-        assertTrue(sut.mdsResponseQueue.isEmpty())
     }
 
     @Test
@@ -605,7 +616,7 @@ class BleMdsClientTest {
     }
 
     @Test
-    fun processServiceData_dataExport_notifyingFalse_doesNotEmitAndDoesNotAddToQueue() = runTest {
+    fun processServiceData_dataExport_notifyingFalse_doesNotEmit() = runTest {
         // Arrange
         val emitted = mutableListOf<BleMdsClient.TelemetryConfiguration>()
         val job = launch { sut.monitorMdsNotifications(true).collect { emitted.add(it) } }
@@ -618,7 +629,6 @@ class BleMdsClientTest {
 
         // Assert
         assertTrue(emitted.isEmpty())
-        assertTrue(sut.mdsResponseQueue.isEmpty())
     }
 
     @Test
@@ -639,48 +649,14 @@ class BleMdsClientTest {
         assertNull(sut.authorization)
         assertNull(sut.supportedFeatures)
         assertTrue(emitted.isEmpty())
-        assertTrue(sut.mdsResponseQueue.isEmpty())
     }
 
     // --- processServiceDataWritten ---
 
-    @Test
-    fun processServiceDataWritten_dataExportWithError_addsEmptyPayloadAndErrorStatusToResponseQueue() {
-        // Act
-        sut.processServiceDataWritten(BleMdsClient.MDS_DATA_EXPORT, BleGattBase.ATT_WRITE_NOT_PERMITTED)
-
-        // Assert
-        assertEquals(1, sut.mdsResponseQueue.size)
-        val item = sut.mdsResponseQueue.peek()!!
-        assertTrue(item.first.isEmpty())
-        assertEquals(BleGattBase.ATT_WRITE_NOT_PERMITTED, item.second)
-    }
-
-    @Test
-    fun processServiceDataWritten_dataExportSuccess_addsToResponseQueue() {
-        // Act
-        sut.processServiceDataWritten(BleMdsClient.MDS_DATA_EXPORT, BleGattBase.ATT_SUCCESS)
-
-        // Assert
-        assertEquals(1, sut.mdsResponseQueue.size)
-        val item = sut.mdsResponseQueue.peek()!!
-        assertTrue(item.first.isEmpty())
-        assertEquals(BleGattBase.ATT_SUCCESS, item.second)
-    }
-
-    @Test
-    fun processServiceDataWritten_otherCharacteristic_doesNotAddToResponseQueue() {
-        // Act
-        sut.processServiceDataWritten(BleMdsClient.MDS_DEVICE_IDENTIFIER, BleGattBase.ATT_WRITE_NOT_PERMITTED)
-
-        // Assert
-        assertTrue(sut.mdsResponseQueue.isEmpty())
-    }
-
     // --- sendControlPointCommand ---
 
     @Test
-    fun sendControlPointCommand_attSuccess_returnsZero() {
+    fun sendControlPointCommand_attSuccess_returnsZero() = runTest {
         // Arrange
         respondToDataExportWrite(BleGattBase.ATT_SUCCESS)
 
@@ -692,7 +668,7 @@ class BleMdsClientTest {
     }
 
     @Test
-    fun sendControlPointCommand_transmitsCommandToDataExport() {
+    fun sendControlPointCommand_transmitsCommandToDataExport() = runTest {
         // Arrange
         respondToDataExportWrite(BleGattBase.ATT_SUCCESS)
 
@@ -711,15 +687,106 @@ class BleMdsClientTest {
     }
 
     @Test
-    fun sendControlPointCommand_attError_throwsBleAttributeErrorWithStatus() {
+    fun sendControlPointCommand_whileAnotherInFlight_isRejectedAndFirstStillCompletes() = runTest {
+        // Arrange
+        val first = async { sut.sendControlPointCommand(0x01) }
+        testScheduler.runCurrent()
+
+        // Act
+        val overlap = runCatching { sut.sendControlPointCommand(0x02) }.exceptionOrNull()
+        sut.processServiceDataWritten(BleMdsClient.MDS_DATA_EXPORT, BleGattBase.ATT_SUCCESS)
+
+        // Assert
+        assertTrue(overlap is BleOperationInProgress)
+        assertEquals(0, first.await())
+    }
+
+    @Test
+    fun sendControlPointCommand_cancelled_rejectsNextUntilLateWriteCallbackArrives() = runTest {
+        // Arrange
+        val first = launch { sut.sendControlPointCommand(0x01) }
+        testScheduler.runCurrent()
+        every { txInterface.isCharacteristicWriteInFlight() } returns true
+        first.cancelAndJoin()
+
+        // Act: the late callback of the cancelled write must not complete the next command
+        val whileWriteOutstanding = runCatching { sut.sendControlPointCommand(0x02) }.exceptionOrNull()
+        sut.processServiceDataWritten(BleMdsClient.MDS_DATA_EXPORT, BleGattBase.ATT_SUCCESS)
+        respondToDataExportWrite(BleGattBase.ATT_SUCCESS)
+
+        // Assert
+        assertTrue(whileWriteOutstanding is BleOperationInProgress)
+        assertEquals(0, sut.sendControlPointCommand(0x03))
+    }
+
+    @Test
+    fun sendControlPointCommand_afterTimeout_rejectsWhileWriteStillQueuedBehindOtherOperations() = runTest {
+        // Arrange: the MDS write has not been issued to GATT yet, so nothing is in flight
+        every { txInterface.isCharacteristicWriteInFlight() } returns false
+        every { txInterface.transportQueueSize() } returns 2
+        val first = async { runCatching { sut.sendControlPointCommand(0x01) } }
+        testScheduler.advanceUntilIdle()
+        assertTrue(first.await().exceptionOrNull() is BleTimeout)
+
+        // Act
+        val next = runCatching { sut.sendControlPointCommand(0x02) }.exceptionOrNull()
+
+        // Assert
+        assertTrue(next is BleOperationInProgress)
+    }
+
+    @Test
+    fun sendControlPointCommand_afterTimeout_recoversWhenTransportConfirmsNoWriteInFlight() = runTest {
+        // Arrange
+        every { txInterface.isCharacteristicWriteInFlight() } returns true
+        val first = async { runCatching { sut.sendControlPointCommand(0x01) } }
+        testScheduler.advanceUntilIdle()
+        assertTrue(first.await().exceptionOrNull() is BleTimeout)
+
+        // Act: transport confirms the write is no longer awaiting a callback
+        every { txInterface.isCharacteristicWriteInFlight() } returns false
+        every { txInterface.transportQueueSize() } returns 0
+        respondToDataExportWrite(BleGattBase.ATT_SUCCESS)
+
+        // Assert
+        assertEquals(0, sut.sendControlPointCommand(0x02))
+    }
+
+    @Test
+    fun sendControlPointCommand_outerTimeout_propagatesCancellationNotBleTimeout() = runTest {
+        // Act
+        val result = runCatching { withTimeout(1_000) { sut.sendControlPointCommand(0x01) } }
+
+        // Assert
+        assertTrue(result.exceptionOrNull() is TimeoutCancellationException)
+    }
+
+    @Test
+    fun sendControlPointCommand_noResponse_throwsBleTimeoutAndRejectsNextUntilLateCallback() = runTest {
+        every { txInterface.isCharacteristicWriteInFlight() } returns true
+
+        // Act
+        val result = async { runCatching { sut.sendControlPointCommand(0x01) } }
+        testScheduler.advanceUntilIdle()
+        val next = runCatching { sut.sendControlPointCommand(0x02) }.exceptionOrNull()
+        sut.processServiceDataWritten(BleMdsClient.MDS_DATA_EXPORT, BleGattBase.ATT_SUCCESS)
+        respondToDataExportWrite(BleGattBase.ATT_SUCCESS)
+
+        // Assert
+        assertTrue(result.await().exceptionOrNull() is BleTimeout)
+        assertTrue(next is BleOperationInProgress)
+        assertEquals(0, sut.sendControlPointCommand(0x03))
+    }
+
+    @Test
+    fun sendControlPointCommand_attError_throwsBleAttributeErrorWithStatus() = runTest {
         // Arrange
         respondToDataExportWrite(BleGattBase.ATT_WRITE_NOT_PERMITTED)
 
         // Act & Assert
-        val ex = assertThrows(BleAttributeError::class.java) {
-            sut.sendControlPointCommand(0x02)
-        }
-        assertEquals(BleGattBase.ATT_WRITE_NOT_PERMITTED, ex.error)
+        val ex = runCatching { sut.sendControlPointCommand(0x02) }.exceptionOrNull()
+        assertTrue(ex is BleAttributeError)
+        assertEquals(BleGattBase.ATT_WRITE_NOT_PERMITTED, (ex as BleAttributeError).error)
     }
 
     @Test

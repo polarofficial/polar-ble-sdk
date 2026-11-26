@@ -304,6 +304,14 @@ public interface <span class="typeNameLabel"><a href=BleGattTxInterface.html>Ble
                                         <tr id="i7" class="rowColor">
                                             <td class="colFirst"><code>abstract <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a></code>
                                             </td>
+                                            <th class="colSecond" scope="row"><code><a href=BleGattTxInterface.html#isCharacteristicWriteInFlight()>isCharacteristicWriteInFlight</a>() </code>
+                                            </th>
+                                            <td class="colLast"></td>
+                                        </tr>
+                                        
+                                        <tr id="i8" class="altColor">
+                                            <td class="colFirst"><code>abstract <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a></code>
+                                            </td>
                                             <th class="colSecond" scope="row"><code><a href=BleGattTxInterface.html#isConnected()>isConnected</a>() </code>
                                             </th>
                                             <td class="colLast"></td>
@@ -509,6 +517,32 @@ public interface <span class="typeNameLabel"><a href=BleGattTxInterface.html>Ble
                                         
                                             <dt><span class="returnLabel">Returns:</span></dt>
                                             <dd><p>current att operation queue size</p></dd>
+                                        
+
+                                        
+
+                                        </dl>
+                                    </li>
+                                </ul>
+                                
+                                <a id="isCharacteristicWriteInFlight()">
+                                    <!--   -->
+                                </a>
+                                <ul class=
+                                              "blockList"
+                                          >
+                                    <li class="blockList">
+                                        <h4>isCharacteristicWriteInFlight</h4>
+                                        <pre class="methodSignature"> abstract <a href=https://developer.android.com/reference/kotlin/java/lang/Boolean.html>Boolean</a> <a href=BleGattTxInterface.html#isCharacteristicWriteInFlight()>isCharacteristicWriteInFlight</a>()</pre>
+                                        <div class="block"></div>
+
+                                        <dl>
+
+                                        
+
+                                        
+                                            <dt><span class="returnLabel">Returns:</span></dt>
+                                            <dd><p>true while a characteristic write has been issued to the GATT stack and its callback has not yet been delivered. Unlike <a href=BleGattTxInterface.html#transportQueueSize()>transportQueueSize</a>, this stays true when the operation queue is cleared, so false confirms that no callback for an earlier write can still arrive.</p></dd>
                                         
 
                                         

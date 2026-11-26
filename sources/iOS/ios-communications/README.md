@@ -13,7 +13,6 @@ iOS Communications XCode project (i.e. `iOSCommunications.xcworkspace`) contains
     * [To update dependencies](#to-update-dependencies)
 * [Install](#install)
     * [... using Swift Package Manager](#...-using-Swift-Package-Manager)
-    * [... using CocoaPods](#...-using-CocoaPods)
     * [... using XCFramework](#...-using-XCFramework)
     * [... using git submodules](#...-using-git-submodules)
     * [... using Carthage](#...-using-Carthage)
@@ -31,30 +30,12 @@ iOS Communications XCode project (i.e. `iOSCommunications.xcworkspace`) contains
    * [SwiftProtobuf](https://github.com/apple/swift-protobuf). `SwiftProtobuf` dependency is only required by the targets `PolarBleSdk` and `PolarBleSdkWatchOs`
    
 ### To update dependencies
- * the dependent libraries are referenced by Cocoapods. To update dependencies please modify the `Podfile`
+ * the dependent libraries are referenced by Swift Package Manager. To update dependencies please modify `Package.swift`
  
 ## Install 
 
 ### ... using Swift Package Manager 
 * iOS Communications project is made available via Swift Package. Please get familiar with [XCode help](https://developer.apple.com/documentation/swift_packages/adding_package_dependencies_to_your_app) how to take Swift Package into use on your project.
-
-### ... using CocoaPods
-* In your `Podfile` add
-```
-source 'https://github.com/CocoaPods/Specs.git'
-
-use_frameworks!
-
-target 'YOUR_TARGET_NAME' do
-    pod 'iOSCommunications', '~> 14.1.6'
-end
-```
-
-And run
-
-```
-$ pod install
-```
 
 ### ... using XCFramework
 * From `/scripts` folder run the `./build_ios_communications.sh` or  `./build_sdk.sh` depending on target of your choice. Both scripts builds the XCFrameworks. 
@@ -86,39 +67,6 @@ To debug the iOS communications or Polar BLE SDK target follow the steps provide
 1. Clone the iOS communications repository (this repository) by running `git clone <
    repository_url>.
 2. Follow the steps below depending on which dependency your app uses.
-
-### If you are using CocoaPods as a dependency in your app
-
-#### iOS Communications
-
-Add the following line to your Podfile:
-
-```ruby
-target '<target>' do
-    ...
-    pod 'iOSCommunications', :path => '<relative_path_to_cloned_repo>/ios-communications/'
-    ...
-end    
-```
-Then, run:
-
-```bash
-    pod update iOSCommunications
-```
-
-#### Polar BLE SDK
-
-Add the following line to your Podfile:
-
-```ruby
-      pod 'PolarBleSdk', :path => '<relative_path_to_cloned_repo>/ios-communications/'
-```
-
-Then, run:
-
-```bash
-    pod update PolarBleSdk
-```
 
 ### If you are using Swift Package Manager as a dependency in your app
 

@@ -49,7 +49,7 @@ class PhysicalConfigActivity : AppCompatActivity() {
 
     private val api = PolarBleSdkModule.providePolarBleSdkApi(this)
     private val deviceSettingsViewModel: DeviceSettingsViewModel by viewModels()
-    private val formatter = DateTimeFormatter.ofPattern("yyyyMMdd", Locale.ENGLISH)
+    private val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd", Locale.ENGLISH)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

@@ -1,9 +1,11 @@
 package com.polar.sdk.impl.utils
 
+import com.polar.androidcommunications.api.ble.exceptions.BleOperationInProgress
 import com.polar.androidcommunications.api.ble.model.gatt.client.BleMdsClient
 import com.polar.sdk.api.DeviceTelemetryConfiguration
 import com.polar.sdk.api.DeviceTelemetryEvent
 import com.polar.sdk.api.PolarDeviceTelemetryType
+import com.polar.sdk.api.errors.PolarSdkConcurrentApiCallException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -27,8 +29,12 @@ internal object PolarTelemetryMemfaultUtils {
         }
     }
 
-    fun stopTelemetryStreaming(client: BleMdsClient): Boolean {
-        return client.sendControlPointCommand(0) == 0
+    suspend fun stopTelemetryStreaming(client: BleMdsClient): Boolean {
+        return try {
+            client.sendControlPointCommand(0) == 0
+        } catch (_: BleOperationInProgress) {
+            throw PolarSdkConcurrentApiCallException("stopTelemetry: MDS control point command already in progress")
+        }
     }
 
     fun getAvailableTelemetryTypes(client: BleMdsClient): List<PolarDeviceTelemetryType> {

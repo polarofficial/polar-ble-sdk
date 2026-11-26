@@ -72,7 +72,9 @@ import UIKit
     }
 #endif
     let features:Set<PolarBleSdkFeature>
-    let apiCallGuard = PolarApiCallGuard()
+    let apiCallGuard: PolarApiCallGuard
+    // MDS uses its own BLE client, so its calls are guarded separately and do not block file system calls.
+    let mdsApiCallGuard: PolarApiCallGuard
     let PMDFilePath = "/PMDFILES.TXT"
     public private(set) var serviceClientUtils: PolarServiceClientUtils
     var fileUtils: PolarFileUtils
@@ -147,6 +149,10 @@ import UIKit
         self.scheduler = queue
         self.serviceClientUtils = PolarServiceClientUtils(listener: listener)
         self.fileUtils = PolarFileUtils(listener: listener, serviceClientUtils: serviceClientUtils)
+        // Device id and BLE address of the same device must share one guard key.
+        let resolveGuardKey = PolarBleApiImpl.makeGuardKeyResolver(serviceClientUtils)
+        self.apiCallGuard = PolarApiCallGuard(resolveKey: resolveGuardKey)
+        self.mdsApiCallGuard = PolarApiCallGuard(resolveKey: resolveGuardKey)
         super.init()
         self.listener.scanPreFilter = deviceFilter
         self.listener.deviceSessionStateObserver = self
@@ -173,6 +179,16 @@ import UIKit
 #endif
     }
     
+    /// Maps a device id or BLE address to one guard key. A connected session gives its address; otherwise the id is upper-cased.
+    static func makeGuardKeyResolver(_ utils: PolarServiceClientUtils) -> (String) -> String {
+        return { identifier in
+            if let address = (try? utils.fetchSession(identifier))??.address.uuidString {
+                return address
+            }
+            return identifier.uppercased()
+        }
+    }
+
     // from BlePowerStateObserver
     func powerStateChanged(_ state: BleState) {
         switch state {
@@ -1935,6 +1951,7 @@ extension PolarBleApiImpl: PolarBleApi  {
                 var backupList: [PolarBackupManager.BackupFileData] = []
                 let automaticReconnection = self.automaticReconnection
                 var firmwareVersionInfo: String = ""
+                var firmwareSyncStarted = false
                 defer { self.automaticReconnection = automaticReconnection }
                 do {
                     // Resolve Firmware URL
@@ -1979,15 +1996,19 @@ extension PolarBleApiImpl: PolarBleApi  {
                     continuation.yield(.preparingDeviceForFwUpdate(details: "Reconnecting after factory reset"))
                     try await self.waitDeviceSessionWithPftpToOpen(identifier: identifier, timeoutSeconds: 6*60, waitForDeviceDownSeconds: 10)
                     // Speed up for file transfer by sending sync signal
+                    firmwareSyncStarted = true
                     try await self.sendInitializationAndStartSyncNotifications(identifier: identifier)
                     // Write FW files
                     continuation.yield(.writingFwUpdatePackage(details: "Writing firmware files \(firmwareVersionInfo)"))
                     for try await status in self.writeFirmwareFilesToDeviceAsync(identifier, firmwareFiles: firmwareFiles) {
                         continuation.yield(status)
                     }
+                    // The firmware reboot ends the previous sync session.
+                    firmwareSyncStarted = false
                     continuation.yield(.finalizingFwUpdate(details: "Waiting for device to update to \(firmwareVersionInfo)"))
                     try await self.waitDeviceSessionWithPftpToOpen(identifier: identifier, timeoutSeconds: 6*60, waitForDeviceDownSeconds: 10)
                     if !hasH10FileSystem {
+                        firmwareSyncStarted = true
                         try await self.sendInitializationAndStartSyncNotifications(identifier: identifier)
                         continuation.yield(.finalizingFwUpdate(details: "Restoring backup to device"))
                         try await backupManager.restoreBackup(backupFiles: backupList)
@@ -2005,14 +2026,38 @@ extension PolarBleApiImpl: PolarBleApi  {
                         continuation.yield(.finalizingFwUpdate(details: "Reconnecting after restart"))
                         try await self.waitDeviceSessionWithPftpToOpen(identifier: identifier, timeoutSeconds: 6*60, waitForDeviceDownSeconds: 10)
                     }
+                    firmwareSyncStarted = false
                     continuation.yield(.fwUpdateCompletedSuccessfully(details: "Firmware update to \(firmwareVersionInfo) completed successfully"))
                     continuation.finish()
                 } catch let error {
                     BleLogger.error("Error during updateFirmware() to \(firmwareVersionInfo), error: \(error)")
+                    if firmwareSyncStarted {
+                        await self.cleanupFirmwareUpdateSession(identifier: identifier)
+                    }
                     continuation.yield(.fwUpdateFailed(details: "Error: \(error)"))
                     continuation.finish(throwing: self.handleError(error))
                 }
             }
+        }
+    }
+
+    /// Cleanup must not mark a failed restore as a completed sync or hide its original error.
+    func cleanupFirmwareUpdateSession(identifier: String) async {
+        guard let session = try? serviceClientUtils.sessionFtpClientReady(identifier),
+              let client = session.fetchGattClient(BlePsFtpClient.PSFTP_SERVICE) as? BlePsFtpClient else { return }
+        do {
+            var params = Protocol_PbPFtpStopSyncParams()
+            params.completed = false
+            try await client.sendNotification(Protocol_PbPFtpHostToDevNotification.stopSync.rawValue,
+                                              parameters: try params.serializedData() as NSData)
+        } catch {
+            BleLogger.error("Failed to stop sync after firmware update failure: \(error)")
+        }
+        // Still terminate the session if stopSync failed.
+        do {
+            try await client.sendNotification(Protocol_PbPFtpHostToDevNotification.terminateSession.rawValue, parameters: nil)
+        } catch {
+            BleLogger.error("Failed to terminate session after firmware update failure: \(error)")
         }
     }
 

@@ -90,6 +90,7 @@ class PolarBackupManagerTests: XCTestCase {
 
         // Assert
         XCTAssertEqual(mockClient.writeCalls.count, 3)
+        XCTAssertTrue(mockClient.requestCalls.isEmpty, "Successful first writes must not download the files again")
     }
     
     func testRestoreBackup_createsNestedFolderPaths() async throws {
@@ -246,6 +247,99 @@ class PolarBackupManagerTests: XCTestCase {
         }
     }
     
+    func testRestoreBackup_acceptsInterruptedWriteOnlyWhenReadbackMatches() async throws {
+        let contents = Data([1, 2, 3])
+        let file = PolarBackupManager.BackupFileData(data: contents, directory: "/U/0/SLEEP/", fileName: "SCHIST.BPB")
+        mockClient.writeReturnValue = AsyncThrowingStream { $0.finish(throwing: BlePsFtpException.protocolError) }
+        mockClient.requestReturnValueClosure = { requestData in
+            let request = try Protocol_PbPFtpOperation(serializedBytes: requestData)
+            XCTAssertEqual(request.command, .get)
+            XCTAssertEqual(request.path, "/U/0/SLEEP/SCHIST.BPB")
+            return contents
+        }
+
+        try await backupManager.restoreBackup(backupFiles: [file])
+
+        XCTAssertEqual(mockClient.writeCalls.count, 1)
+        XCTAssertEqual(mockClient.requestCalls.count, 1)
+    }
+
+    func testRestoreBackup_retriesIncompleteWriteAndVerifiesRetry() async throws {
+        let contents = Data(repeating: 0xA5, count: 1_048_576)
+        let file = PolarBackupManager.BackupFileData(data: contents, directory: "/U/0/SLEEP/", fileName: "SCHIST.BPB")
+        mockClient.writeReturnValues = [
+            AsyncThrowingStream { $0.finish(throwing: BlePsFtpException.protocolError) },
+            AsyncThrowingStream { $0.finish() }
+        ]
+        var readCount = 0
+        mockClient.requestReturnValueClosure = { _ in
+            readCount += 1
+            return readCount == 1 ? Data([1]) : contents
+        }
+
+        try await backupManager.restoreBackup(backupFiles: [file])
+
+        XCTAssertEqual(mockClient.writeCalls.count, 2)
+        XCTAssertEqual(readCount, 2)
+    }
+
+    func testRestoreBackup_doesNotAcceptTruncatedRetryOrRetryIndefinitely() async throws {
+        let file = PolarBackupManager.BackupFileData(data: Data([1, 2, 3]), directory: "/U/0/SLEEP/", fileName: "SCHIST.BPB")
+        mockClient.writeReturnValues = [
+            AsyncThrowingStream { $0.finish(throwing: BlePsFtpException.protocolError) },
+            AsyncThrowingStream { $0.finish() }
+        ]
+        mockClient.requestReturnValueClosure = { _ in Data([1]) }
+
+        do {
+            try await backupManager.restoreBackup(backupFiles: [file])
+            XCTFail("A truncated file must not be reported as restored")
+        } catch {
+            XCTAssertTrue(error.localizedDescription.contains("SCHIST.BPB"))
+        }
+        XCTAssertEqual(mockClient.writeCalls.count, 2)
+        XCTAssertEqual(mockClient.requestCalls.count, 2, "A verification mismatch must not download the same file again")
+    }
+
+    func testRestoreBackup_doesNotRepeatFailedRetryReadback() async throws {
+        let contents = Data([1, 2, 3])
+        let file = PolarBackupManager.BackupFileData(data: contents, directory: "/U/0/SLEEP/", fileName: "SCHIST.BPB")
+        mockClient.writeReturnValues = [
+            AsyncThrowingStream { $0.finish(throwing: BlePsFtpException.protocolError) },
+            AsyncThrowingStream { $0.finish() }
+        ]
+        var readCount = 0
+        mockClient.requestReturnValueClosure = { _ in
+            readCount += 1
+            if readCount == 1 { return Data([1]) }
+            if readCount == 2 { throw BlePsFtpException.protocolError }
+            return contents
+        }
+
+        do {
+            try await backupManager.restoreBackup(backupFiles: [file])
+            XCTFail("A failed retry verification must not be hidden by another download")
+        } catch {
+            XCTAssertTrue(error.localizedDescription.contains("SCHIST.BPB"))
+        }
+        XCTAssertEqual(mockClient.writeCalls.count, 2)
+        XCTAssertEqual(readCount, 2)
+    }
+
+    func testRestoreBackup_doesNotRetryNonzeroDeviceError() async throws {
+        let file = PolarBackupManager.BackupFileData(data: Data([1]), directory: "/U/0/", fileName: "USERID.BPB")
+        mockClient.writeReturnValue = AsyncThrowingStream { $0.finish(throwing: BlePsFtpException.responseError(errorCode: 103)) }
+
+        do {
+            try await backupManager.restoreBackup(backupFiles: [file])
+            XCTFail("A genuine device error must not be ignored")
+        } catch {
+            XCTAssertTrue(error.localizedDescription.contains("103"))
+        }
+        XCTAssertEqual(mockClient.writeCalls.count, 1)
+        XCTAssertTrue(mockClient.requestCalls.isEmpty)
+    }
+
     func testRestoreBackup_handlesRootDirectoryWithoutCrashing() async throws {
         // Arrange
         let mockFileData = [

@@ -4,6 +4,7 @@ import androidx.annotation.VisibleForTesting
 import com.polar.androidcommunications.api.ble.BleLogger
 import com.polar.androidcommunications.api.ble.exceptions.BleAttributeError
 import com.polar.androidcommunications.api.ble.exceptions.BleDisconnected
+import com.polar.androidcommunications.api.ble.exceptions.BleOperationInProgress
 import com.polar.androidcommunications.api.ble.exceptions.BleTimeout
 import com.polar.androidcommunications.api.ble.model.gatt.BleGattBase
 import com.polar.androidcommunications.api.ble.model.gatt.BleGattTxInterface
@@ -12,10 +13,10 @@ import com.polar.androidcommunications.common.ble.ChannelUtils
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.withTimeoutOrNull
+import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.coroutines.flow.flow
 import java.util.UUID
-import java.util.concurrent.LinkedBlockingQueue
-import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 
 /**
@@ -41,6 +42,7 @@ class BleMdsClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, M
 
     companion object {
         private const val TAG = "BleMdsClient"
+        private const val CONTROL_POINT_TIMEOUT_MS = 30_000L
         val MDS_SERVICE: UUID = UUID.fromString("54220000-f6a5-4007-a371-722f4ebd8436")
         val MDS_SUPPORTED_FEATURES: UUID = UUID.fromString("54220001-f6a5-4007-a371-722f4ebd8436")
         val MDS_DEVICE_IDENTIFIER: UUID = UUID.fromString("54220002-f6a5-4007-a371-722f4ebd8436")
@@ -105,7 +107,10 @@ class BleMdsClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, M
     @Volatile private var supportedFeaturesRead = CompletableDeferred<Int>()
     private var supportedFeaturesError: Throwable? = null
     private var supportedFeaturesRetryAttempted = false
-    val mdsResponseQueue = LinkedBlockingQueue<Pair<ByteArray, Int>>()
+    private val controlPointLock = Any()
+    private var pendingControlPoint: CompletableDeferred<Int>? = null
+    // The caller was cancelled but its write callback has not arrived yet.
+    private var controlPointAbandoned = false
 
     // Bumped every time clientReady() has evaluated the cached supported-features error/retry
     // state. Tests use this to deterministically wait past the real Dispatchers.IO hop in
@@ -139,7 +144,11 @@ class BleMdsClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, M
             supportedFeaturesRetryAttempted = false
         }
         lastSeqCounter = -1
-        mdsResponseQueue.clear()
+        synchronized(controlPointLock) {
+            pendingControlPoint?.completeExceptionally(BleDisconnected())
+            pendingControlPoint = null
+            controlPointAbandoned = false
+        }
         ChannelUtils.postDisconnectedAndClearList(mdsObserverAtomicList)
     }
 
@@ -295,7 +304,13 @@ class BleMdsClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, M
             if (status != ATT_SUCCESS) {
                 BleLogger.e(TAG, "MDS Data Export write failed with status: $status")
             }
-            mdsResponseQueue.add(Pair(byteArrayOf(), status))
+            synchronized(controlPointLock) {
+                // The callback consumes the slot atomically, so a concurrent abandon cannot leave it taken.
+                val pending = pendingControlPoint
+                pendingControlPoint = null
+                controlPointAbandoned = false
+                pending
+            }?.complete(status)
         }
     }
 
@@ -333,17 +348,64 @@ class BleMdsClient(txInterface: BleGattTxInterface) : BleGattBase(txInterface, M
         return ChannelUtils.monitorNotifications(mdsObserverAtomicList, txInterface, checkConnection)
     }
 
-    fun sendControlPointCommand(command: Int): Int {
-        mdsResponseQueue.clear()
-        txInterface.transmitMessages(MDS_SERVICE, MDS_DATA_EXPORT, listOf(byteArrayOf(command.toByte())), true)
-        val pair = mdsResponseQueue.poll(30, TimeUnit.SECONDS)
-        if (pair != null) {
-            if (pair.second == ATT_SUCCESS) {
+    /**
+     * Sends a control point command and suspends until the write response arrives. Only one command
+     * may await the single write response at a time. The wait ends on response, timeout, caller
+     * cancellation or [reset] (disconnect). After a timeout or cancellation the slot stays taken
+     * until the in-flight write's callback or [reset], so later commands are rejected meanwhile; the slot
+     * is also reused once the transport has neither queued nor in-flight writes.
+     *
+     * @throws BleOperationInProgress if another command is still awaiting its response.
+     * @throws BleDisconnected if the client was reset while waiting.
+     */
+    suspend fun sendControlPointCommand(command: Int): Int {
+        val response = CompletableDeferred<Int>()
+        synchronized(controlPointLock) {
+            if (pendingControlPoint != null) {
+                // Reuse is safe only if the abandoned write is neither still queued behind other operations
+                // (non-empty queue) nor issued and awaiting its callback (write in flight). An empty queue
+                // alone is not enough, since an issued write stays in flight after the queue is cleared.
+                if (controlPointAbandoned && txInterface.transportQueueSize() == 0 &&
+                    !txInterface.isCharacteristicWriteInFlight()
+                ) {
+                    BleLogger.w(TAG, "MDS control point: no write awaiting callback for abandoned command, recovering")
+                } else {
+                    throw BleOperationInProgress("MDS control point command already in progress")
+                }
+            }
+            pendingControlPoint = response
+            controlPointAbandoned = false
+        }
+        var written = false
+        try {
+            txInterface.transmitMessages(MDS_SERVICE, MDS_DATA_EXPORT, listOf(byteArrayOf(command.toByte())), true)
+            written = true
+            val status = withTimeoutOrNull(CONTROL_POINT_TIMEOUT_MS) { response.await() }
+            if (status == null) {
+                abandonControlPoint(response)
+                throw BleTimeout("Mds response failed to receive in timeline")
+            }
+            if (status == ATT_SUCCESS) {
                 return 0
-            } else {
-                throw BleAttributeError("mds attribute ", pair.second)
+            }
+            throw BleAttributeError("mds attribute ", status)
+        } catch (cancellation: CancellationException) {
+            if (written) abandonControlPoint(response)
+            throw cancellation
+        } finally {
+            synchronized(controlPointLock) {
+                if (pendingControlPoint === response && !controlPointAbandoned) pendingControlPoint = null
             }
         }
-        throw BleTimeout("Mds response failed to receive in timeline")
+    }
+
+    /**
+     * The write may still be queued in GATT; keep the slot taken until its callback arrives (or
+     * [reset]) so that the late result cannot be attributed to a later command.
+     */
+    private fun abandonControlPoint(response: CompletableDeferred<Int>) {
+        synchronized(controlPointLock) {
+            if (pendingControlPoint === response) controlPointAbandoned = true
+        }
     }
 }

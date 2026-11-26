@@ -165,4 +165,32 @@ class PolarApiCallGuardTest {
         release.complete(Unit)
         assertEquals("first-result", first.await())
     }
+
+    @Test
+    fun `device id and BT address of the same device share one lock`() = runTest {
+        val address = "AA:BB:CC:DD:EE:FF"
+        val guard = PolarApiCallGuard { if (it.equals("abcd1234", true)) address else normalizeIdentifier(it) }
+        val started = CompletableDeferred<Unit>()
+        val release = CompletableDeferred<Unit>()
+
+        val first = async {
+            guard.guardSuspend("first", "ABCD1234") {
+                started.complete(Unit)
+                release.await()
+            }
+        }
+        started.await()
+
+        assertThrows(PolarSdkConcurrentApiCallException::class.java) {
+            runBlocking { guard.guardSuspend("second", address) { } }
+        }
+        assertThrows(PolarSdkConcurrentApiCallException::class.java) {
+            runBlocking { guard.guardSuspend("third", "aa-bb-cc-dd-ee-ff") { } }
+        }
+        assertEquals("other", guard.guardSuspend("other", "11:22:33:44:55:66") { "other" })
+
+        release.complete(Unit)
+        first.await()
+        assertEquals("again", guard.guardSuspend("again", address) { "again" })
+    }
 }

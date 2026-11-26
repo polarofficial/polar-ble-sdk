@@ -132,6 +132,173 @@ final class PolarBleApiImplMemfaultTests: XCTestCase {
         XCTAssertEqual(memfaultConfig.authorization, "")
     }
 
+    // MARK: - getDeviceTelemetryConfiguration MDS API call guard
+
+    private final class Gate: @unchecked Sendable {
+        let entered: XCTestExpectation
+        private let lock = NSLock()
+        private var released = false
+        private var waiters: [UUID: CheckedContinuation<Void, Error>] = [:]
+
+        init(expectedEntries: Int = 1) {
+            entered = XCTestExpectation(description: "gate entered")
+            entered.expectedFulfillmentCount = expectedEntries
+        }
+
+        func release() {
+            lock.lock()
+            released = true
+            let pending = Array(waiters.values)
+            waiters.removeAll()
+            lock.unlock()
+            pending.forEach { $0.resume() }
+        }
+
+        /// Signals that the guarded operation was entered, then suspends until release() or task cancellation.
+        func enterAndWait() async throws {
+            entered.fulfill()
+            let id = UUID()
+            try await withTaskCancellationHandler {
+                try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+                    lock.lock()
+                    if released {
+                        lock.unlock()
+                        continuation.resume()
+                    } else if Task.isCancelled {
+                        lock.unlock()
+                        continuation.resume(throwing: CancellationError())
+                    } else {
+                        waiters[id] = continuation
+                        lock.unlock()
+                    }
+                }
+            } onCancel: {
+                lock.lock()
+                let continuation = waiters.removeValue(forKey: id)
+                lock.unlock()
+                continuation?.resume(throwing: CancellationError())
+            }
+        }
+    }
+
+    func test_getTelemetryConfiguration_concurrentCallForSameDevice_isRejectedWhileFirstIsInProgress() async throws {
+        let gate = Gate()
+        mockMdsClient.readSupportedFeaturesGate = { try await gate.enterAndWait() }
+        defer { gate.release() }
+        let first = Task { [sut] in
+            try await sut!.getDeviceTelemetryConfiguration(telemetryType: .memfault_mds, "ABC123")
+        }
+        await fulfillment(of: [gate.entered], timeout: 2)
+
+        do {
+            _ = try await sut.getDeviceTelemetryConfiguration(telemetryType: .memfault_mds, "ABC123")
+            XCTFail("Expected concurrentApiCall")
+        } catch let error as PolarErrors {
+            guard case let .concurrentApiCall(description) = error else {
+                gate.release()
+                return XCTFail("Expected concurrentApiCall, got \(error)")
+            }
+            XCTAssertNotNil(description.range(of: "getDeviceTelemetryConfiguration"))
+        }
+
+        gate.release()
+        let config = try await first.value
+        XCTAssertNotNil(config, "the first call must not be disturbed by the rejected one")
+    }
+
+    func test_getTelemetryConfiguration_mdsReadSlotStillReserved_throwsPublicConcurrentApiCall() async throws {
+        // Arrange
+        mockMdsClient.readSupportedFeaturesReturnValue = .failure(BleMdsClientError.operationInProgress)
+
+        // Act
+        do {
+            _ = try await sut.getDeviceTelemetryConfiguration(telemetryType: .memfault_mds, "ABC123")
+            XCTFail("Expected concurrentApiCall")
+        } catch let error as PolarErrors {
+            // Assert
+            guard case let .concurrentApiCall(description) = error else {
+                return XCTFail("Expected concurrentApiCall, got \(error)")
+            }
+            XCTAssertNotNil(description.range(of: "getDeviceTelemetryConfiguration"))
+        }
+    }
+
+    func test_getTelemetryConfiguration_guardIsReleasedAfterFailure_nextCallSucceeds() async throws {
+        mockMdsClient.readSupportedFeaturesReturnValue = .failure(PolarErrors.deviceError(description: "boom"))
+        _ = try? await sut.getDeviceTelemetryConfiguration(telemetryType: .memfault_mds, "ABC123")
+
+        mockMdsClient.readSupportedFeaturesReturnValue = .success(0x01)
+        let config = try await sut.getDeviceTelemetryConfiguration(telemetryType: .memfault_mds, "ABC123")
+        XCTAssertNotNil(config)
+    }
+
+    func test_getTelemetryConfiguration_callForOtherDevice_isNotRejected() async throws {
+        let gate = Gate(expectedEntries: 2)
+        mockMdsClient.readSupportedFeaturesGate = { try await gate.enterAndWait() }
+        defer { gate.release() }
+        let first = Task { [sut] in
+            try await sut!.getDeviceTelemetryConfiguration(telemetryType: .memfault_mds, "ABC123")
+        }
+        let other = Task { [sut] in
+            try await sut!.getDeviceTelemetryConfiguration(telemetryType: .memfault_mds, "DEF456")
+        }
+        // Both calls must reach the mock gate, which proves that the calls overlap.
+        await fulfillment(of: [gate.entered], timeout: 2)
+        gate.release()
+
+        do {
+            _ = try await other.value
+        } catch PolarErrors.concurrentApiCall {
+            XCTFail("A different device must not share the guard")
+        }
+        _ = try await first.value
+    }
+
+    func test_getTelemetryConfiguration_cancelledCall_releasesGuard() async throws {
+        let gate = Gate()
+        mockMdsClient.readSupportedFeaturesGate = { try await gate.enterAndWait() }
+        defer { gate.release() }
+        let first = Task { [sut] in
+            try await sut!.getDeviceTelemetryConfiguration(telemetryType: .memfault_mds, "ABC123")
+        }
+        await fulfillment(of: [gate.entered], timeout: 2)
+        first.cancel()
+        gate.release()
+        _ = try? await first.value
+
+        mockMdsClient.readSupportedFeaturesGate = nil
+        let config = try await sut.getDeviceTelemetryConfiguration(telemetryType: .memfault_mds, "ABC123")
+        XCTAssertNotNil(config)
+    }
+
+    func test_guardKeyResolver_connectedSession_mapsDeviceIdAndAddressToSameKey() {
+        // Arrange
+        let utils = MockMdsServiceClientUtils(listener: MockCBDeviceListenerImpl())
+        utils.stubFetchedSession = mockMdsSession
+        let resolve = PolarBleApiImpl.makeGuardKeyResolver(utils)
+        let address = mockMdsSession.address.uuidString
+
+        // Act
+        let keyFromDeviceId = resolve("ABC123")
+        let keyFromAddress = resolve(address)
+
+        // Assert
+        XCTAssertEqual(keyFromDeviceId, address)
+        XCTAssertEqual(keyFromAddress, address)
+    }
+
+    func test_guardKeyResolver_noSession_usesUpperCasedIdentifier() {
+        // Arrange
+        let utils = MockMdsServiceClientUtils(listener: MockCBDeviceListenerImpl())
+        let resolve = PolarBleApiImpl.makeGuardKeyResolver(utils)
+
+        // Act
+        let key = resolve("abc123")
+
+        // Assert
+        XCTAssertEqual(key, "ABC123")
+    }
+
     func test_getTelemetryConfiguration_deviceNotFound_throws() {
         let utils = sut.serviceClientUtils as! MockMdsServiceClientUtils
         utils.stubError = PolarErrors.deviceNotFound

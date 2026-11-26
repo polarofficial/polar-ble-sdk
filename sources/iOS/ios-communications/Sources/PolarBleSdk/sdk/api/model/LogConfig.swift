@@ -33,7 +33,8 @@ public struct LogConfig {
     public var logTrigger: Int? = nil
     public var magnetometerFrequency: Int? = nil
     public var hrSensorConfig: HrSensorConfig? = nil
-    
+    public var wearLogEnabled: Bool? = nil
+
     
     public init(
         ppiLogEnabled: Bool?,
@@ -61,7 +62,8 @@ public struct LogConfig {
         speed3DLogEnabled: Bool?,
         logTrigger: Int?,
         magnetometerFrequency: Int?,
-        hrSensorConfig: HrSensorConfig?
+        hrSensorConfig: HrSensorConfig?,
+        wearLogEnabled: Bool? = nil
     ) {
         
         self.accelerationLogEnabled = accelerationLogEnabled
@@ -90,6 +92,7 @@ public struct LogConfig {
         self.logTrigger = logTrigger
         self.magnetometerFrequency = magnetometerFrequency
         self.hrSensorConfig = hrSensorConfig
+        self.wearLogEnabled = wearLogEnabled
     }
     
     static func fromProto(proto: Data_PbSensorDataLog) -> LogConfig {
@@ -120,7 +123,8 @@ public struct LogConfig {
             speed3DLogEnabled: proto.hasSpeed3DLogEnabled ? proto.speed3DLogEnabled : nil,
             logTrigger: proto.hasLogTrigger ? proto.logTrigger.rawValue : nil,
             magnetometerFrequency: proto.hasMagnetometerLogFrequency ? proto.magnetometerLogFrequency.rawValue : nil,
-            hrSensorConfig: HrSensorConfig.fromProto(proto: proto)
+            hrSensorConfig: HrSensorConfig.fromProto(proto: proto),
+            wearLogEnabled: proto.hasWearLogEnabled ? proto.wearLogEnabled : nil
         )
     }
     
@@ -150,6 +154,9 @@ public struct LogConfig {
         if (logConfig.skinTemperatureLogEnabled != nil) {pbSensorDataLog.skinTemperatureLogEnabled = logConfig.skinTemperatureLogEnabled!}
         if (logConfig.compassLogEnabled != nil) {pbSensorDataLog.compassLogEnabled = logConfig.compassLogEnabled!}
         if (logConfig.speed3DLogEnabled != nil) {pbSensorDataLog.speed3DLogEnabled = logConfig.speed3DLogEnabled!}
+        if let wearLogEnabled = logConfig.wearLogEnabled {
+            pbSensorDataLog.wearLogEnabled = wearLogEnabled
+        }
         if let magnetometerFrequency = logConfig.magnetometerFrequency,
            let frequency = Data_PbSensorDataLog.PbMagnetometerLogFrequency(rawValue: magnetometerFrequency) {
             pbSensorDataLog.magnetometerLogFrequency = frequency

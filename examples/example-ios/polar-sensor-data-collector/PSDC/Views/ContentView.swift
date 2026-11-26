@@ -24,8 +24,11 @@ struct ContentView: View {
     @State private var appHeader: String = NSLocalizedString("APP_NAME", comment: "")
     @State private var localModifications: String = ""
     @State private var presenting: Bool = false
+    @State private var isDismissingAlert = false
     @State private var presentedMessageText: String = ""
     @State private var shownMessageIds: Set<UUID> = []
+    @State private var presentedStopManager: PolarBleSdkManager?
+    @State private var presentedStopMessageId: UUID?
 
     @State private var isShareSheetPresented = false
     @State private var appLogFileURL: URL?
@@ -179,11 +182,39 @@ struct ContentView: View {
         }, message: {
             Text(presentedMessageText)
         })
-        .onChange(of: appState.bleSdkManager.generalMessage?.id) { id in
-            // Track ids already shown so switching managers back and forth doesn't
-            // re-present a message, without mutating the manager's state from the view.
-            guard let message = appState.bleSdkManager.generalMessage,
-                  !shownMessageIds.contains(message.id) else { return }
+        .onAppear { showNextMessage() }
+        .onChange(of: appState.bleSdkManager.generalMessage?.id) { _ in
+            showNextMessage()
+        }
+        .onChange(of: appState.bleSdkManager.deviceStoppedStreamMessage?.id) { _ in
+            showNextMessage()
+        }
+        .onChange(of: presenting) { isPresented in
+            guard !isPresented else { return }
+            isDismissingAlert = true
+            if let manager = presentedStopManager, let id = presentedStopMessageId {
+                manager.acknowledgeDeviceStoppedStreamMessage(id)
+            }
+            presentedStopManager = nil
+            presentedStopMessageId = nil
+            // Let SwiftUI finish dismissing the current alert before presenting another.
+            DispatchQueue.main.async {
+                isDismissingAlert = false
+                showNextMessage()
+            }
+        }
+    }
+
+    private func showNextMessage() {
+        guard !presenting, !isDismissingAlert else { return }
+        let manager = appState.bleSdkManager
+        if let message = manager.deviceStoppedStreamMessage {
+            presentedStopManager = manager
+            presentedStopMessageId = message.id
+            presentedMessageText = message.text
+            presenting = true
+        } else if let message = manager.generalMessage, !shownMessageIds.contains(message.id) {
+            // Avoid re-presenting a general message when switching back to a manager.
             shownMessageIds.insert(message.id)
             presentedMessageText = message.text
             presenting = true
@@ -310,6 +341,8 @@ struct ContentView: View {
 
 struct OperationModesTabView: View {
     @EnvironmentObject private var bleSdkManager: PolarBleSdkManager
+    @Environment(\.scenePhase) private var scenePhase
+    @State private var displayedHrChargingWarning: Message?
     var chosenActionView: SelectedAction
     
     var body: some View {
@@ -337,6 +370,50 @@ struct OperationModesTabView: View {
                 OfflineExerciseV2View()
                     .id(bleSdkManager.deviceConnectionState.get().deviceId)
                     .environmentObject(bleSdkManager)
+            }
+        }
+        .overlay(alignment: .bottom) {
+            if let warning = displayedHrChargingWarning {
+                Text(warning.text)
+                    .font(.subheadline)
+                    .foregroundColor(.white)
+                    .padding(12)
+                    .background(Color.black.opacity(0.85))
+                    .cornerRadius(8)
+                    .padding()
+                    .accessibilityIdentifier("hrChargerWarning")
+            }
+        }
+        .onAppear { showPendingHrChargingWarning() }
+        .onDisappear { displayedHrChargingWarning = nil }
+        .onChange(of: scenePhase) { phase in
+            if phase == .active { showPendingHrChargingWarning() }
+        }
+        .onChange(of: chosenActionView) { _ in
+            displayedHrChargingWarning = nil
+            showPendingHrChargingWarning()
+        }
+        .onChange(of: bleSdkManager.hrChargingWarning?.id) { _ in
+            showPendingHrChargingWarning()
+        }
+        .onChange(of: bleSdkManager.deviceId) { _ in
+            displayedHrChargingWarning = nil
+            showPendingHrChargingWarning()
+        }
+        .onChange(of: bleSdkManager.generalMessage?.id) { _ in
+            // A confirmed device stop or other alert takes precedence.
+            displayedHrChargingWarning = nil
+        }
+    }
+
+    private func showPendingHrChargingWarning() {
+        guard scenePhase == .active, chosenActionView == .online,
+              let warning = bleSdkManager.hrChargingWarning else { return }
+        displayedHrChargingWarning = warning
+        bleSdkManager.acknowledgeHrChargingWarning(warning.id)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 4) {
+            if displayedHrChargingWarning?.id == warning.id {
+                displayedHrChargingWarning = nil
             }
         }
     }

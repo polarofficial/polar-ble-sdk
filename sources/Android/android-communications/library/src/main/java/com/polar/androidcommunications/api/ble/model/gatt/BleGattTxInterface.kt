@@ -51,5 +51,12 @@ interface BleGattTxInterface {
      */
     fun transportQueueSize(): Int
 
+    /**
+     * @return true while a characteristic write has been issued to the GATT stack and its callback has
+     * not yet been delivered. Unlike [transportQueueSize], this stays true when the operation queue
+     * is cleared, so false confirms that no callback for an earlier write can still arrive.
+     */
+    fun isCharacteristicWriteInFlight(): Boolean
+
     fun isConnected(): Boolean
 }

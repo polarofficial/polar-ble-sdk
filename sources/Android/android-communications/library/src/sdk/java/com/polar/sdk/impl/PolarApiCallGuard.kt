@@ -11,11 +11,19 @@ import com.polar.androidcommunications.api.ble.BleLogger
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * Single-flight guard for device-side API calls. Calls targeting the same device identifier are mutually
- * exclusive; calls targeting different devices may run in parallel. Calls without an identifier share one key.
+ * Single-flight guard for device-side API calls. Calls targeting the same device are mutually exclusive;
+ * calls targeting different devices may run in parallel. Calls without an identifier share one key.
+ * The identifier (Polar device id or BT address) is mapped to a canonical key by [resolveKey], so both forms
+ * of the same device share one lock. Calls are rejected, not queued.
+ * Use one instance per BLE client: calls through different clients do not block each other.
  * The guard is not reentrant: a guarded call must not invoke another guarded call on the same device.
+ *
+ * @param resolveKey Maps a caller supplied device identifier to the key the lock is held under. It is invoked
+ * before the lock map is touched and must not throw. The default only normalizes the identifier.
  */
-internal class PolarApiCallGuard {
+internal class PolarApiCallGuard(
+    private val resolveKey: (String) -> String = ::normalizeIdentifier
+) {
     private val activeCalls = ConcurrentHashMap<String, ActiveCall>()
 
     /**
@@ -107,8 +115,8 @@ internal class PolarApiCallGuard {
             return null
         }
 
-        val next = ActiveCall(callName = callName, identifier = identifier)
-        val current = activeCalls.putIfAbsent(keyOf(identifier), next)
+        val next = ActiveCall(callName = callName, identifier = identifier, key = keyOf(identifier))
+        val current = activeCalls.putIfAbsent(next.key, next)
         if (current != null) {
             BleLogger.w(TAG, "Rejected $callName: ${current.description()} is still in progress")
             throw PolarSdkConcurrentApiCallException(
@@ -125,10 +133,10 @@ internal class PolarApiCallGuard {
      */
     private fun release(token: ActiveCall?) {
         token ?: return
-        activeCalls.remove(keyOf(token.identifier), token)
+        activeCalls.remove(token.key, token)
     }
 
-    private fun keyOf(identifier: String?): String = identifier ?: GLOBAL_KEY
+    private fun keyOf(identifier: String?): String = identifier?.let(resolveKey) ?: GLOBAL_KEY
 
     /**
      * Describes the currently active guarded call for logging and exception messages.
@@ -136,7 +144,8 @@ internal class PolarApiCallGuard {
      */
     private class ActiveCall(
         val callName: String,
-        val identifier: String?
+        val identifier: String?,
+        val key: String
     ) {
         /**
          * Formats the active call into a human-readable description.
@@ -149,3 +158,8 @@ internal class PolarApiCallGuard {
         const val GLOBAL_KEY = "<global>"
     }
 }
+
+/**
+ * Normalizes a device identifier: upper-cased, with BT address separators unified to ':'.
+ */
+internal fun normalizeIdentifier(identifier: String): String = identifier.uppercase().replace('-', ':')

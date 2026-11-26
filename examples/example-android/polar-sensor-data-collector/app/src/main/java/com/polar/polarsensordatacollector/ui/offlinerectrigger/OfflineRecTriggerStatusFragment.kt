@@ -95,14 +95,14 @@ class OfflineRecTriggerStatusFragment : Fragment(R.layout.fragment_offline_trigg
         }
         hrTriggerStatus = view.findViewById(R.id.hr_trigger_status)
         // HR do not have settings
-        hrTriggerStatus.findViewById<Button>(R.id.feature_selection_settings_button)?.visibility = View.INVISIBLE
+        hrTriggerStatus.findViewById<Button>(R.id.feature_selection_settings_button)?.visibility = GONE
 
         accTriggerStatus = view.findViewById(R.id.acc_trigger_status)
         ecgTriggerStatus = view.findViewById(R.id.ecg_trigger_status)
         ppgTriggerStatus = view.findViewById(R.id.ppg_trigger_status)
         ppiTriggerStatus = view.findViewById(R.id.ppi_trigger_status)
         // PPI do not have settings
-        ppiTriggerStatus.findViewById<Button>(R.id.feature_selection_settings_button)?.visibility = View.INVISIBLE
+        ppiTriggerStatus.findViewById<Button>(R.id.feature_selection_settings_button)?.visibility = GONE
         magTriggerStatus = view.findViewById(R.id.mag_trigger_status)
         gyrTriggerStatus = view.findViewById(R.id.gyr_trigger_status)
         pressureTriggerStatus = view.findViewById(R.id.pressure_trigger_status)

@@ -2,6 +2,7 @@
     <string name="app_name">PSDC</string>
     <string name="start_streaming">Start streaming</string>
     <string name="stop_streaming">Stop streaming</string>
+    <string name="online_hr_charger_warning">Device connected to charger. HR streaming may be interrupted.</string>
     <string name="start_offline_recording">Start offline recording</string>
     <string name="search">Search</string>
     <string name="disconnect_all">Disconnect All</string>
@@ -62,6 +63,8 @@
     <string name="met_logging_disable">Disable Metabolic Equivalent logging</string>
     <string name="sleep_logging_enable">Enable Sleep logging</string>
     <string name="sleep_logging_disable">Disable Sleep logging</string>
+    <string name="wear_logging_enable">Enable Wear Detection logging</string>
+    <string name="wear_logging_disable">Disable Wear Detection logging</string>
     <string name="fetch_errorlog">Fetch errorlog</string>
     <string name="errorlog_exported_mail_subject">Errorlog exported with PSDC</string>
     <string name="errorlog_exported_mail_text">Hello,\n Errorlog exported as an attachment</string>

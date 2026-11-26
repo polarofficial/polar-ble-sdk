@@ -16,9 +16,7 @@
     <a title="PolarBleSdk  Reference"></a>
     <header>
       <div class="content-wrapper">
-        <p><a href="index.html">PolarBleSdk 8.5.2
-&gt;= 1.10
-    s.source            = { :git =&gt; &#39;https://github.com/polarofficial/polar-ble-sdk.git&#39;, :tag =&gt; s.version.to_s } Docs</a> (44% documented)</p>
+        <p><a href="index.html">PolarBleSdk 9.0.0 Docs</a> (43% documented)</p>
         <p class="header-right"><a href="https://github.com/polarofficial/polar-ble-sdk"><img src="img/gh.png" alt="GitHub"/>View on GitHub</a></p>
         <div class="header-right">
           <form role="search" action="search.json">
@@ -597,7 +595,6 @@
 
 <ul>
 <li><a href="#...-using-Swift-Package-Manager">&hellip; using Swift Package Manager</a></li>
-<li><a href="#...-using-CocoaPods">&hellip; using CocoaPods</a></li>
 <li><a href="#...-using-XCFramework">&hellip; using XCFramework</a></li>
 <li><a href="#...-using-git-submodules">&hellip; using git submodules</a></li>
 <li><a href="#...-using-Carthage">&hellip; using Carthage</a></li>
@@ -624,7 +621,7 @@
 <h3 id='to-update-dependencies' class='heading'>To update dependencies</h3>
 
 <ul>
-<li>the dependent libraries are referenced by Cocoapods. To update dependencies please modify the <code>Podfile</code></li>
+<li>the dependent libraries are referenced by Swift Package Manager. To update dependencies please modify <code>Package.swift</code></li>
 </ul>
 <h2 id='install' class='heading'>Install</h2>
 <h3 id='using-swift-package-manager' class='heading'>&hellip; using Swift Package Manager</h3>
@@ -632,83 +629,52 @@
 <ul>
 <li>iOS Communications project is made available via Swift Package. Please get familiar with <a href="https://developer.apple.com/documentation/swift_packages/adding_package_dependencies_to_your_app">XCode help</a> how to take Swift Package into use on your project.</li>
 </ul>
-<h3 id='using-cocoapods' class='heading'>&hellip; using CocoaPods</h3>
+<h3 id='using-xcframework' class='heading'>&hellip; using XCFramework</h3>
 
 <ul>
-<li>In your <code>Podfile</code> add
-&ldquo;`
-source &lsquo;<a href="https://github.com/CocoaPods/Specs.git">https://github.com/CocoaPods/Specs.git</a>&rsquo;</li>
+<li>From <code>/scripts</code> folder run the <code>./build_ios_communications.sh</code> or  <code>./build_sdk.sh</code> depending on target of your choice. Both scripts builds the XCFrameworks.</li>
+<li>Copy generated XCFramework from <code>iOSCommunicationsBuild/</code>  or from <code>SdkBuild/</code> to your project</li>
 </ul>
+<h3 id='using-git-submodules' class='heading'>&hellip; using git submodules</h3>
 
-<p>use_frameworks!</p>
+<ul>
+<li><code>git submodule add &lt;repository_url&gt;</code></li>
+<li>Drag and drop the iOS communications project file (i.e. <code>iOSCommunications.xcodeproj</code>) to yours Xcode project Project Navigator</li>
+<li>In your project choose the <code>Target → General → Frameworks, Libraries and Embedded Content → Press &quot;+&quot;</code>. From opened dialog select the target <code>iOSCommunications</code>, <code>PolarBleSdk</code> or <code>PolarBleSdkWatchOs</code> depending on your needs.<br></li>
+</ul>
+<h3 id='using-carthage' class='heading'>&hellip; using Carthage</h3>
 
-<p>target &#39;YOUR_TARGET_NAME&rsquo; do
-    pod &lsquo;iOSCommunications&rsquo;, &lsquo;~&gt; 14.1.6&rsquo;
-end</p>
-<pre class="highlight plaintext"><code>
-And run
+<ul>
+<li>Not supported at the moment</li>
+</ul>
+<h2 id='usage' class='heading'>Usage</h2>
 
-</code></pre>
+<ul>
+<li><strong>RxSwift</strong>: 
 
-<p>$ pod install</p>
-<pre class="highlight plaintext"><code>
-### ... using XCFramework
-* From `/scripts` folder run the `./build_ios_communications.sh` or  `./build_sdk.sh` depending on target of your choice. Both scripts builds the XCFrameworks. 
-* Copy generated XCFramework from `iOSCommunicationsBuild/`  or from `SdkBuild/` to your project
+<ul>
+<li>To use iOS Communications API&rsquo;s you must have <a href="https://github.com/ReactiveX/RxSwift">RxSwift</a> added to your project.</li>
+</ul></li>
+<li><strong>Permissions</strong>
 
-### ... using git submodules
-* `git submodule add &lt;repository_url&gt;`
-* Drag and drop the iOS communications project file (i.e. `iOSCommunications.xcodeproj`) to yours Xcode project Project Navigator
-*  In your project choose the `Target → General → Frameworks, Libraries and Embedded Content → Press "+"`. From opened dialog select the target `iOSCommunications`, `PolarBleSdk` or `PolarBleSdkWatchOs` depending on your needs.  
+<ul>
+<li>In project target settings enable <strong>Background Modes</strong>, add  <strong>Uses Bluetooth LE accessories</strong></li>
+<li>In your project target property list add the key  <a href="https://developer.apple.com/documentation/bundleresources/information_property_list/nsbluetoothalwaysusagedescription">NSBluetoothAlwaysUsageDescription</a>
+<code>xml
+&lt;key&gt;NSBluetoothAlwaysUsageDescription&lt;/key&gt;
+&lt;string&gt;Needs BLE permission&lt;/string&gt;
+</code></li>
+</ul></li>
+</ul>
+<h2 id='debugging' class='heading'>Debugging</h2>
 
-### ... using Carthage 
-* Not supported at the moment
+<p>To debug the iOS communications or Polar BLE SDK target follow the steps provided below:</p>
 
-## Usage
-* **RxSwift**: 
-    * To use iOS Communications API's you must have [RxSwift](https://github.com/ReactiveX/RxSwift) added to your project. 
-* **Permissions**
-    * In project target settings enable __Background Modes__, add  __Uses Bluetooth LE accessories__
-    * In your project target property list add the key  [NSBluetoothAlwaysUsageDescription](https://developer.apple.com/documentation/bundleresources/information_property_list/nsbluetoothalwaysusagedescription)
-    ```xml
-    &lt;key&gt;NSBluetoothAlwaysUsageDescription&lt;/key&gt;
-    &lt;string&gt;Needs BLE permission&lt;/string&gt;
-    ```
-
-## Debugging
-
-To debug the iOS communications or Polar BLE SDK target follow the steps provided below:
-
-1. Clone the iOS communications repository (this repository) by running `git clone &lt;
-   repository_url&gt;.
-2. Follow the steps below depending on which dependency your app uses.
-
-### If you are using CocoaPods as a dependency in your app
-
-#### iOS Communications
-
-Add the following line to your Podfile:
-
-```ruby
-target '&lt;target&gt;' do
-    ...
-    pod 'iOSCommunications', :path =&gt; '&lt;relative_path_to_cloned_repo&gt;/ios-communications/'
-    ...
-end    
-</code></pre>
-
-<p>Then, run:</p>
-<pre class="highlight shell"><code>    pod update iOSCommunications
-</code></pre>
-<h4 id='polar-ble-sdk' class='heading'>Polar BLE SDK</h4>
-
-<p>Add the following line to your Podfile:</p>
-<pre class="highlight ruby"><code>      <span class="n">pod</span> <span class="s1">'PolarBleSdk'</span><span class="p">,</span> <span class="ss">:path</span> <span class="o">=&gt;</span> <span class="s1">'&lt;relative_path_to_cloned_repo&gt;/ios-communications/'</span>
-</code></pre>
-
-<p>Then, run:</p>
-<pre class="highlight shell"><code>    pod update PolarBleSdk
-</code></pre>
+<ol>
+<li>Clone the iOS communications repository (this repository) by running `git clone &lt;
+repository_url&gt;.</li>
+<li>Follow the steps below depending on which dependency your app uses.</li>
+</ol>
 <h3 id='if-you-are-using-swift-package-manager-as-a-dependency-in-your-app' class='heading'>If you are using Swift Package Manager as a dependency in your app</h3>
 
 <ol>
@@ -719,7 +685,7 @@ end
           </section>
         </section>
         <section id="footer">
-          <p>&copy; 2026 <a class="link" href="https://github.com/polarofficial/polar-ble-sdk" target="_blank" rel="external noopener">Polar Electro Oy</a>. All rights reserved. (Last updated: 2026-11-13)</p>
+          <p>&copy; 2026 <a class="link" href="" target="_blank" rel="external noopener">Polar Electro Oy</a>. All rights reserved. (Last updated: 2026-11-26)</p>
           <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external noopener">jazzy ♪♫ v0.15.3</a>, a <a class="link" href="https://realm.io" target="_blank" rel="external noopener">Realm</a> project.</p>
         </section>
       </article>

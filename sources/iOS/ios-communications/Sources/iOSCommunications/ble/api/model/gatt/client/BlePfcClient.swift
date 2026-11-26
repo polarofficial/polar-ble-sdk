@@ -64,7 +64,7 @@ public class BlePfcClient: BleGattClientBase, @unchecked Sendable {
              pfcConfigureBleMode = 7, pfcConfigureMultiConnection = 8, pfcRequestMultiConnectionSetting = 9,
              pfcConfigureAntPlusSetting = 10, pfcRequestAntPlusSetting = 11,
              pfcRequestSecurityMode = 12, pfcConfigureSensorInitiatedSecurityMode = 14,
-             pfcRequestSensorInitiatedSecurityMode = 15
+             pfcRequestSensorInitiatedSecurityMode = 15, pfcConfigureSecurityMode = 16
 
         public var description: String { return "PFC_\(rawValue)" }
     }

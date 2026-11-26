@@ -244,6 +244,15 @@ struct Data_PbSensorDataLog {
   /// Clears the value of `speed3DLogEnabled`. Subsequent reads from it will return its default value.
   mutating func clearSpeed3DLogEnabled() {_uniqueStorage()._speed3DLogEnabled = nil}
 
+  var wearLogEnabled: Bool {
+    get {return _storage._wearLogEnabled ?? false}
+    set {_uniqueStorage()._wearLogEnabled = newValue}
+  }
+  /// Returns true if `wearLogEnabled` has been explicitly set.
+  var hasWearLogEnabled: Bool {return _storage._wearLogEnabled != nil}
+  /// Clears the value of `wearLogEnabled`. Subsequent reads from it will return its default value.
+  mutating func clearWearLogEnabled() {_uniqueStorage()._wearLogEnabled = nil}
+
   var magnetometerLogFrequency: Data_PbSensorDataLog.PbMagnetometerLogFrequency {
     get {return _storage._magnetometerLogFrequency ?? .magLog10Hz}
     set {_uniqueStorage()._magnetometerLogFrequency = newValue}
@@ -427,6 +436,7 @@ extension Data_PbSensorDataLog: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     22: .standard(proto: "skin_temperature_log_enabled"),
     23: .standard(proto: "compass_log_enabled"),
     24: .standard(proto: "speed3d_log_enabled"),
+    30: .standard(proto: "wear_log_enabled"),
     50: .standard(proto: "magnetometer_log_frequency"),
     100: .standard(proto: "retain_settings_over_boot"),
     29: .standard(proto: "ble_hr_sensor_config"),
@@ -457,6 +467,7 @@ extension Data_PbSensorDataLog: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     var _skinTemperatureLogEnabled: Bool? = nil
     var _compassLogEnabled: Bool? = nil
     var _speed3DLogEnabled: Bool? = nil
+    var _wearLogEnabled: Bool? = nil
     var _magnetometerLogFrequency: Data_PbSensorDataLog.PbMagnetometerLogFrequency? = nil
     var _retainSettingsOverBoot: Bool? = nil
     var _bleHrSensorConfig: Data_PbBleHrSensorConfig? = nil
@@ -498,6 +509,7 @@ extension Data_PbSensorDataLog: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
       _skinTemperatureLogEnabled = source._skinTemperatureLogEnabled
       _compassLogEnabled = source._compassLogEnabled
       _speed3DLogEnabled = source._speed3DLogEnabled
+      _wearLogEnabled = source._wearLogEnabled
       _magnetometerLogFrequency = source._magnetometerLogFrequency
       _retainSettingsOverBoot = source._retainSettingsOverBoot
       _bleHrSensorConfig = source._bleHrSensorConfig
@@ -551,6 +563,7 @@ extension Data_PbSensorDataLog: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
         case 23: try { try decoder.decodeSingularBoolField(value: &_storage._compassLogEnabled) }()
         case 24: try { try decoder.decodeSingularBoolField(value: &_storage._speed3DLogEnabled) }()
         case 29: try { try decoder.decodeSingularMessageField(value: &_storage._bleHrSensorConfig) }()
+        case 30: try { try decoder.decodeSingularBoolField(value: &_storage._wearLogEnabled) }()
         case 50: try { try decoder.decodeSingularEnumField(value: &_storage._magnetometerLogFrequency) }()
         case 100: try { try decoder.decodeSingularBoolField(value: &_storage._retainSettingsOverBoot) }()
         default: break
@@ -640,6 +653,9 @@ extension Data_PbSensorDataLog: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
       try { if let v = _storage._bleHrSensorConfig {
         try visitor.visitSingularMessageField(value: v, fieldNumber: 29)
       } }()
+      try { if let v = _storage._wearLogEnabled {
+        try visitor.visitSingularBoolField(value: v, fieldNumber: 30)
+      } }()
       try { if let v = _storage._magnetometerLogFrequency {
         try visitor.visitSingularEnumField(value: v, fieldNumber: 50)
       } }()
@@ -679,6 +695,7 @@ extension Data_PbSensorDataLog: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
         if _storage._skinTemperatureLogEnabled != rhs_storage._skinTemperatureLogEnabled {return false}
         if _storage._compassLogEnabled != rhs_storage._compassLogEnabled {return false}
         if _storage._speed3DLogEnabled != rhs_storage._speed3DLogEnabled {return false}
+        if _storage._wearLogEnabled != rhs_storage._wearLogEnabled {return false}
         if _storage._magnetometerLogFrequency != rhs_storage._magnetometerLogFrequency {return false}
         if _storage._retainSettingsOverBoot != rhs_storage._retainSettingsOverBoot {return false}
         if _storage._bleHrSensorConfig != rhs_storage._bleHrSensorConfig {return false}

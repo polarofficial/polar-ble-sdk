@@ -31,7 +31,8 @@ data class LogConfig(
     val retainSettingsOverBoot: Boolean? = null,
     val logTriggerSettings: PbSensorDataLog.PbLogTrigger? = null,
     val magnetometerFrequency: PbSensorDataLog.PbMagnetometerLogFrequency? = null,
-    val hrSensorConfig: HrSensorConfig? = null
+    val hrSensorConfig: HrSensorConfig? = null,
+    val wearLogEnabled: Boolean? = null
 ) {
     companion object {
         const val LOG_CONFIG_FILENAME = "/SDLOGS.BPB"
@@ -63,6 +64,7 @@ data class LogConfig(
                 skinTemperatureLogEnabled = if (proto.hasSkinTemperatureLogEnabled()) proto.skinTemperatureLogEnabled else null,
                 compassLogEnabled = if (proto.hasCompassLogEnabled()) proto.compassLogEnabled else null,
                 speed3DLogEnabled = if (proto.hasSpeed3DLogEnabled()) proto.speed3DLogEnabled else null,
+                wearLogEnabled = if (proto.hasWearLogEnabled()) proto.wearLogEnabled else null,
                 retainSettingsOverBoot = if (proto.hasRetainSettingsOverBoot()) proto.retainSettingsOverBoot else null,
                 logTriggerSettings = if (proto.hasLogTrigger()) proto.logTrigger else null,
                 magnetometerFrequency = if (proto.hasMagnetometerLogFrequency()) proto.magnetometerLogFrequency else null,
@@ -96,6 +98,7 @@ data class LogConfig(
         if (skinTemperatureLogEnabled != null) builder.skinTemperatureLogEnabled = skinTemperatureLogEnabled
         if (compassLogEnabled != null) builder.compassLogEnabled = compassLogEnabled
         if (speed3DLogEnabled != null) builder.speed3DLogEnabled = speed3DLogEnabled
+        if (wearLogEnabled != null) builder.wearLogEnabled = wearLogEnabled
         if (retainSettingsOverBoot != null) builder.retainSettingsOverBoot = retainSettingsOverBoot
         if (logTriggerSettings != null) builder.logTrigger = logTriggerSettings
         if (magnetometerFrequency != null) builder.magnetometerLogFrequency = magnetometerFrequency

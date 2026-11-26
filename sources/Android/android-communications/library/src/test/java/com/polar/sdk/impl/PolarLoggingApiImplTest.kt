@@ -190,6 +190,7 @@ internal class PolarLoggingApiImplTest {
             .setPpiLogEnabled(false)
             .setAccelerationLogEnabled(true)
             .setGpsLogEnabled(false)
+            .setWearLogEnabled(true)
             .setBleHrSensorConfig(hrSensorConfig)
             .build()
             .toByteArray()
@@ -202,6 +203,7 @@ internal class PolarLoggingApiImplTest {
         assertEquals(false, config.ppiLogEnabled)
         assertEquals(true,  config.accelerationLogEnabled)
         assertEquals(false, config.gpsLogEnabled)
+        assertEquals(true, config.wearLogEnabled)
         assertNotNull(config.hrSensorConfig)
         assertEquals("Polar H10 ABCD1234", config.hrSensorConfig?.deviceInformation)
         assertEquals(true, config.hrSensorConfig?.waitUntilConnected)
@@ -222,7 +224,45 @@ internal class PolarLoggingApiImplTest {
         assertNull(config.accelerationLogEnabled)
         assertNull(config.gpsLogEnabled)
         assertNull(config.sleepLogEnabled)
+        assertNull(config.wearLogEnabled)
         assertNull(config.hrSensorConfig)
+    }
+
+    @Test
+    fun `setLogConfig enables and disables wear logging without changing other settings`() = runTest {
+        val (client, listener) = mockBleConnection(deviceId)
+        val api = PolarLoggingApiImpl(listener)
+        val captured = mutableListOf<Pair<ByteArray, ByteArray>>()
+        every { client.write(any(), any()) } answers {
+            captured += (firstArg<ByteArray>() to secondArg<InputStream>().readBytes())
+            flowOf(1L)
+        }
+
+        for (enabled in listOf(true, false)) {
+            val config = LogConfig(ohrLogEnabled = true, ppiLogEnabled = false, wearLogEnabled = enabled)
+            api.setLogConfig(deviceId, config)
+
+            val (requestBytes, payload) = captured.last()
+            val request = PftpRequest.PbPFtpOperation.parseFrom(requestBytes)
+            assertEquals(PftpRequest.PbPFtpOperation.Command.PUT, request.command)
+            assertEquals(LogConfig.LOG_CONFIG_FILENAME, request.path)
+            val proto = SensorDataLog.PbSensorDataLog.parseFrom(payload)
+            assertTrue(proto.hasWearLogEnabled())
+            assertEquals(enabled, proto.wearLogEnabled)
+            assertEquals(config, LogConfig.fromBytes(payload))
+        }
+        verify(exactly = 2) { client.write(any(), any()) }
+    }
+
+    @Test
+    fun `unset wear logging is omitted from serialized config`() {
+        assertTrue(!LogConfig().toProto().hasWearLogEnabled())
+    }
+
+    @Test
+    fun `wear logging uses firmware protobuf field 30`() {
+        assertArrayEquals(byteArrayOf(0xF0.toByte(), 0x01, 0x01), LogConfig(wearLogEnabled = true).toProto().toByteArray())
+        assertArrayEquals(byteArrayOf(0xF0.toByte(), 0x01, 0x00), LogConfig(wearLogEnabled = false).toProto().toByteArray())
     }
 
     @Test

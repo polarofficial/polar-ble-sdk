@@ -24,13 +24,10 @@ struct SettingsView: View {
     @State private var selectedDerivedMethods: Set<PolarDerivedMeasurementMethod> = [.downsample]
 
     private var derivedSourceRates: [Int] {
-        guard let g = bleSdkManager.accDerivedSettingsGroup else { return [] }
-        let rates = g.sourceSampleRates
-        return (rates.contains(50) ? [50] : rates.sorted())
+        StreamSettingsLogic.derivedSourceRates(bleSdkManager.accDerivedSettingsGroup)
     }
     private var derivedTimeWindows: [Int] {
-        guard let g = bleSdkManager.accDerivedSettingsGroup else { return [] }
-        return g.timeWindowOptions.sorted()
+        StreamSettingsLogic.derivedTimeWindows(bleSdkManager.accDerivedSettingsGroup)
     }
     private var showDerivedSection: Bool {
         isOfflineSettings && streamedFeature == .acc && bleSdkManager.accDerivedSettingsGroup != nil
@@ -43,33 +40,37 @@ struct SettingsView: View {
                     ForEach(streamSettings.sortedSettings) { settings in
                         if(settings.type == PolarSensorSetting.SettingType.sampleRate) {
                             HStack {
-                                Picker("Sample rate", selection: $selectedSampleRate) {
+                                Picker("settings.sampleRate", selection: $selectedSampleRate) {
                                     ForEach(settings.sortedValues.indices, id: \.self) {
                                         Text("\(settings.sortedValues[$0])")
                                     }
                                 }
+                                    .accessibilityIdentifier("psdc.settings.sampleRatePicker")
                             }
                         } else if(settings.type == PolarSensorSetting.SettingType.range) {
-                            Picker("Range", selection: $selectedRange) {
+                            Picker("settings.range", selection: $selectedRange) {
                                 ForEach(settings.sortedValues.indices, id: \.self) {
                                     Text("\(settings.sortedValues[$0])")
                                 }
                             }
+                                .accessibilityIdentifier("psdc.settings.rangePicker")
                         } else if(settings.type == PolarSensorSetting.SettingType.resolution) {
                             HStack {
-                                Picker("Resolution", selection: $selectedResolution) {
+                                Picker("settings.resolution", selection: $selectedResolution) {
                                     ForEach(settings.sortedValues.indices, id: \.self) {
                                         Text("\(settings.sortedValues[$0])")
                                     }
                                 }
+                                    .accessibilityIdentifier("psdc.settings.resolutionPicker")
                             }
                         } else if(settings.type == PolarSensorSetting.SettingType.channels) {
                             HStack {
-                                Picker("Channels", selection: $selectedChannels) {
+                                Picker("settings.channels", selection: $selectedChannels) {
                                     ForEach(settings.sortedValues.indices, id: \.self) {
                                         Text("\(settings.sortedValues[$0])")
                                     }
                                 }
+                                    .accessibilityIdentifier("psdc.settings.channelsPicker")
                             }
                         } else {
                             EmptyView()
@@ -77,28 +78,31 @@ struct SettingsView: View {
                     }
 
                     if showDerivedSection, let group = bleSdkManager.accDerivedSettingsGroup {
-                        Section(header: Text("Derived data")) {
-                            Toggle("Enable derived data", isOn: $derivedEnabled)
+                        Section(header: Text("settings.derived.title")) {
+                            Toggle("settings.derived.enable", isOn: $derivedEnabled)
+                                .accessibilityIdentifier("psdc.settings.derivedEnableToggle")
 
                             if derivedEnabled {
                                 if !derivedSourceRates.isEmpty {
-                                    Picker("Source rate", selection: $selectedDerivedSourceRateIdx) {
+                                    Picker("settings.derived.sourceRate", selection: $selectedDerivedSourceRateIdx) {
                                         ForEach(derivedSourceRates.indices, id: \.self) { i in
                                             Text("\(derivedSourceRates[i]) Hz")
                                         }
                                     }
+                                    .accessibilityIdentifier("psdc.settings.derivedSourceRatePicker")
                                 }
 
                                 if !derivedTimeWindows.isEmpty {
-                                    Picker("Time window", selection: $selectedDerivedTimeWindowIdx) {
+                                    Picker("settings.derived.timeWindow", selection: $selectedDerivedTimeWindowIdx) {
                                         ForEach(derivedTimeWindows.indices, id: \.self) { i in
-                                            Text(formatTimeWindow(derivedTimeWindows[i]))
+                                            Text(StreamSettingsLogic.formatTimeWindow(derivedTimeWindows[i]))
                                         }
                                     }
+                                    .accessibilityIdentifier("psdc.settings.derivedTimeWindowPicker")
                                 }
 
                                 VStack(alignment: .leading, spacing: 4) {
-                                    Text("Methods").font(.subheadline).foregroundColor(.secondary)
+                                    Text("settings.derived.methods").font(.subheadline).foregroundColor(.secondary)
                                     ForEach(group.supportedMethods.sorted(by: { $0.rawValue < $1.rawValue }), id: \.self) { method in
                                         Button(action: { toggleMethod(method) }) {
                                             HStack {
@@ -109,6 +113,7 @@ struct SettingsView: View {
                                         }
                                         .foregroundColor(.primary)
                                         .buttonStyle(PlainButtonStyle())
+                                        .accessibilityIdentifier("psdc.settings.derivedMethodButton.\(method.rawValue)")
                                     }
                                 }
                                 .padding(.vertical, 4)
@@ -125,7 +130,7 @@ struct SettingsView: View {
                     }
                     presentationMode.wrappedValue.dismiss()
                 }) {
-                    Text(saveOnly ? "SAVE" : "START")
+                    Text(LocalizedStringKey(saveOnly ? "settings.save" : "settings.start"))
                         .font(.system(size: 17, weight: .bold))
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
@@ -133,17 +138,19 @@ struct SettingsView: View {
                         .background(Color.red)
                         .cornerRadius(10)
                 }
+                .accessibilityIdentifier(saveOnly ? "psdc.settings.saveButton" : "psdc.settings.startButton")
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)
             }
-            .navigationTitle("\(getShortNameForDataType(streamedFeature)) settings")
+            .navigationTitle(String(format: NSLocalizedString("settings.navTitle", comment: ""), getShortNameForDataType(streamedFeature)))
             .toolbar(content: {
                 ToolbarItem(placement: .cancellationAction) {
                     Button {
                         presentationMode.wrappedValue.dismiss()
                     } label: {
-                        Text("Cancel")
+                        Text("common.cancel")
                     }
+                    .accessibilityIdentifier("psdc.settings.cancelButton")
                 }
             })
             .onAppear {
@@ -157,112 +164,49 @@ struct SettingsView: View {
     private func restorePreviousSettings() {
         guard !isOfflineSettings,
               let saved = bleSdkManager.savedOnlineStreamSettings[streamedFeature] else { return }
-        func index(for type: PolarSensorSetting.SettingType) -> Int? {
-            guard let value = saved.settings.first(where: { $0.type == type })?.values.first,
-                  let available = streamSettings.sortedSettings.first(where: { $0.type == type }) else { return nil }
-            return available.sortedValues.firstIndex(of: value)
-        }
-        if let i = index(for: .sampleRate) { selectedSampleRate = i }
-        if let i = index(for: .range) { selectedRange = i }
-        if let i = index(for: .resolution) { selectedResolution = i }
-        if let i = index(for: .channels) { selectedChannels = i }
+        let indices = StreamSettingsLogic.restoredIndices(saved: saved, available: streamSettings)
+        selectedSampleRate = indices.sampleRate
+        selectedRange = indices.range
+        selectedResolution = indices.resolution
+        selectedChannels = indices.channels
     }
 
     private func restorePreviousDerivedSettings() {
         guard showDerivedSection else { return }
-        derivedEnabled = false
-        if let prev = bleSdkManager.accDerivedSettings {
-            selectedDerivedMethods = prev.selectedMethods
-            if let idx = derivedSourceRates.firstIndex(of: prev.sourceSampleRate) {
-                selectedDerivedSourceRateIdx = idx
-            }
-            if let idx = derivedTimeWindows.firstIndex(of: prev.timeWindowMs) {
-                selectedDerivedTimeWindowIdx = idx
-            }
-        }
+        let restored = StreamSettingsLogic.restoredDerived(
+            saved: bleSdkManager.accDerivedSettings, group: bleSdkManager.accDerivedSettingsGroup)
+        derivedEnabled = restored.enabled
+        selectedDerivedMethods = restored.methods
+        selectedDerivedSourceRateIdx = restored.sourceRateIndex
+        selectedDerivedTimeWindowIdx = restored.timeWindowIndex
     }
 
     private func toggleMethod(_ method: PolarDerivedMeasurementMethod) {
-        if selectedDerivedMethods.contains(method) {
-            if selectedDerivedMethods.count > 1 { selectedDerivedMethods.remove(method) }
-        } else {
-            selectedDerivedMethods.insert(method)
-        }
+        selectedDerivedMethods = StreamSettingsLogic.toggled(method, in: selectedDerivedMethods)
     }
 
-    private func formatTimeWindow(_ ms: Int) -> String {
-        let duration: String
-        switch ms {
-        case ..<1_000:        duration = "\(ms) ms"
-        case ..<60_000:       duration = "\(ms / 1_000) s"
-        case ..<3_600_000:    duration = "\(ms / 60_000) min"
-        default:              duration = "\(ms / 3_600_000) h"
-        }
-        let outputLabel: String
-        switch ms {
-        case 0:               outputLabel = ""
-        case ...1_000:        outputLabel = " — \(1000 / ms) Hz output"
-        case ..<60_000:       outputLabel = " — 1 sample / \(ms / 1_000) s"
-        case ..<3_600_000:    outputLabel = " — 1 sample / \(ms / 60_000) min"
-        default:              outputLabel = " — 1 sample / \(ms / 3_600_000) h"
-        }
-        return "\(duration)\(outputLabel)"
+    private var chosenSettings: RecordingSettings {
+        StreamSettingsLogic.chosen(
+            from: streamSettings, feature: streamedFeature,
+            indices: .init(sampleRate: selectedSampleRate, range: selectedRange,
+                           resolution: selectedResolution, channels: selectedChannels))
     }
 
     func saveSettings() {
-        var settingValues: [TypeSetting] = []
-        if let sampleRate = streamSettings.sortedSettings.first(where: { $0.type == PolarSensorSetting.SettingType.sampleRate })?.sortedValues[selectedSampleRate] {
-            settingValues.append(TypeSetting(type: PolarSensorSetting.SettingType.sampleRate, values: [sampleRate]))
-        }
-        if let range = streamSettings.sortedSettings.first(where: { $0.type == PolarSensorSetting.SettingType.range })?.sortedValues[selectedRange] {
-            settingValues.append(TypeSetting(type: PolarSensorSetting.SettingType.range, values: [range]))
-        }
-        if let resolution = streamSettings.sortedSettings.first(where: { $0.type == PolarSensorSetting.SettingType.resolution })?.sortedValues[selectedResolution] {
-            settingValues.append(TypeSetting(type: PolarSensorSetting.SettingType.resolution, values: [resolution]))
-        }
-        if let channel = streamSettings.sortedSettings.first(where: { $0.type == PolarSensorSetting.SettingType.channels })?.sortedValues[selectedChannels] {
-            settingValues.append(TypeSetting(type: PolarSensorSetting.SettingType.channels, values: [channel]))
-        }
-        bleSdkManager.saveOnlineStreamSettings(
-            feature: streamedFeature,
-            settings: RecordingSettings(feature: streamedFeature, settings: settingValues)
-        )
+        bleSdkManager.saveOnlineStreamSettings(feature: streamedFeature, settings: chosenSettings)
     }
 
     func startStream() {
-        var settingValues:[TypeSetting] = []
-        
-        if let sampleRate = streamSettings.sortedSettings.first(where: {$0.type ==  PolarSensorSetting.SettingType.sampleRate})?.sortedValues[selectedSampleRate] {
-            settingValues.append(TypeSetting(type: PolarSensorSetting.SettingType.sampleRate, values: [sampleRate]))
-        }
-        
-        if let range = streamSettings.sortedSettings.first(where: {$0.type ==  PolarSensorSetting.SettingType.range})?.sortedValues[selectedRange] {
-            settingValues.append(TypeSetting(type: PolarSensorSetting.SettingType.range, values: [range]))
-        }
-        
-        if let resolution = streamSettings.sortedSettings.first(where: {$0.type ==  PolarSensorSetting.SettingType.resolution})?.sortedValues[selectedResolution] {
-            settingValues.append(TypeSetting(type: PolarSensorSetting.SettingType.resolution, values: [resolution]))
-        }
-        
-        if let channel = streamSettings.sortedSettings.first(where: {$0.type ==  PolarSensorSetting.SettingType.channels})?.sortedValues[selectedChannels] {
-            settingValues.append(TypeSetting(type: PolarSensorSetting.SettingType.channels, values: [channel]))
-        }
-        
-        let selectedSettings = RecordingSettings(feature: streamedFeature, settings: settingValues)
+        let selectedSettings = chosenSettings
 
         if isOfflineSettings && streamedFeature == .acc {
             bleSdkManager.accDerivedSettings = nil
         }
-        if showDerivedSection, let group = bleSdkManager.accDerivedSettingsGroup {
-            if derivedEnabled && !derivedSourceRates.isEmpty && !derivedTimeWindows.isEmpty {
-                bleSdkManager.accDerivedSettings = PolarDerivedMeasurementSettings(
-                    groupId: group.groupId,
-                    sourceMeasurementType: .acc,
-                    sourceSampleRate: derivedSourceRates[selectedDerivedSourceRateIdx],
-                    timeWindowMs: derivedTimeWindows[selectedDerivedTimeWindowIdx],
-                    selectedMethods: selectedDerivedMethods.isEmpty ? [.downsample] : selectedDerivedMethods
-                )
-            }
+        if showDerivedSection, let group = bleSdkManager.accDerivedSettingsGroup, derivedEnabled,
+           let derived = StreamSettingsLogic.derivedSettings(
+                group: group, sourceRateIndex: selectedDerivedSourceRateIdx,
+                timeWindowIndex: selectedDerivedTimeWindowIdx, methods: selectedDerivedMethods) {
+            bleSdkManager.accDerivedSettings = derived
         }
 
         if(isOfflineSettings) {

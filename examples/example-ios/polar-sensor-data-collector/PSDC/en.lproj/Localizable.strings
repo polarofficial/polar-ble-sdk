@@ -4,6 +4,8 @@
 
 "APP_NAME" = "PSDC";
 
+"online.hr.chargerWarning" = "Device connected to charger. HR streaming may be interrupted.";
+
 "exercise.title" = "Exercise";
 "exercise.sportProfile" = "Sport profile (optional)";
 "exercise.defaultSport" = "Default (Other outdoor)";
@@ -34,3 +36,49 @@
 "exercise.toast.paused" = "Exercise paused";
 "exercise.toast.syncing" = "Syncing…";
 "exercise.toast.stopped" = "No active exercise";
+
+"offline.triggerSettings" = "Trigger Settings";
+"offline.notSupported" = "Offline recording is not supported";
+"offline.tab.status" = "Status";
+"offline.tab.setup" = "Setup";
+"offline.title" = "Offline Trigger";
+"offline.discardEdits" = "Discard Edits";
+"offline.keepEditing" = "Keep Editing";
+"offline.unsavedChanges" = "You have unsaved trigger setup changes.";
+"offline.currentTriggers" = "Currently set triggers";
+"offline.triggerMode" = "Trigger mode";
+"offline.enabledTriggers" = "Enabled triggers and settings";
+"offline.noSettings" = "No settings available";
+"offline.setupTrigger" = "Setup the trigger:";
+"offline.triggerModePicker" = "Trigger Mode";
+"offline.mode.disabled" = "DISABLED";
+"offline.mode.systemStart" = "SYSTEM START";
+"offline.mode.exerciseStart" = "EXERCISE START";
+"offline.settings" = "Settings";
+"offline.setupTriggers" = "SETUP TRIGGERS";
+"offline.sampleRate" = "Sample Rate";
+"offline.resolution" = "Resolution";
+"offline.range" = "Range";
+"offline.channels" = "Channels";
+"common.ok" = "OK";
+"offline.errorFormat" = "Error: %@";
+"offline.status.sampleRate" = "Sample Rate: %@ Hz";
+"offline.status.resolution" = "Resolution: %@ bits";
+"offline.status.range" = "Range: %@";
+"offline.status.channels" = "Channels: %@";
+"offline.sectionSettings" = "%@ Settings";
+"settings.sampleRate" = "Sample rate";
+"settings.range" = "Range";
+"settings.resolution" = "Resolution";
+"settings.channels" = "Channels";
+"settings.derived.title" = "Derived data";
+"settings.derived.enable" = "Enable derived data";
+"settings.derived.sourceRate" = "Source rate";
+"settings.derived.timeWindow" = "Time window";
+"settings.derived.methods" = "Methods";
+"common.cancel" = "Cancel";
+"settings.save" = "SAVE";
+"settings.start" = "START";
+"settings.navTitle" = "%@ settings";
+"online.settings" = "SETTINGS";
+"online.graph" = "Graph";

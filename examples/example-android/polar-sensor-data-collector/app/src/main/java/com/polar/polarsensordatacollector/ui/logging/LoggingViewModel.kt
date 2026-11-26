@@ -124,6 +124,17 @@ internal class LoggingViewModel @Inject constructor(
         }
     }
 
+    fun wearLogging() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val current = _uiLogConfigState.value
+            val updated = current.copy(wearLogEnabled = current.wearLogEnabled != true)
+            when (val result = polarDeviceStreamingRepository.setLogConfig(identifier, updated)) {
+                is ResultOfRequest.Success -> updateLogConfigState(updated)
+                is ResultOfRequest.Failure -> Log.w(TAG, "Failed to update wear log config: ${result.message}", result.throwable)
+            }
+        }
+    }
+
     fun fetchErrorLog() {
         viewModelScope.launch(Dispatchers.IO) {
             try {
@@ -172,6 +183,7 @@ internal class LoggingViewModel @Inject constructor(
                 metLogEnabled = logConfig.metLogEnabled,
                 caloriesLogEnabled = logConfig.caloriesLogEnabled,
                 sleepLogEnabled = logConfig.sleepLogEnabled,
+                wearLogEnabled = logConfig.wearLogEnabled,
                 hrSensorConfig = logConfig.hrSensorConfig
             )
         }

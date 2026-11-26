@@ -221,7 +221,14 @@ class BDBleApiImpl private constructor(context: Context, features: Set<PolarBleS
     private lateinit var trainingSessionApiImpl: PolarTrainingSessionApiImpl
     private lateinit var offlineRecordingApiImpl: PolarOfflineRecordingApiImpl
     private lateinit var telemetryAvailabilityMap: MutableMap<String, MutableList<PolarDeviceTelemetryType>?>
-    private val apiCallGuard = PolarApiCallGuard()
+    // One guard for the PS-FTP client, keyed by session address so device id and BT address share a lock.
+    private val apiCallGuard = PolarApiCallGuard { identifier ->
+        try {
+            PolarServiceClientUtils.fetchSession(identifier, listener)?.address?.let(::normalizeIdentifier)
+        } catch (_: Exception) {
+            null
+        } ?: normalizeIdentifier(identifier)
+    }
 
     init {
         val clients: MutableSet<Class<out BleGattBase>> = mutableSetOf()
