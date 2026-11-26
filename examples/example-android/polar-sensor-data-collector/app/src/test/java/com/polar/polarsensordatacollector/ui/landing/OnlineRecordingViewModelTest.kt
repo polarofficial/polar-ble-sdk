@@ -18,6 +18,8 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.job
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -28,6 +30,7 @@ import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -50,6 +53,7 @@ class OnlineRecordingViewModelTest {
     fun setUp() {
         Dispatchers.setMain(mainDispatcher)
         every { repository.availableFeatures } returns MutableStateFlow(AvailableFeatures())
+        every { repository.deviceChargingStates } returns MutableStateFlow(emptyMap())
         every { repository.deviceConnectionStatus } returns connectionStatus
         every { repository.getDeviceName(deviceId) } returns "device"
         every { repository.isFeatureReady(any(), any()) } returns true
@@ -69,7 +73,7 @@ class OnlineRecordingViewModelTest {
     private fun uri(name: String): Uri = Uri.parse("content://files/sensorDataLogs/$name")
 
     @Test
-    fun markerUriFor_returnsLinkedMarker_whenLinked() {
+    fun `marker uri for returns linked marker when linked`() {
         // Arrange
         val viewModel = newViewModel()
         val marker = uri("MARKER/dev1/m.txt")
@@ -86,7 +90,7 @@ class OnlineRecordingViewModelTest {
     }
 
     @Test
-    fun linkMarkerToDataFiles_keepsExistingLinks_whenDataUriListIsEmpty() {
+    fun `link marker to data files keeps existing links when data uri list is empty`() {
         // Arrange
         val viewModel = newViewModel()
         val hr = uri("HR/dev1/hr.txt")
@@ -100,7 +104,7 @@ class OnlineRecordingViewModelTest {
     }
 
     @Test
-    fun init_restoresMarkerLinks_whenSavedStateHasEntries() {
+    fun `init restores marker links when saved state has entries`() {
         // Arrange
         val state = newState()
         val marker = uri("MARKER/dev1/m|with|bars.txt")
@@ -115,7 +119,7 @@ class OnlineRecordingViewModelTest {
     }
 
     @Test
-    fun clearValidatedFileUris_removesMarkerLinks_forClearedDataUris() {
+    fun `clear validated file uris removes marker links for cleared data uris`() {
         // Arrange
         val viewModel = newViewModel()
         val marker = uri("MARKER/dev1/m.txt")
@@ -135,7 +139,7 @@ class OnlineRecordingViewModelTest {
     }
 
     @Test
-    fun handleStreamError_restartsAllActiveStreams_whenDeviceReconnects() {
+    fun `handle stream error restarts all active streams when device reconnects`() {
         // Arrange
         val hrFails = CompletableDeferred<Unit>()
         val streams = StartCounters()
@@ -160,7 +164,7 @@ class OnlineRecordingViewModelTest {
     }
 
     @Test
-    fun handleStreamError_keepsFilesOpenAndRestartsAll_whenTwoStreamsFailTogether() {
+    fun `handle stream error keeps files open and restarts all when two streams fail together`() {
         // Arrange
         val gate = CompletableDeferred<Unit>()
         val streams = StartCounters()
@@ -188,7 +192,31 @@ class OnlineRecordingViewModelTest {
     }
 
     @Test
-    fun handleStreamError_finalizesFiles_whenErrorIsNotDisconnect() {
+    fun `handle stream error leaves running streams alone when handler job is cancelled`() {
+        // Arrange
+        val streams = StartCounters()
+        fakeHrStream(streams) { awaitCancellation() }
+        val viewModel = newViewModel()
+        viewModel.startStream(PolarDeviceDataType.HR)
+        awaitLatch(streams.hrStarted, 1)
+        val before = viewModel.uiStreamingState.value.streamingRecordingState[PolarDeviceDataType.HR]?.state
+
+        // Act
+        runBlocking {
+            launch(Dispatchers.Unconfined) {
+                coroutineContext.job.cancel()
+                viewModel.handleStreamError(PolarDeviceDataType.HR, "x", PolarDeviceDisconnected())
+            }.join()
+        }
+
+        // Assert
+        val after = viewModel.uiStreamingState.value.streamingRecordingState[PolarDeviceDataType.HR]?.state
+        assertTrue(before != StreamingFeatureState.STATES.STOPPED)
+        assertEquals(before, after)
+    }
+
+    @Test
+    fun `handle stream error finalizes files when error is not disconnect`() {
         // Arrange
         val fails = CompletableDeferred<Unit>()
         val streams = StartCounters()
@@ -207,7 +235,7 @@ class OnlineRecordingViewModelTest {
     }
 
     @Test
-    fun startStream_finalizesOldFilesBeforeNewStart_whenRestartWasPending() {
+    fun `start stream finalizes old files before new start when restart was pending`() {
         // Arrange
         val hrFails = CompletableDeferred<Unit>()
         val streams = StartCounters()
@@ -231,7 +259,7 @@ class OnlineRecordingViewModelTest {
     }
 
     @Test
-    fun handleStreamError_closesOldFilesAndStartsReadyStreams_whenOnlyOneStreamIsReady() {
+    fun `handle stream error closes old files and starts ready streams when only one stream is ready`() {
         // Arrange
         val gate = CompletableDeferred<Unit>()
         val streams = StartCounters()
@@ -261,7 +289,7 @@ class OnlineRecordingViewModelTest {
     }
 
     @Test
-    fun startStream_discardsPendingRestarts_whenUserStartsOtherStream() {
+    fun `start stream discards pending restarts when user starts other stream`() {
         // Arrange
         val streams = StartCounters()
         val hrFails = CompletableDeferred<Unit>()

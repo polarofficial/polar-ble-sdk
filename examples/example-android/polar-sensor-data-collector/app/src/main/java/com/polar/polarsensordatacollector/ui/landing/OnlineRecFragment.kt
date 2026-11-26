@@ -69,6 +69,7 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
     }
 
     private lateinit var timer: TextView
+    private var streamingWarningToast: Toast? = null
 
     private lateinit var hrStatusAndSettings: View
     private lateinit var accStatusAndSettings: View
@@ -150,11 +151,28 @@ class OnlineRecFragment : Fragment(R.layout.fragment_online_rec) {
         viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 onlineViewModel.uiDeviceStoppedStream.collect { feature ->
+                    streamingWarningToast?.cancel()
                     Toast.makeText(
                         requireContext(),
                         getString(R.string.online_stream_stopped_by_device, feature.name),
                         Toast.LENGTH_LONG
                     ).show()
+                }
+            }
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                onlineViewModel.uiHrChargingWarning.collect { showWarning ->
+                    if (showWarning) {
+                        streamingWarningToast?.cancel()
+                        streamingWarningToast = Toast.makeText(
+                            requireContext(),
+                            getString(R.string.online_hr_charger_warning),
+                            Toast.LENGTH_LONG
+                        ).also { it.show() }
+                        onlineViewModel.acknowledgeHrChargingWarning()
+                    }
                 }
             }
         }

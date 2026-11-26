@@ -13,7 +13,7 @@ class GuardedApiCallsSerializedTest {
     )
 
     @Test
-    fun repository_serializesGuardedCalls_whenSdkGuardsThem() {
+    fun `repository serializes guarded calls when sdk guards them`() {
         // Arrange
         val source = File("src/main/java/com/polar/polarsensordatacollector/repository/PolarDeviceRepository.kt")
             .readLines()

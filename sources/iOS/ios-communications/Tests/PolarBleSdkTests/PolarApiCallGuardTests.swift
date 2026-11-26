@@ -345,6 +345,20 @@ final class PolarApiCallGuardTests: XCTestCase {
         XCTAssertNoThrow(try guardUnderTest.acquire("third", "device-1"))
     }
 
+    func testAcquire_deviceIdAndAddressOfSameDeviceShareLock() throws {
+        let address = "11111111-2222-3333-4444-555555555555"
+        let guardUnderTest = PolarApiCallGuard(resolveKey: { $0 == "ABCD1234" ? address : $0.uppercased() })
+        let token = try guardUnderTest.acquire("read", "ABCD1234")
+
+        XCTAssertThrowsError(try guardUnderTest.acquire("write", address)) { error in
+            self.assertConcurrentApiCall(error, containing: ["write", "read"])
+        }
+        XCTAssertNoThrow(try guardUnderTest.acquire("other", "FFFF0000"))
+
+        guardUnderTest.release(token)
+        XCTAssertNoThrow(try guardUnderTest.acquire("write", address))
+    }
+
     private func eventually<T>(attempts: Int = 100, _ operation: () async throws -> T) async throws -> T {
         var lastError: Error?
         for _ in 0..<attempts {

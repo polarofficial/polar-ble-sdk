@@ -121,6 +121,25 @@ final class PolarBleApiImplLoggingTests: XCTestCase {
         XCTAssertEqual(request.path, LOG_CONFIG_PATH)
     }
 
+    func testGetLogConfig_decodesEnabledAndDisabledWearLogging() async throws {
+        for enabled in [true, false] {
+            // Firmware field 30, wire type 0; verify independently of the encoder.
+            mockClient.requestReturnValue = .success(Data([0xF0, 0x01, enabled ? 0x01 : 0x00]))
+
+            let result = try await api.getLogConfig(identifier)
+
+            XCTAssertEqual(result.wearLogEnabled, enabled)
+        }
+    }
+
+    func testGetLogConfig_whenWearLoggingIsAbsent_returnsNil() async throws {
+        mockClient.requestReturnValue = .success(Data())
+
+        let result = try await api.getLogConfig(identifier)
+
+        XCTAssertNil(result.wearLogEnabled)
+    }
+
     func testGetLogConfig_throwsServiceNotFoundWhenFtpClientMissing() async {
         let noFtpApi = PolarBleApiImplWithNoFtpSession(mockDeviceSession: MockNoFtpClientBleDeviceSession())
 
@@ -188,6 +207,74 @@ final class PolarBleApiImplLoggingTests: XCTestCase {
         XCTAssertEqual(writtenProto.bleHrSensorConfig.waitForConnect, true)
     }
 
+    func testSetLogConfig_togglesWearLoggingWithoutChangingOtherSettings() async throws {
+        var config = makeLogConfig(ohrEnabled: true, ppiEnabled: false, wearEnabled: true)
+        let originalProto = LogConfig.toProto(logConfig: config)
+
+        for enabled in [true, false] {
+            config.wearLogEnabled = enabled
+            try await api.setLogConfig(identifier, logConfig: config)
+
+            let writeCall = try XCTUnwrap(mockClient.writeCalls.last)
+            let request = try Protocol_PbPFtpOperation(serializedBytes: writeCall.header as Data)
+            XCTAssertEqual(request.command, .put)
+            XCTAssertEqual(request.path, LOG_CONFIG_PATH)
+
+            let writtenProto = try Data_PbSensorDataLog(serializedBytes: readAll(from: writeCall.data))
+            XCTAssertTrue(writtenProto.hasWearLogEnabled)
+            XCTAssertEqual(writtenProto.wearLogEnabled, enabled)
+            var expectedProto = originalProto
+            expectedProto.wearLogEnabled = enabled
+            XCTAssertEqual(writtenProto, expectedProto)
+            let decodedConfig = LogConfig.fromProto(proto: writtenProto)
+            XCTAssertEqual(decodedConfig.wearLogEnabled, enabled)
+            XCTAssertEqual(LogConfig.toProto(logConfig: decodedConfig), expectedProto)
+        }
+
+        XCTAssertEqual(mockClient.writeCalls.count, 2)
+    }
+
+    func testWearLogging_whenUnset_isOmittedFromSerializedConfig() async throws {
+        let config = makeLogConfig(ohrEnabled: true, ppiEnabled: false)
+        XCTAssertNil(config.wearLogEnabled)
+        XCTAssertFalse(LogConfig.toProto(logConfig: config).hasWearLogEnabled)
+
+        try await api.setLogConfig(identifier, logConfig: config)
+
+        let writeCall = try XCTUnwrap(mockClient.writeCalls.last)
+        let writtenProto = try Data_PbSensorDataLog(serializedBytes: readAll(from: writeCall.data))
+        XCTAssertFalse(writtenProto.hasWearLogEnabled)
+        XCTAssertNil(LogConfig.fromProto(proto: writtenProto).wearLogEnabled)
+    }
+
+    func testWearLogging_usesFirmwareProtobufField30() throws {
+        var config = LogConfig.fromProto(proto: Data_PbSensorDataLog())
+        XCTAssertEqual(try LogConfig.toProto(logConfig: config).serializedData(), Data())
+
+        for enabled in [true, false] {
+            config.wearLogEnabled = enabled
+            XCTAssertEqual(
+                try LogConfig.toProto(logConfig: config).serializedData(),
+                Data([0xF0, 0x01, enabled ? 0x01 : 0x00])
+            )
+        }
+    }
+
+    func testWearLogging_protobufCopyAndClearPreservePresence() {
+        let original = Data_PbSensorDataLog.with { $0.wearLogEnabled = true }
+        var copy = original
+        copy.wearLogEnabled = false
+        XCTAssertTrue(original.wearLogEnabled)
+        XCTAssertTrue(copy.hasWearLogEnabled)
+        XCTAssertNotEqual(copy, original)
+        XCTAssertNotEqual(copy, Data_PbSensorDataLog())
+
+        copy.clearWearLogEnabled()
+        XCTAssertFalse(copy.hasWearLogEnabled)
+        XCTAssertFalse(copy.wearLogEnabled)
+        XCTAssertEqual(copy, Data_PbSensorDataLog())
+    }
+
     func testSetLogConfig_throwsServiceNotFoundWhenFtpClientMissing() async {
         let noFtpApi = PolarBleApiImplWithNoFtpSession(mockDeviceSession: MockNoFtpClientBleDeviceSession())
         let config = makeLogConfig(ohrEnabled: true, ppiEnabled: true)
@@ -228,7 +315,7 @@ final class PolarBleApiImplLoggingTests: XCTestCase {
         }
     }
 
-    private func makeLogConfig(ohrEnabled: Bool, ppiEnabled: Bool) -> LogConfig {
+    private func makeLogConfig(ohrEnabled: Bool, ppiEnabled: Bool, wearEnabled: Bool? = nil) -> LogConfig {
         LogConfig(
             ppiLogEnabled: ppiEnabled,
             accelerationLogEnabled: nil,
@@ -258,7 +345,8 @@ final class PolarBleApiImplLoggingTests: XCTestCase {
             hrSensorConfig: HrSensorConfig(
                 deviceInformation: "POLAR-HR-TEST",
                 waitUntilConnected: true
-            )
+            ),
+            wearLogEnabled: wearEnabled
         )
     }
 

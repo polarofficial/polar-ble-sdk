@@ -209,6 +209,71 @@ class BDBleApiImplTest {
         }
     }
 
+    private fun concurrentCallRejected(
+        firstIdentifier: String,
+        secondIdentifier: String,
+        configureLookup: () -> Unit
+    ) = runTest {
+        val api = BDBleApiImpl.getInstance(
+            context,
+            setOf(
+                PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_FILE_TRANSFER,
+                PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_DEVICE_CONTROL,
+                PolarBleApi.PolarBleSdkFeature.FEATURE_POLAR_SLEEP_DATA
+            )
+        )
+        val (client, _) = mockPsFtpConnection(firstIdentifier)
+        configureLookup()
+        initCapabilityForFirmwareTest("polar", BlePolarDeviceCapabilitiesUtility.FileSystemType.POLAR_FILE_SYSTEM_V2, false)
+        val started = CompletableDeferred<Unit>()
+        val release = CompletableDeferred<Unit>()
+        coEvery { client.request(any()) } coAnswers {
+            started.complete(Unit)
+            release.await()
+            ByteArrayOutputStream()
+        }
+
+        try {
+            val first = launch { api.getLogConfig(firstIdentifier) }
+            started.await()
+
+            Assert.assertThrows(PolarSdkConcurrentApiCallException::class.java) {
+                runBlocking { api.getSleep(secondIdentifier, LocalDate.of(2024, 1, 1), LocalDate.of(2024, 1, 2)) }
+            }
+
+            release.complete(Unit)
+            first.join()
+        } finally {
+            resetCapabilityUtilityState()
+            unmockkObject(PolarServiceClientUtils)
+        }
+    }
+
+    @Test
+    fun `guard rejects second call when device id and bt address resolve to the same session`() {
+        // Arrange
+        val deviceId = "E123456F"
+        val address = "00:11:22:33:44:55"
+        val resolved = mockk<BleDeviceSession>()
+        every { resolved.address } returns address
+
+        // Act & Assert
+        concurrentCallRejected(deviceId, address) {
+            every { PolarServiceClientUtils.fetchSession(any(), any()) } returns resolved
+        }
+    }
+
+    @Test
+    fun `guard rejects second call when session lookup throws and identifiers match after normalizing`() {
+        // Arrange
+        val deviceId = "E123456F"
+
+        // Act & Assert
+        concurrentCallRejected(deviceId, deviceId.lowercase()) {
+            every { PolarServiceClientUtils.fetchSession(any(), any()) } throws RuntimeException("lookup failed")
+        }
+    }
+
     @After
     fun tearDown() {
         BDBleApiImpl.clearInstance()

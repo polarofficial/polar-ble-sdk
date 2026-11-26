@@ -6,6 +6,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.polar.androidcommunications.api.ble.exceptions.BleDisconnected
+import com.polar.androidcommunications.api.ble.model.gatt.client.ChargeState
 import com.polar.androidcommunications.api.ble.model.gatt.client.pmd.PmdMeasurementType
 import com.polar.polarsensordatacollector.DataCollector
 import com.polar.polarsensordatacollector.repository.DeviceConnectionState
@@ -23,7 +24,9 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -31,6 +34,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -193,6 +198,13 @@ class OnlineRecordingViewModel @Inject constructor(
     private val _uiStreamingState = MutableStateFlow(LiveRecordingUiState())
     val uiStreamingState: StateFlow<LiveRecordingUiState> = _uiStreamingState.asStateFlow()
 
+    private val _uiHrChargingWarning = MutableStateFlow(false)
+    val uiHrChargingWarning: StateFlow<Boolean> = _uiHrChargingWarning.asStateFlow()
+
+    fun acknowledgeHrChargingWarning() {
+        _uiHrChargingWarning.value = false
+    }
+
     private val _checkedDataTypes = MutableStateFlow<Set<PolarBleApi.PolarDeviceDataType>>(emptySet())
     val checkedDataTypes: StateFlow<Set<PolarBleApi.PolarDeviceDataType>> = _checkedDataTypes.asStateFlow()
 
@@ -310,6 +322,15 @@ class OnlineRecordingViewModel @Inject constructor(
     @Volatile private var finalizeJob: Job? = null
 
     init {
+
+        viewModelScope.launch {
+            combine(polarDeviceStreamingRepository.deviceChargingStates, _uiStreamingState) { states, streaming ->
+                states[identifier] == ChargeState.CHARGING &&
+                    streaming.streamingRecordingState[PolarBleApi.PolarDeviceDataType.HR]?.state == StreamingFeatureState.STATES.RECORDING
+            }.distinctUntilChanged().collect { warn ->
+                _uiHrChargingWarning.value = warn
+            }
+        }
 
         viewModelScope.launch {
             polarDeviceStreamingRepository.availableFeatures
@@ -914,6 +935,9 @@ class OnlineRecordingViewModel @Inject constructor(
     }
 
     private fun updateStreamingRecordingState(identifier: String, feature: PolarBleApi.PolarDeviceDataType, state: StreamingFeatureState.STATES, settings: Map<PolarSensorSetting.SettingType, Int> = emptyMap()) {
+        if (feature == PolarBleApi.PolarDeviceDataType.HR && state != StreamingFeatureState.STATES.RECORDING) {
+            _uiHrChargingWarning.value = false
+        }
         _uiStreamingState.update {
             val newSettings: Map<PolarSensorSetting.SettingType, Int> = settings.ifEmpty {
                 if (state == StreamingFeatureState.STATES.PAUSED) {
@@ -961,8 +985,9 @@ class OnlineRecordingViewModel @Inject constructor(
         return false
     }
 
-    private suspend fun handleStreamError(feature: PolarBleApi.PolarDeviceDataType, errorMsg: String, error: Throwable) {
+    internal suspend fun handleStreamError(feature: PolarBleApi.PolarDeviceDataType, errorMsg: String, error: Throwable) {
         if (StreamUtils.isDeviceInitiatedStop(error)) {
+            _uiHrChargingWarning.value = false
             // Notify before cleanup cancels this job; channel/SDK errors may wrap the cause.
             _uiDeviceStoppedStream.tryEmit(feature)
         }
@@ -972,6 +997,10 @@ class OnlineRecordingViewModel @Inject constructor(
         // Remember every running stream here, so that all of them restart after reconnection.
         // Do not close the data files here. After reconnection, the streams write to the same files.
         streamErrorMutex.withLock {
+            // An earlier handler can cancel this job before it takes a free lock.
+            // Stop here. A late handler must not stop the streams that restarted after reconnect.
+            // It must not add an old restart to the queue.
+            currentCoroutineContext().ensureActive()
             val jobsToStop = synchronized(streamJobs) {
                 streamJobs.entries
                     .filter { it.value != null }

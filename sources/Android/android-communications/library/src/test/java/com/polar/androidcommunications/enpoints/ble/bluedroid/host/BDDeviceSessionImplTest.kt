@@ -5,15 +5,20 @@ import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
 import android.bluetooth.BluetoothGattService
+import android.bluetooth.BluetoothStatusCodes
 import android.content.Context
+import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import com.polar.androidcommunications.api.ble.model.BleDeviceSession.DeviceSessionState
 import com.polar.androidcommunications.api.ble.model.BleDeviceSession
 import com.polar.androidcommunications.api.ble.model.gatt.BleGattBase
 import com.polar.androidcommunications.api.ble.model.gatt.BleGattFactory
+import com.polar.androidcommunications.common.ble.AndroidBuildUtils
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkObject
+import io.mockk.unmockkObject
 import io.mockk.verify
 import kotlinx.coroutines.Job
 import org.junit.Assert.assertEquals
@@ -609,5 +614,161 @@ class BDDeviceSessionImplTest {
 
         // Act & Assert
         assertFalse(sut.isAuthenticationNeeded)
+    }
+
+    private val writeServiceUuid = UUID.randomUUID()
+    private val writeCharacteristicUuid = UUID.randomUUID()
+
+    private fun sessionWithWritableCharacteristic(sdk: Int, gatt: BluetoothGatt): BDDeviceSessionImpl {
+        mockkObject(AndroidBuildUtils)
+        every { AndroidBuildUtils.getBuildVersion() } returns sdk
+        val characteristic = mockk<BluetoothGattCharacteristic>(relaxed = true)
+        every { characteristic.uuid } returns writeCharacteristicUuid
+        every { characteristic.properties } returns BluetoothGattCharacteristic.PROPERTY_WRITE
+        val service = mockk<BluetoothGattService>()
+        every { service.uuid } returns writeServiceUuid
+        every { service.characteristics } returns listOf(characteristic)
+        every { gatt.services } returns listOf(service)
+        val sut = createSut()
+        sut.gatt = gatt
+        return sut
+    }
+
+    @Test
+    fun transmitMessage_marksWriteInFlight_whenWriteAcceptedOnTiramisu() {
+        try {
+            // Arrange
+            val gatt = mockk<BluetoothGatt>(relaxed = true)
+            val sut = sessionWithWritableCharacteristic(Build.VERSION_CODES.TIRAMISU, gatt)
+            every { gatt.writeCharacteristic(any(), any(), any()) } returns BluetoothStatusCodes.SUCCESS
+
+            // Act
+            sut.transmitMessage(writeServiceUuid, writeCharacteristicUuid, byteArrayOf(1), true)
+
+            // Assert
+            assertTrue(sut.isCharacteristicWriteInFlight())
+        } finally {
+            unmockkObject(AndroidBuildUtils)
+        }
+    }
+
+    @Test
+    fun transmitMessage_doesNotMarkWriteInFlight_whenWriteRejectedOnTiramisu() {
+        try {
+            // Arrange
+            val gatt = mockk<BluetoothGatt>(relaxed = true)
+            val sut = sessionWithWritableCharacteristic(Build.VERSION_CODES.TIRAMISU, gatt)
+            every { gatt.writeCharacteristic(any(), any(), any()) } returns BluetoothStatusCodes.ERROR_UNKNOWN
+
+            // Act
+            sut.transmitMessage(writeServiceUuid, writeCharacteristicUuid, byteArrayOf(1), true)
+
+            // Assert
+            assertFalse(sut.isCharacteristicWriteInFlight())
+        } finally {
+            unmockkObject(AndroidBuildUtils)
+        }
+    }
+
+    @Test
+    fun transmitMessage_marksWriteInFlight_whenWriteIssuedBeforeTiramisu() {
+        try {
+            // Arrange
+            val gatt = mockk<BluetoothGatt>(relaxed = true)
+            val sut = sessionWithWritableCharacteristic(Build.VERSION_CODES.S, gatt)
+            every { gatt.writeCharacteristic(any<BluetoothGattCharacteristic>()) } returns true
+
+            // Act
+            sut.transmitMessage(writeServiceUuid, writeCharacteristicUuid, byteArrayOf(1), true)
+
+            // Assert
+            assertTrue(sut.isCharacteristicWriteInFlight())
+        } finally {
+            unmockkObject(AndroidBuildUtils)
+        }
+    }
+
+    @Test
+    fun transmitMessage_doesNotMarkWriteInFlight_whenWriteNotIssuedBeforeTiramisu() {
+        try {
+            // Arrange
+            val gatt = mockk<BluetoothGatt>(relaxed = true)
+            val sut = sessionWithWritableCharacteristic(Build.VERSION_CODES.S, gatt)
+            every { gatt.writeCharacteristic(any<BluetoothGattCharacteristic>()) } returns false
+
+            // Act
+            sut.transmitMessage(writeServiceUuid, writeCharacteristicUuid, byteArrayOf(1), true)
+
+            // Assert
+            assertFalse(sut.isCharacteristicWriteInFlight())
+        } finally {
+            unmockkObject(AndroidBuildUtils)
+        }
+    }
+
+    private fun issuePendingWrite(gatt: BluetoothGatt): BDDeviceSessionImpl {
+        val sut = sessionWithWritableCharacteristic(Build.VERSION_CODES.S, gatt)
+        every { gatt.writeCharacteristic(any<BluetoothGattCharacteristic>()) } returns true
+        sut.transmitMessage(writeServiceUuid, writeCharacteristicUuid, byteArrayOf(1), true)
+        assertTrue(sut.isCharacteristicWriteInFlight())
+        return sut
+    }
+
+    private fun writtenCharacteristic(): Pair<BluetoothGattService, BluetoothGattCharacteristic> {
+        val service = mockk<BluetoothGattService>()
+        val characteristic = mockk<BluetoothGattCharacteristic>()
+        every { service.uuid } returns writeServiceUuid
+        every { characteristic.uuid } returns writeCharacteristicUuid
+        return service to characteristic
+    }
+
+    @Test
+    fun handleCharacteristicWrite_clearsWriteInFlight_whenStatusSuccess() {
+        try {
+            // Arrange
+            val sut = issuePendingWrite(mockk(relaxed = true))
+            val (service, characteristic) = writtenCharacteristic()
+
+            // Act
+            sut.handleCharacteristicWrite(service, characteristic, BleGattBase.ATT_SUCCESS)
+
+            // Assert
+            assertFalse(sut.isCharacteristicWriteInFlight())
+        } finally {
+            unmockkObject(AndroidBuildUtils)
+        }
+    }
+
+    @Test
+    fun handleCharacteristicWrite_clearsWriteInFlight_whenInsufficientAuthentication() {
+        try {
+            // Arrange
+            val sut = issuePendingWrite(mockk(relaxed = true))
+            val (service, characteristic) = writtenCharacteristic()
+
+            // Act
+            sut.handleCharacteristicWrite(service, characteristic, BleGattBase.ATT_INSUFFICIENT_AUTHENTICATION)
+
+            // Assert
+            assertFalse(sut.isCharacteristicWriteInFlight())
+        } finally {
+            unmockkObject(AndroidBuildUtils)
+        }
+    }
+
+    @Test
+    fun handleDisconnection_clearsWriteInFlight_whenWriteIsPending() {
+        try {
+            // Arrange
+            val sut = issuePendingWrite(mockk(relaxed = true))
+
+            // Act
+            sut.handleDisconnection()
+
+            // Assert
+            assertFalse(sut.isCharacteristicWriteInFlight())
+        } finally {
+            unmockkObject(AndroidBuildUtils)
+        }
     }
 }

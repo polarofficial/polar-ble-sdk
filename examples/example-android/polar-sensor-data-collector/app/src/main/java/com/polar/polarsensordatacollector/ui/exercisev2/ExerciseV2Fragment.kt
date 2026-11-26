@@ -25,6 +25,7 @@ import com.polar.polarsensordatacollector.R
 import com.polar.polarsensordatacollector.ui.landing.ONLINE_OFFLINE_KEY_DEVICE_ID
 import com.polar.sdk.api.model.PolarExerciseSession
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
 
 
 // Represents the offline exercise lifecycle shown in this screen.
@@ -68,7 +69,9 @@ class ExerciseV2Fragment : Fragment() {
             // screen. Reading it here instead of tracking a separate local
             // flag keeps this screen from drifting out of sync with what the
             // device actually reports.
-            val onlineExerciseInfo by viewModel.onlineExerciseState.collectAsState()
+            // The default collection already runs on the main thread.
+            // Main.immediate skips the extra dispatch. This helps the unit tests, which use a test clock.
+            val onlineExerciseInfo by viewModel.onlineExerciseState.collectAsState(Dispatchers.Main.immediate)
             val isPaused = onlineExerciseInfo.status == PolarExerciseSession.ExerciseStatus.PAUSED
 
             val exerciseState = when {

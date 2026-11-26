@@ -3,8 +3,17 @@
 import XCTest
 @testable import iOSCommunications
 import Combine
+import CoreBluetooth
 
 final class BlePfcClientTest: XCTestCase {
+
+    private final class PacketCapturingTransport: MockGattServiceTransmitterImpl {
+        var packets: [Data] = []
+
+        override func transmitMessage(_ parent: BleGattClientBase, serviceUuid: CBUUID, characteristicUuid: CBUUID, packet: Data, withResponse: Bool) throws {
+            packets.append(packet)
+        }
+    }
 
     var mockGattServiceTransmitterImpl: MockPolarGattServiceTransmitter!
     var blePfcClient: BlePfcClient!
@@ -89,6 +98,33 @@ final class BlePfcClientTest: XCTestCase {
         // Assert
         XCTAssertEqual(result.opCode, 0x0E)
         XCTAssertEqual(result.status, .success)
+    }
+
+    func testSendConfigureSecurityModeCommand() async throws {
+        let transport = PacketCapturingTransport()
+        let client = BlePfcClient(gattServiceTransmitter: transport)
+        client.notifyDescriptorWritten(BlePfcClient.PFC_CP, enabled: true, err: 0)
+        try await awaitCompletion(client.clientReady(false))
+
+        for mode: UInt8 in [0, 1] {
+            client.processServiceData(BlePfcClient.PFC_CP, data: Data([0xF0, 16, 1]), err: 0)
+            let response = try await client.sendControlPointCommand(.pfcConfigureSecurityMode, value: mode)
+            XCTAssertEqual(response.responseCode, 0xF0)
+            XCTAssertEqual(response.opCode, 16)
+            XCTAssertEqual(response.status, .success)
+            XCTAssertTrue(response.payload.isEmpty)
+        }
+
+        XCTAssertEqual(transport.packets, [Data([16, 0]), Data([16, 1])])
+    }
+
+    func testConfigureSecurityModeNotSupportedResponseHasNoPayload() {
+        let response = Pfc.PfcResponse(data: Data([0xF0, 16, 2]))
+
+        XCTAssertEqual(response.responseCode, 0xF0)
+        XCTAssertEqual(response.opCode, 16)
+        XCTAssertEqual(response.status, .errorNotSupported)
+        XCTAssertTrue(response.payload.isEmpty)
     }
 
     func testSendRequestSecurityModeCommand() async throws {

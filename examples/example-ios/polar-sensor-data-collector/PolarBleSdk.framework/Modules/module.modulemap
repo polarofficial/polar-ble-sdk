@@ -1,4 +1,0 @@
-framework module PolarBleSdk {
-  header "PolarBleSdk-Swift.h"
-  requires objc
-}

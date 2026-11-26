@@ -38,6 +38,7 @@ class LoggingFragment: Fragment(R.layout.fragment_logging) {
     private lateinit var metLoggingButton: Button
     private lateinit var caloriesLoggingButton: Button
     private lateinit var sleepLoggingButton: Button
+    private lateinit var wearLoggingButton: Button
     private lateinit var fetchErrorLogButton: Button
     private lateinit var hrSensorLogInfoButton: Button
     private lateinit var hrSensorLogWaitForConnectionSwitch: SwitchMaterial
@@ -84,6 +85,9 @@ class LoggingFragment: Fragment(R.layout.fragment_logging) {
 
         sleepLoggingButton.setOnClickListener {
             viewModel.sleepLogging()
+        }
+        wearLoggingButton.setOnClickListener {
+            viewModel.wearLogging()
         }
         fetchErrorLogButton.setOnClickListener {
             viewModel.fetchErrorLog()
@@ -135,6 +139,7 @@ class LoggingFragment: Fragment(R.layout.fragment_logging) {
         metLoggingButton = view.findViewById(R.id.enable_met_logging_button)
         caloriesLoggingButton = view.findViewById(R.id.enable_calories_logging_button)
         sleepLoggingButton = view.findViewById(R.id.enable_sleep_logging_button)
+        wearLoggingButton = view.findViewById(R.id.enable_wear_logging_button)
         fetchErrorLogButton = view.findViewById(R.id.fetch_errorlog_button)
         exportDeviceLogsButton = view.findViewById(R.id.export_device_logs_button)
         exportDeviceLogsProgress = view.findViewById(R.id.export_device_logs_progress)
@@ -185,6 +190,10 @@ class LoggingFragment: Fragment(R.layout.fragment_logging) {
         } else {
             sleepLoggingButton.text = getString(R.string.sleep_logging_enable)
         }
+
+        wearLoggingButton.text = getString(
+            if (logConfig.wearLogEnabled == true) R.string.wear_logging_disable else R.string.wear_logging_enable
+        )
 
         if (logConfig.hrSensorConfig?.waitUntilConnected ?: false) {
             hrSensorLogWaitForConnectionSwitch.isChecked = true

@@ -140,6 +140,54 @@ class BlePsFtpClientTest: XCTestCase {
         return Data([0x00, 0x00, 0x00])
     }
 
+    func testWrite_earlySuccessResponseReportsProtocolError() async throws {
+        let transmitter = ResponseInjectingTransmitter()
+        transmitter.responseQueue = [makeSuccessResponseFrame()]
+        let client = BlePsFtpClient(gattServiceTransmitter: transmitter)
+        client.PROTOCOL_TIMEOUT = 1
+        defer { client.disconnected() }
+
+        do {
+            for try await _ in client.write(Data() as NSData, data: InputStream(data: Data(repeating: 1, count: 2048))) {}
+            XCTFail("An early response must not accept an incomplete file")
+        } catch BlePsFtpException.protocolError {
+            // Expected: zero is not a device error, but this response is premature.
+        } catch {
+            XCTFail("Expected protocolError, got \(error)")
+        }
+    }
+
+    func testWrite_earlyNonzeroResponsePreservesDeviceError() async throws {
+        let transmitter = ResponseInjectingTransmitter()
+        transmitter.responseQueue = [Data([0x00, 0x67, 0x00])]
+        let client = BlePsFtpClient(gattServiceTransmitter: transmitter)
+        client.PROTOCOL_TIMEOUT = 1
+        defer { client.disconnected() }
+
+        do {
+            for try await _ in client.write(Data() as NSData, data: InputStream(data: Data(repeating: 1, count: 2048))) {}
+            XCTFail("A device error must fail the write")
+        } catch BlePsFtpException.responseError(let code) {
+            XCTAssertEqual(code, 103)
+        } catch {
+            XCTFail("Expected responseError, got \(error)")
+        }
+    }
+
+    func testWrite_successResponseAfterFinalFrameCompletes() async throws {
+        let transmitter = ResponseInjectingTransmitter()
+        transmitter.responseQueue = [makeSuccessResponseFrame()]
+        let client = BlePsFtpClient(gattServiceTransmitter: transmitter)
+        client.PROTOCOL_TIMEOUT = 1
+        defer { client.disconnected() }
+
+        var progress: [UInt] = []
+        for try await bytes in client.write(Data() as NSData, data: InputStream(data: Data([1]))) {
+            progress.append(bytes)
+        }
+        XCTAssertEqual(progress.last, 1)
+    }
+
     func testWaitPacketsWritten_doesNotReportLinkLostWhenAckArrivesInRaceWindow() throws {
         let racingCounter = RaceInjectingAtomicInteger(initialValue: 0) {
             self.mockGattServiceTransmitterImpl.mockConnectionStatus = false
@@ -651,6 +699,8 @@ class BlePsFtpClientTest: XCTestCase {
         let active = Task<Void, Error> { try await client.sendNotification(1, parameters: nil) }
         try await Task.sleep(nanoseconds: 100_000_000)
         let queued = Task<Void, Error> { try await client.sendNotification(1, parameters: nil) }
+        // Give the queued operation time to enter the queue before disconnecting.
+        try await Task.sleep(nanoseconds: 100_000_000)
         transmitter.mockConnectionStatus = false
         await Task { client.disconnected() }.value
 
@@ -968,8 +1018,10 @@ class BlePsFtpClientTest: XCTestCase {
 
     func testRequest_clientDeallocatedImmediatelyAfterCall_neverCrashesOrHangs() async throws {
         for _ in 0..<50 {
-            let transmitter = MockGattServiceTransmitterImpl()
+            // acknowledging transmitter and a short timeout: a request that wins the race must not wait out the 90 s protocol timeout
+            let transmitter = ResponseInjectingTransmitter()
             var client: BlePsFtpClient? = BlePsFtpClient(gattServiceTransmitter: transmitter)
+            client?.PROTOCOL_TIMEOUT = 0.2
 
             // Capture only weakly so dropping `client` below is the sole strong reference.
             let task = Task { [weak client] in
@@ -983,8 +1035,10 @@ class BlePsFtpClientTest: XCTestCase {
 
     func testWrite_clientDeallocatedImmediatelyAfterCall_neverCrashesOrHangs() async throws {
         for _ in 0..<50 {
-            let transmitter = MockGattServiceTransmitterImpl()
+            // acknowledging transmitter and a short timeout: a request that wins the race must not wait out the 90 s protocol timeout
+            let transmitter = ResponseInjectingTransmitter()
             var client: BlePsFtpClient? = BlePsFtpClient(gattServiceTransmitter: transmitter)
+            client?.PROTOCOL_TIMEOUT = 0.2
 
             let header = NSData(data: Data([0x00]))
             let task = Task { [weak client] in

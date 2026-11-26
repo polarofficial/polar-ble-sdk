@@ -65,6 +65,10 @@ class BDDeviceSessionImpl internal constructor(
 
     private val attOperations = LinkedBlockingDeque<AttributeOperation>()
 
+    // True from the moment a characteristic write is issued to the GATT stack until its callback has
+    // been delivered to the clients; unlike the queue, clearing attOperations does not reset it.
+    @Volatile private var characteristicWriteInFlight = false
+
     var gatt: BluetoothGatt? = null
         get() {
             synchronized(gattMutex) {
@@ -307,7 +311,10 @@ class BDDeviceSessionImpl internal constructor(
                             }
                         if (getBuildVersion() >= Build.VERSION_CODES.TIRAMISU) {
                             val status = gatt!!.writeCharacteristic(characteristic, operation.getData()!!, writeType)
-                            if (status == BluetoothStatusCodes.SUCCESS) return true
+                            if (status == BluetoothStatusCodes.SUCCESS) {
+                                characteristicWriteInFlight = true
+                                return true
+                            }
                             e(TAG, "Error: characteristic write failed. Reason: $status")
                             return false
                         } else {
@@ -315,7 +322,9 @@ class BDDeviceSessionImpl internal constructor(
                             @Suppress("DEPRECATION")
                             characteristic.setValue(operation.getData())
                             @Suppress("DEPRECATION")
-                            return gatt!!.writeCharacteristic(characteristic)
+                            val issued = gatt!!.writeCharacteristic(characteristic)
+                            if (issued) characteristicWriteInFlight = true
+                            return issued
                         }
                     }
                     AttributeOperationCommand.DESCRIPTOR_WRITE -> {
@@ -376,10 +385,13 @@ class BDDeviceSessionImpl internal constructor(
         return attOperations.size
     }
 
+    override fun isCharacteristicWriteInFlight(): Boolean = characteristicWriteInFlight
+
     fun handleDisconnection() {
         d(TAG, "disconnected")
         advertisementContent.resetAdvertisementData()
         attOperations.clear()
+        characteristicWriteInFlight = false
         for (gattClient in clients) {
             gattClient.reset()
         }
@@ -612,6 +624,7 @@ class BDDeviceSessionImpl internal constructor(
                         client.processServiceDataWritten(characteristic.uuid, status)
                     }
                 }
+                characteristicWriteInFlight = false
             }
             else -> {
                 val client = fetchClient(service.uuid)
@@ -622,6 +635,7 @@ class BDDeviceSessionImpl internal constructor(
                         client.processServiceDataWritten(characteristic.uuid, status)
                     }
                 }
+                characteristicWriteInFlight = false
                 processNextAttributeOperation(true)
             }
         }

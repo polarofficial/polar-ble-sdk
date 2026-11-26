@@ -25,7 +25,9 @@ extension PolarBleApiImpl: PolarDeviceTelemetryApi {
                     BleLogger.trace("\(TAG) getDeviceTelemetryConfiguration: BLE MDS client not available for \(identifier), no-op")
                     throw PolarErrors.serviceNotFound
                 }
-                return try await PolarTelemetryMemfaultUtils.getDeviceTelemetryConfiguration(client: client, identifier)
+                return try await mdsApiCallGuard.guardAsync("getDeviceTelemetryConfiguration", identifier) {
+                    try await PolarTelemetryMemfaultUtils.getDeviceTelemetryConfiguration(client: client, identifier)
+                }
         }
     }
 

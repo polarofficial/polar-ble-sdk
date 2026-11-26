@@ -14,7 +14,15 @@ internal class PolarTelemetryMemfaultUtils {
         async let deviceId  = client.readDeviceIdentifier()
         async let dataUri   = client.readDataUri()
         async let auth      = client.readAuthorization()
-        let (f, d, u, a) = try await (features, deviceId, dataUri, auth)
+        let f: UInt32, d: String, u: String, a: String
+        do {
+            (f, d, u, a) = try await (features, deviceId, dataUri, auth)
+        } catch BleMdsClientError.operationInProgress {
+            // A cancelled earlier read keeps its slot until its GATT callback arrives. Map the internal error to the public one.
+            throw PolarErrors.concurrentApiCall(
+                description: "Cannot start getDeviceTelemetryConfiguration while a previous MDS read of \(identifier) is still in progress"
+            )
+        }
         BleLogger.trace("\(TAG) getDeviceTelemetryConfiguration for \(identifier): deviceId=\(d) uri=\(u) supportedFeatures=0x\(String(f, radix: 16))")
         
         let memfaultConfig = BleMdsClient.MemfaultTelemetryConfiguration(

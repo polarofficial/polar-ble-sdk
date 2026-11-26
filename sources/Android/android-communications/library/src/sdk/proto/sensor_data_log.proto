@@ -52,6 +52,7 @@ message PbSensorDataLog
     optional bool skin_temperature_log_enabled = 22;
     optional bool compass_log_enabled = 23;
     optional bool speed3d_log_enabled = 24;
+    optional bool wear_log_enabled = 30;
 
     optional PbMagnetometerLogFrequency magnetometer_log_frequency = 50;
 

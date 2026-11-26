@@ -1062,7 +1062,11 @@ public class MockBleMdsClient: BleMdsClient, @unchecked Sendable {
     public var stubbedChunks: [Data] = []
     public var stubbedChunkError: Error?
     
+    /// Awaited at the start of readSupportedFeatures, lets a test keep a telemetry configuration read in flight.
+    public var readSupportedFeaturesGate: (@Sendable () async throws -> Void)?
+
     public override func readSupportedFeatures() async throws -> UInt32 {
+        try await readSupportedFeaturesGate?()
         switch readSupportedFeaturesReturnValue {
         case .success(let v): return v
         case .failure(let e): throw e
@@ -1138,9 +1142,14 @@ class MockMdsBleDeviceSession: BleDeviceSession {
 class MockMdsServiceClientUtils: PolarServiceClientUtils {
     var stubSession: MockMdsBleDeviceSession?
     var stubError: Error?
+    var stubFetchedSession: BleDeviceSession?
     
     required init(listener: CBDeviceListenerImpl) {
         super.init(listener: listener)
+    }
+    
+    override func fetchSession(_ identifier: String) throws -> BleDeviceSession? {
+        return stubFetchedSession
     }
     
     override func sessionMdsClientReady(_ identifier: String) throws -> BleDeviceSession {

@@ -33,7 +33,7 @@ class ZipCompressionHelperTest {
      * Expected: Returns correct file size
      */
     @Test
-    fun testCalculateTotalSize_SingleFile() {
+    fun `test calculate total size single file`() {
         // Arrange
         val testFile = File(testDir, "test_file.txt")
         testFile.writeText("A".repeat(1024)) // 1KB
@@ -55,7 +55,7 @@ class ZipCompressionHelperTest {
      * Expected: Returns sum of all file sizes
      */
     @Test
-    fun testCalculateTotalSize_MultipleFiles() {
+    fun `test calculate total size multiple files`() {
         // Arrange
         val file1 = File(testDir, "file1.txt").apply { writeText("A".repeat(1024)) }
         val file2 = File(testDir, "file2.txt").apply { writeText("B".repeat(2048)) }
@@ -77,7 +77,7 @@ class ZipCompressionHelperTest {
      * Expected: No compression when total size < 25MB
      */
     @Test
-    fun testCompressFilesIfNeeded_BelowThreshold() {
+    fun `test compress files if needed below threshold`() {
         // Arrange
         val smallFile = File(testDir, "small.txt").apply { writeText("A".repeat(1024 * 100)) }
         val uri = Uri.fromFile(smallFile)
@@ -97,7 +97,7 @@ class ZipCompressionHelperTest {
      * Expected: Returns null without crashing
      */
     @Test
-    fun testCompressFilesIfNeeded_InvalidFile() {
+    fun `test compress files if needed invalid file`() {
         // Arrange
         val invalidUri = Uri.fromFile(File(testDir, "nonexistent.txt"))
 
@@ -113,7 +113,7 @@ class ZipCompressionHelperTest {
      * Expected: Returns 0
      */
     @Test
-    fun testCalculateTotalSize_EmptyList() {
+    fun `test calculate total size empty list`() {
         // Act
         val size = ZipCompressionHelper.calculateTotalSize(context, emptyList())
 
@@ -149,7 +149,7 @@ class ZipCompressionHelperTest {
      * Expected: ZIP file exists, has correct entry names and byte-for-byte data
      */
     @Test
-    fun testCreateDeviceLogsZipFile_ContainsAllEntries() {
+    fun `test create device logs zip file contains all entries`() {
         val logs = listOf(
             "/ERRORLOG.BPB" to "error log".toByteArray(),
             "/SYSLOG.TXT"   to "sys log".toByteArray(),
@@ -184,7 +184,7 @@ class ZipCompressionHelperTest {
      * Expected: Filename starts with "device_logs-A1B2C3-" and ends with ".zip"
      */
     @Test
-    fun testCreateDeviceLogsZipFile_FilenamePattern() {
+    fun `test create device logs zip file filename pattern`() {
         val zipFile = ZipCompressionHelper.createDeviceLogsZipFile(
             context,
             listOf("/SYSLOG.TXT" to "data".toByteArray()),
@@ -205,7 +205,7 @@ class ZipCompressionHelperTest {
      * Expected: Filename contains "unknown" when no device ID is provided
      */
     @Test
-    fun testCreateDeviceLogsZipFile_BlankDeviceIdUsesUnknown() {
+    fun `test create device logs zip file blank device id uses unknown`() {
         val zipFile = ZipCompressionHelper.createDeviceLogsZipFile(
             context,
             listOf("/SYSLOG.TXT" to "data".toByteArray()),
@@ -225,7 +225,7 @@ class ZipCompressionHelperTest {
      * Expected: ZIP file is created with no entries
      */
     @Test
-    fun testCreateDeviceLogsZipFile_EmptyLogs() {
+    fun `test create device logs zip file empty logs`() {
         val zipFile = ZipCompressionHelper.createDeviceLogsZipFile(context, emptyList(), deviceId = "XYZ")
 
         assertTrue(zipFile.exists())
@@ -241,7 +241,7 @@ class ZipCompressionHelperTest {
      * Expected: Recent ZIP files are not deleted
      */
     @Test
-    fun testCleanupOldZipFiles_PreservesRecent() {
+    fun `test cleanup old zip files preserves recent`() {
         // Create a recent ZIP file
         val recentZipFile = File(context.cacheDir, "recordings_${System.currentTimeMillis()}.zip")
         recentZipFile.createNewFile()

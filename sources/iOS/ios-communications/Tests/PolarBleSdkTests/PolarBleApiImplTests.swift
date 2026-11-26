@@ -140,6 +140,30 @@ final class PolarBleApiImplTests: XCTestCase {
         cancellables.removeAll()
     }
 
+    func test_cleanupFirmwareUpdateSession_marksSyncIncompleteAndTerminates() async throws {
+        await v2Api.cleanupFirmwareUpdateSession(identifier: deviceId)
+
+        XCTAssertEqual(v2MockClient.sendNotificationCalls.map(\.notification), [
+            Protocol_PbPFtpHostToDevNotification.stopSync.rawValue,
+            Protocol_PbPFtpHostToDevNotification.terminateSession.rawValue
+        ])
+        let parameters = try XCTUnwrap(v2MockClient.sendNotificationCalls.first?.parameters)
+        let stopSync = try Protocol_PbPFtpStopSyncParams(serializedBytes: parameters as Data)
+        XCTAssertTrue(stopSync.hasCompleted, "The 'completed' field must be explicitly present in the notification")
+        XCTAssertFalse(stopSync.completed, "Cleanup must send completed=false to mark synchronization as incomplete")
+    }
+
+    func test_cleanupFirmwareUpdateSession_attemptsTerminationWhenStopSyncFails() async {
+        v2MockClient.sendNotificationError = BlePsFtpException.operationTimeout
+
+        await v2Api.cleanupFirmwareUpdateSession(identifier: deviceId)
+
+        XCTAssertEqual(v2MockClient.sendNotificationCalls.map(\.notification), [
+            Protocol_PbPFtpHostToDevNotification.stopSync.rawValue,
+            Protocol_PbPFtpHostToDevNotification.terminateSession.rawValue
+        ])
+    }
+
     // MARK: - Helpers
 
     // MARK: - Combine-based helpers (for AnyPublisher-returning APIs)

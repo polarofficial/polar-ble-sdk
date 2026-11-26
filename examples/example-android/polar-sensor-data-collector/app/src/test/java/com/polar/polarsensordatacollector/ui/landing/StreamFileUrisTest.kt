@@ -14,7 +14,7 @@ class StreamFileUrisTest {
         Uri.parse("content://files/sensorDataLogs/$type/dev1/$name")
 
     @Test
-    fun findMarkerLinks_returnsMarkerAndDataFiles_whenSessionHasMarker() {
+    fun `find marker links returns marker and data files when session has marker`() {
         // Arrange
         val hr = uri("HR", "HR_2026-10-30T07:00:00_dev1.txt")
         val acc = uri("ACC", "ACC_2026-10-30T07:00:00_dev1.txt")
@@ -29,7 +29,7 @@ class StreamFileUrisTest {
     }
 
     @Test
-    fun findMarkerLinks_returnsNull_whenSessionHasNoMarker() {
+    fun `find marker links returns null when session has no marker`() {
         // Arrange
         val hr = uri("HR", "HR_2026-10-30T07:00:00_dev1.txt")
 
@@ -41,7 +41,7 @@ class StreamFileUrisTest {
     }
 
     @Test
-    fun parseMetadata_returnsNull_whenFileNameHasNoTimestamp() {
+    fun `parse metadata returns null when file name has no timestamp`() {
         // Arrange
         val file = uri("HR", "HR_dev1.txt")
 

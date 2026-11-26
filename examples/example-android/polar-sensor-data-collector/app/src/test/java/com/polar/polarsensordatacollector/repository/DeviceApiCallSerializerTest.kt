@@ -22,7 +22,7 @@ class DeviceApiCallSerializerTest {
     private val serializer = DeviceApiCallSerializer()
 
     @Test
-    fun serialize_returnsBlockResult_whenBlockCompletes() = runTest {
+    fun `serialize returns block result when block completes`() = runTest {
         // Arrange
         val id = "ret"
 
@@ -34,7 +34,7 @@ class DeviceApiCallSerializerTest {
     }
 
     @Test
-    fun serialize_runsInTurn_whenSameDevice() = runTest {
+    fun `serialize runs in turn when same device`() = runTest {
         // Arrange
         val id = "same"
         val gate = CompletableDeferred<Unit>()
@@ -57,7 +57,7 @@ class DeviceApiCallSerializerTest {
     }
 
     @Test
-    fun serialize_runsInParallel_whenDifferentDevices() = runTest {
+    fun `serialize runs in parallel when different devices`() = runTest {
         // Arrange
         val gate = CompletableDeferred<Unit>()
         var bRan = false
@@ -74,7 +74,7 @@ class DeviceApiCallSerializerTest {
     }
 
     @Test
-    fun serialize_releasesLock_whenBlockThrows() = runTest {
+    fun `serialize releases lock when block throws`() = runTest {
         // Arrange
         val id = "exc"
         var thrown: IllegalStateException? = null
@@ -94,7 +94,7 @@ class DeviceApiCallSerializerTest {
     }
 
     @Test
-    fun serialize_releasesLock_whenCallerIsCancelled() = runTest {
+    fun `serialize releases lock when caller is cancelled`() = runTest {
         // Arrange
         val id = "cancel"
         val job = launch { serializer.serialize(id) { CompletableDeferred<Unit>().await() } }
@@ -114,7 +114,7 @@ class DeviceApiCallSerializerTest {
     }
 
     @Test
-    fun serializeFlow_holdsLock_whileCollecting() = runTest {
+    fun `serialize flow holds lock while collecting`() = runTest {
         // Arrange
         val id = "flow-hold"
         val gate = CompletableDeferred<Unit>()
@@ -144,7 +144,7 @@ class DeviceApiCallSerializerTest {
     }
 
     @Test
-    fun serializeFlow_doesNotLock_whenNotCollected() = runTest {
+    fun `serialize flow does not lock when not collected`() = runTest {
         // Arrange
         val id = "flow-lazy"
 
@@ -157,7 +157,7 @@ class DeviceApiCallSerializerTest {
     }
 
     @Test
-    fun serializeFlow_releasesLock_whenCollectorIsCancelled() = runTest {
+    fun `serialize flow releases lock when collector is cancelled`() = runTest {
         // Arrange
         val id = "flow-cancel"
         val job = launch {
@@ -175,7 +175,7 @@ class DeviceApiCallSerializerTest {
     }
 
     @Test
-    fun serializeFlow_releasesLock_whenFlowThrows() = runTest {
+    fun `serialize flow releases lock when flow throws`() = runTest {
         // Arrange
         val id = "flow-error"
         var thrown: IllegalStateException? = null
@@ -195,7 +195,7 @@ class DeviceApiCallSerializerTest {
     }
 
     @Test
-    fun serialize_throwsBusy_whenLockIsNotFreeInTime() = runTest {
+    fun `serialize throws busy when lock is not free in time`() = runTest {
         // Arrange
         val id = "busy"
         val gate = CompletableDeferred<Unit>()
@@ -211,7 +211,7 @@ class DeviceApiCallSerializerTest {
     }
 
     @Test
-    fun serialize_runsBlock_whenLockFreesInTime() = runTest {
+    fun `serialize runs block when lock frees in time`() = runTest {
         // Arrange
         val id = "frees"
         val gate = CompletableDeferred<Unit>()
@@ -228,7 +228,7 @@ class DeviceApiCallSerializerTest {
     }
 
     @Test
-    fun serialize_releasesLock_whenWaitTimesOut() = runTest {
+    fun `serialize releases lock when wait times out`() = runTest {
         // Arrange
         val id = "timeout-release"
         val gate = CompletableDeferred<Unit>()
@@ -246,7 +246,7 @@ class DeviceApiCallSerializerTest {
     }
 
     @Test
-    fun serializeFlow_throwsBusy_whenLockIsNotFreeInTime() = runTest {
+    fun `serialize flow throws busy when lock is not free in time`() = runTest {
         // Arrange
         val id = "flow-busy"
         val gate = CompletableDeferred<Unit>()
