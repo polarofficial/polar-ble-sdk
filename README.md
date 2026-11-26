@@ -42,7 +42,7 @@ Official SDK for Polar sensors and watches on **Android** and **iOS**. Build app
 | Polar Verity Sense | [PolarVeritySense.md](./documentation/products/PolarVeritySense.md) |
 | Polar OH1 | [PolarOH1.md](./documentation/products/PolarOH1.md) |
 | Polar Ignite 3 | [PolarIgnite3.md](./documentation/products/PolarIgnite3.md) |
-| Polar Vantage V3, M3, Grit X2 Pro, Grit X2 | [PolarVantageV3andGritX2Pro.md](./documentation/products/PolarVantageV3andGritX2Pro.md) |
+| Polar Vantage V3, M3, Grit X2 Pro, Grit X2, Street X | [PolarVantageV3andGritX2Pro.md](./documentation/products/PolarVantageV3andGritX2Pro.md) |
 | Polar Pacer / Pacer Pro | [PolarPacerAndPacerPro.md](./documentation/products/PolarPacerAndPacerPro.md) |
 
 For watch-specific guidance, see [Using SDK with Watches](./documentation/UsingSDKWithWatches.md).
